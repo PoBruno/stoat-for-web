@@ -19,6 +19,7 @@ import {
   Room,
   ScreenSharePresets,
   Track,
+  VideoPresets,
   VideoResolution,
 } from "livekit-client";
 import { Channel } from "stoat.js";
@@ -218,11 +219,8 @@ class Voice {
         deviceId: this.#settings.preferredAudioOutputDevice,
       },
       videoCaptureDefaults: {
-        resolution: {
-          width: 1280,
-          height: 720,
-          frameRate: 30,
-        },
+        // TODO: Support higher resolutions based on limits
+        resolution: VideoPresets.h720.resolution,
         deviceId: this.#settings.preferredVideoDevice,
       },
     });
@@ -555,25 +553,26 @@ class Voice {
             const quality = qualities[qualityName] || qualities.low!;
 
             if (localTrack.videoTrack) {
-              await localTrack.videoTrack.mediaStreamTrack.applyConstraints({
-                frameRate: { max: quality.resolution.frameRate },
-                width:
-                  quality.resolution.width === 0
-                    ? undefined
-                    : {
-                        ideal: quality.resolution.width,
-                        max: quality.resolution.width,
-                      },
-                height:
-                  quality.resolution.width === 0
-                    ? undefined
-                    : {
-                        ideal: quality.resolution.width,
-                        max: quality.resolution.height,
-                      },
-              });
-              localTrack.videoTrack.mediaStreamTrack.contentHint =
-                quality.contentHint;
+              await localTrack.videoTrack.applyConstraints(
+                {
+                  frameRate: { max: quality.resolution.frameRate },
+                  width:
+                    quality.resolution.width === 0
+                      ? undefined
+                      : {
+                          ideal: quality.resolution.width,
+                          max: quality.resolution.width,
+                        },
+                  height:
+                    quality.resolution.width === 0
+                      ? undefined
+                      : {
+                          ideal: quality.resolution.width,
+                          max: quality.resolution.height,
+                        },
+                },
+                quality.contentHint,
+              );
               if (!audio && screenAudioTrack?.track) {
                 room.localParticipant.unpublishTrack(screenAudioTrack.track);
               }
