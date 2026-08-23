@@ -1,6 +1,7 @@
 packages:
   - packages/client
   - packages/stoat.js
+  - packages/stoat-api
   - packages/solid-livekit-components
 allowBuilds:
   "@swc/core": true
@@ -13,12 +14,13 @@ nodeLinker: isolated
 # Having multiple prettiers makes the vscode extension unpredictable
 # Override solid-js because somewhere from 1.9.6 -> 1.9.14 breaks reactivity
 # across dependencies.
-# Override stoat-api to the sibling repo in this harness: the fork's backend adds
+# Override stoat-api to the packages/stoat-api submodule: the fork's backend adds
 # types (e.g. ForumPost) that do not exist in the published package. Regenerate it
-# with `curl localhost:14702/openapi.json > OpenAPI.json && pnpm build` there.
-# NOTE: this breaks `docker build` of for-web, which cannot see outside its context.
+# with `curl localhost:14702/openapi.json > OpenAPI.json && pnpm build` in there.
+# It has to be a submodule rather than a sibling directory, because `docker build`
+# only sees this repo's context.
 overrides:
   "prettier": "^3.8.1"
   "solid-js": "1.9.14"
-  "stoat-api": "link:../javascript-client-api"
+  "stoat-api": "workspace:*"
 strictPeerDependencies: false

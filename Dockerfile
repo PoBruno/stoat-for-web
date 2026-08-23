@@ -21,8 +21,11 @@ COPY packages/client/panda.config.ts packages/client/
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Build sub-dependencies (stoat.js, livekit-components, lingui plugins, panda css etc)
-RUN pnpm --filter stoat.js build && \
+# Build sub-dependencies (stoat-api, stoat.js, livekit-components, lingui plugins, panda css etc)
+# stoat-api goes first: stoat.js imports its generated types, and without them
+# its tsc fails with "Cannot find module 'stoat-api'".
+RUN pnpm --filter stoat-api build && \
+  pnpm --filter stoat.js build && \
   pnpm --filter solid-livekit-components build && \
   pnpm --filter client exec lingui compile --typescript && \
   pnpm --filter client exec node scripts/copyAssets.mjs && \
