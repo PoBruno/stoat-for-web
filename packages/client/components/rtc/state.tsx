@@ -807,6 +807,17 @@ class Voice {
   }
 
   /**
+   * Whether a soundboard clip can be played right now.
+   *
+   * Estar num canal nao basta: publicar uma track exige a conexao de verdade
+   * estabelecida. Sem isto o botao de tocar aceitava clique e nao acontecia
+   * nada, deixando a UI travada no estado "tocando".
+   */
+  get canPlaySound() {
+    return this.state() === "CONNECTED" && this.soundboardPermission;
+  }
+
+  /**
    * Play a soundboard clip into the call.
    *
    * The clip goes out as its own LiveKit track rather than being mixed into
@@ -819,7 +830,12 @@ class Voice {
    */
   async playSound(url: string, onEnded?: () => void) {
     const room = this.room();
-    if (!room || !this.soundboardPermission) return;
+    if (!room || !this.canPlaySound) {
+      // Avisa o chamador de qualquer forma: retornar calado deixava o botao
+      // presdo em "parar" para sempre.
+      onEnded?.();
+      return;
+    }
 
     // Um clipe por vez: publicar dois com a mesma fonte seria recusado, e
     // sobrepor audio no canal e ruim de ouvir de qualquer forma.
@@ -833,7 +849,17 @@ class Voice {
 
     const fonte = ctx.createBufferSource();
     fonte.buffer = buffer;
+
+    // Sai pela track, no nivel cheio: quem escuta regula do lado de la.
     fonte.connect(destino);
+
+    // E tambem pelos alto-falantes de quem tocou. O LiveKit nao devolve a
+    // propria track, entao sem este ramo quem aperta o botao nao ouve nada —
+    // e sozinho no canal parece que a feature nao funciona.
+    const monitor = ctx.createGain();
+    monitor.gain.value = this.#settings.soundboardVolume;
+    fonte.connect(monitor);
+    monitor.connect(ctx.destination);
 
     const faixa = new LocalAudioTrack(destino.stream.getAudioTracks()[0]);
     await room.localParticipant.publishTrack(faixa, {

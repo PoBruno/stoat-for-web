@@ -317,7 +317,7 @@ export function SoundboardPanel(props: {
                       size="xs"
                       variant={tocando() === som.id ? "filled" : "tonal"}
                       aria-label={t`Play`}
-                      isDisabled={!voice.soundboardPermission}
+                      isDisabled={!voice.canPlaySound}
                       onPress={() => tocar(som)}
                     >
                       <Symbol size={18}>
@@ -386,6 +386,11 @@ export function SoundboardPanel(props: {
         <Show when={!voice.soundboardPermission}>
           <Text class="label" size="small">
             <Trans>You cannot play sounds here.</Trans>
+          </Text>
+        </Show>
+        <Show when={voice.soundboardPermission && !voice.canPlaySound}>
+          <Text class="label" size="small">
+            <Trans>Connect to the voice channel to play.</Trans>
           </Text>
         </Show>
       </Rodape>

@@ -900,6 +900,10 @@ msgstr "本人確認"
 msgid "Connect"
 msgstr "接続"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Connect to the voice channel to play."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Connect to voice channel"
 msgstr "ボイスチャンネルに接続できます"
@@ -911,6 +915,10 @@ msgstr "接続済み"
 #: components/ui/components/features/voice/callCard/VoiceCallCardStatus.tsx
 msgid "Connecting"
 msgstr "接続中"
+
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Connecting…"
+msgstr ""
 
 #: components/modal/modals/ReportContent.tsx
 msgid "Content breaks one or more laws"

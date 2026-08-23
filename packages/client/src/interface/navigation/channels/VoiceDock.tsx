@@ -20,15 +20,24 @@ export function VoiceDock() {
   const voice = useVoice();
   const { t } = useLingui();
 
+  const conectado = () => voice.state() === "CONNECTED";
+
   return (
     <Show when={voice.channel()}>
       {(canal) => (
         <Dock>
           <Info>
             <Row gap="xs" align>
-              <Ponto />
+              {/*
+                Reflete o estado real da conexao. Antes bastava haver um canal
+                selecionado, entao a barra dizia "Voz conectada" enquanto o
+                card da chamada dizia "Desconectado".
+              */}
+              <Ponto conectado={conectado()} />
               <Text class="label" size="small">
-                <Trans>Voice connected</Trans>
+                <Show when={conectado()} fallback={<Trans>Connecting…</Trans>}>
+                  <Trans>Voice connected</Trans>
+                </Show>
               </Text>
             </Row>
             <Text class="label" size="small">
@@ -118,13 +127,18 @@ const Info = styled("div", {
   },
 });
 
-/** Bolinha de "conectado", no mesmo espírito do indicador de presença */
+/** Bolinha de estado, no mesmo espírito do indicador de presença */
 const Ponto = styled("div", {
   base: {
     width: "8px",
     height: "8px",
     borderRadius: "var(--borderRadius-full)",
-    background: "var(--customColours-success-color)",
     flexShrink: 0,
+    background: "var(--md-sys-color-on-surface-variant)",
+  },
+  variants: {
+    conectado: {
+      true: { background: "var(--customColours-success-color)" },
+    },
   },
 });
