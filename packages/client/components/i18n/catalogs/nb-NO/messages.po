@@ -157,8 +157,13 @@ msgstr "{0} endret navn på kanalen"
 
 #. placeholder {0}: instance.globalLimits.server_sounds - props.server.sounds.length
 #: components/app/interface/settings/server/sounds/SoundList.tsx
-msgid "{0} sound slots remaining"
+msgid "{0} slots left"
 msgstr ""
+
+#. placeholder {0}: instance.globalLimits.server_sounds - props.server.sounds.length
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+#~ msgid "{0} sound slots remaining"
+#~ msgstr ""
 
 #. placeholder {0}: (message.systemMessage as MessagePinnedSystemMessage).by?.username
 #: components/client/NotificationsWorker.tsx
@@ -422,6 +427,10 @@ msgstr "Legg til venner i gruppe"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Add new members to the group"
 msgstr "Legg til nye medlemmer i gruppen"
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Add sound"
+msgstr ""
 
 #: src/interface/navigation/servers/UserMenu.tsx
 msgid "Add status text"
@@ -777,6 +786,10 @@ msgstr "Endre avatar"
 msgid "Change bot username"
 msgstr ""
 
+#: components/ui/components/utils/files/FileInput.tsx
+msgid "Change file"
+msgstr ""
+
 #. placeholder {0}: props.member.server!.name
 #: components/modal/modals/ServerIdentity.tsx
 msgid "Change identity on {0}"
@@ -858,6 +871,10 @@ msgstr "Chat-inndata"
 #: components/auth/src/flows/FlowCheck.tsx
 msgid "Check your mail!"
 msgstr "Sjekk e-posten din!"
+
+#: components/ui/components/utils/files/FileInput.tsx
+msgid "Choose a file"
+msgstr ""
 
 #: components/auth/src/flows/FlowLogin.tsx
 msgid "Choose a username"
@@ -1109,7 +1126,6 @@ msgid "Couldn't fetch Stoat configuration from {hStr}."
 msgstr ""
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
-#: components/app/interface/settings/server/sounds/SoundList.tsx
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
@@ -1297,6 +1313,7 @@ msgstr ""
 msgid "Degraded Performance"
 msgstr ""
 
+#: components/app/interface/settings/server/sounds/SoundList.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
 #: components/modal/modals/DeleteChannel.tsx
@@ -2543,6 +2560,10 @@ msgstr ""
 msgid "No comments yet."
 msgstr ""
 
+#: components/ui/components/utils/files/FileInput.tsx
+msgid "No file selected"
+msgstr ""
+
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "No GIFs found"
 msgstr ""
@@ -2985,6 +3006,7 @@ msgstr ""
 
 #: components/app/interface/settings/channel/ForumSettings.tsx
 #: components/modal/modals/RemoveMember.tsx
+#: components/ui/components/utils/files/FileInput.tsx
 msgid "Remove"
 msgstr ""
 

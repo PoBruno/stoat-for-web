@@ -1,10 +1,11 @@
 import { Match, Show, Switch, splitProps } from "solid-js";
 
+import { Trans } from "@lingui/solid/macro";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { ALLOWED_IMAGE_TYPES } from "@revolt/state";
-import { Button, Ripple } from "../../design";
+import { Button, Ripple, Text } from "../../design";
 import { Row } from "../../layout";
 import { Symbol } from "../Symbol";
 
@@ -126,6 +127,44 @@ export function FileInput(props: Props) {
         </>
       }
     >
+      <Match when={local.accept === "audio/*"}>
+        {/*
+          Ramo proprio para audio. Sem ele o componente caia no fallback, que
+          renderiza o <input type="file"> nativo — o "Choose File / No file
+          chosen" do navegador, que destoa do resto da interface e nao diz
+          nada util sobre o arquivo escolhido.
+        */}
+        <input
+          type="file"
+          ref={inputRef}
+          class={css({ display: "none" })}
+          onChange={onChange}
+          accept="audio/*"
+          {...remote}
+        />
+        <Row align gap="sm">
+          <Button size="sm" variant="tonal" onPress={() => inputRef!.click()}>
+            <Show when={local.file} fallback={<Trans>Choose a file</Trans>}>
+              <Trans>Change file</Trans>
+            </Show>
+          </Button>
+          <Show
+            when={Array.isArray(local.file) && local.file.length}
+            fallback={
+              <Text class="label" size="small">
+                <Trans>No file selected</Trans>
+              </Text>
+            }
+          >
+            <Text class="label" size="small">
+              {(local.file as File[])[0].name}
+            </Text>
+            <Button size="sm" variant="text" onPress={onClear}>
+              <Trans>Remove</Trans>
+            </Button>
+          </Show>
+        </Row>
+      </Match>
       <Match when={local.accept === "image/*"}>
         <input
           type="file"

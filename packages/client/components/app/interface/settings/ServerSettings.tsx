@@ -103,16 +103,23 @@ const Config: SettingsConfiguration<Server> = {
           ],
         },
         {
-          hidden: !server.havePermission("ManageCustomisation"),
+          // A secao aparece se houver ao menos uma aba visivel; cada aba tem a
+          // sua propria permissao, porque quem cuida dos emoji nao e
+          // necessariamente quem cuida dos sons.
+          hidden:
+            !server.havePermission("ManageCustomisation") &&
+            !server.havePermission("ManageSoundboard"),
           title: <Trans>Customisation</Trans>,
           entries: [
             {
               id: "emojis",
+              hidden: !server.havePermission("ManageCustomisation"),
               icon: <Symbol size={20}>mood</Symbol>,
               title: <Trans>Emojis</Trans>,
             },
             {
               id: "sounds",
+              hidden: !server.havePermission("ManageSoundboard"),
               icon: <Symbol size={20}>graphic_eq</Symbol>,
               title: <Trans>Soundboard</Trans>,
             },

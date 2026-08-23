@@ -155,7 +155,7 @@ export function SoundboardPanel(props: {
           </Titulo>
         </Row>
         <Row gap="sm" align>
-          <Show when={props.server.havePermission("ManageCustomisation")}>
+          <Show when={props.server.havePermission("ManageSoundboard")}>
             <Button
               size="xs"
               variant="tonal"
@@ -406,11 +406,10 @@ function formatarDuracao(ms: number): string {
   return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-/** Quem subiu pode gerir; os demais precisam de ManageCustomisation */
+/** Quem subiu pode gerir; os demais precisam de ManageSoundboard */
 function podeGerir(server: Server, som: Sound, usuarioId?: string): boolean {
   return (
-    som.creator?.id === usuarioId ||
-    server.havePermission("ManageCustomisation")
+    som.creator?.id === usuarioId || server.havePermission("ManageSoundboard")
   );
 }
 
@@ -520,11 +519,16 @@ const Grade = styled("div", {
     overflowY: "auto",
     minHeight: 0,
     flex: 1,
+
+    // Sem isto a grade estica as linhas para preencher a altura disponivel e
+    // cada som vira um quadrado enorme. O card precisa de duas linhas de
+    // texto, nada mais.
+    alignContent: "start",
   },
   variants: {
     lista: {
       true: { gridTemplateColumns: "1fr" },
-      false: { gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" },
+      false: { gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" },
     },
   },
 });
@@ -538,6 +542,13 @@ const Cartao = styled("div", {
     padding: "var(--gap-sm) var(--gap-md)",
     borderRadius: "var(--borderRadius-md)",
     background: "var(--md-sys-color-surface-container)",
+
+    // Altura de duas linhas: nome em cima, duracao embaixo.
+    minHeight: "52px",
+
+    _hover: {
+      background: "var(--md-sys-color-surface-container-high)",
+    },
   },
 });
 

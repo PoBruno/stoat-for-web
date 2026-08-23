@@ -1,5 +1,5 @@
 import { createFormControl, createFormGroup } from "solid-forms";
-import { For, Match, Show, Switch, createResource } from "solid-js";
+import { For, Match, Show, Switch, createMemo, createResource } from "solid-js";
 
 import { Trans, useLingui } from "@lingui/solid/macro";
 import { Server } from "stoat.js";
@@ -8,15 +8,20 @@ import { useClient } from "@revolt/client";
 import { useError } from "@revolt/i18n";
 import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
+import { styled } from "styled-system/jsx";
+
 import {
-  CategoryButton,
   CircularProgress,
   Column,
   Form2,
+  IconButton,
   Row,
   Symbol,
   Text,
 } from "@revolt/ui";
+
+/** Rotulo do grupo de sons sem categoria */
+const SEM_CATEGORIA = "\u0000sem";
 
 /**
  * Soundboard settings for a server: upload and manage sounds.
@@ -43,6 +48,28 @@ export function SoundList(props: { server: Server }) {
       return true;
     },
   );
+
+  /**
+   * Sons agrupados por categoria, com os sem categoria por ultimo.
+   */
+  const porCategoria = createMemo(() => {
+    const grupos = new Map<string, typeof props.server.sounds>();
+    for (const som of props.server.sounds) {
+      const chave = som.category?.trim() || SEM_CATEGORIA;
+      if (!grupos.has(chave)) grupos.set(chave, []);
+      grupos.get(chave)!.push(som);
+    }
+
+    for (const lista of grupos.values()) {
+      lista.sort((a, b) => a.name.localeCompare(b.name));
+    }
+
+    return [...grupos.entries()].sort(([a], [b]) => {
+      if (a === SEM_CATEGORIA) return 1;
+      if (b === SEM_CATEGORIA) return -1;
+      return a.localeCompare(b);
+    });
+  });
 
   function isDisabled() {
     return props.server.sounds.length >= instance.globalLimits.server_sounds;
@@ -93,62 +120,66 @@ export function SoundList(props: { server: Server }) {
   return (
     <Column gap="lg">
       <form onSubmit={submit}>
-        <Column>
-          <Row align>
-            <Column>
-              <Form2.FileInput
-                control={editGroup.controls.file}
-                accept="audio/*"
-                imageJustify={false}
-                allowRemoval={false}
-                maxSize={instance.limits().file_upload_size_limits["sounds"]}
-                hideErrors={true}
-              />
-            </Column>
-            <Column grow>
-              <Form2.TextField
-                minlength={1}
-                maxlength={32}
-                counter
-                name="name"
-                control={editGroup.controls.name}
-                label={t`Sound name`}
-                autocomplete="off"
-              />
-              <Form2.TextField
-                maxlength={32}
-                name="category"
-                control={editGroup.controls.category}
-                label={t`Category`}
-                helper={t`Free text. Sounds sharing a category are grouped together.`}
-                helper-on-focus={true}
-                autocomplete="off"
-              />
+        {/*
+          Uma coluna, e nao arquivo a esquerda com campos a direita: a versao
+          anterior deixava metade da largura vazia e o botao de criar solto no
+          meio, longe do que ele cria.
+        */}
+        <Formulario>
+          <Form2.FileInput
+            control={editGroup.controls.file}
+            accept="audio/*"
+            imageJustify={false}
+            allowRemoval={false}
+            maxSize={instance.limits().file_upload_size_limits["sounds"]}
+            hideErrors={true}
+          />
 
-              <Row align>
-                <Form2.Submit group={editGroup}>
-                  <Trans>Create</Trans>
-                </Form2.Submit>
-                <Switch
-                  fallback={
-                    <Trans>
-                      {instance.globalLimits.server_sounds -
-                        props.server.sounds.length}{" "}
-                      sound slots remaining
-                    </Trans>
-                  }
-                >
-                  <Match when={editGroup.errors?.error}>
-                    {err(editGroup.errors!.error)}
-                  </Match>
-                  <Match when={editGroup.isPending}>
-                    <CircularProgress />
-                  </Match>
-                </Switch>
-              </Row>
-            </Column>
+          <Campos>
+            <Form2.TextField
+              minlength={1}
+              maxlength={32}
+              counter
+              name="name"
+              control={editGroup.controls.name}
+              label={t`Sound name`}
+              autocomplete="off"
+            />
+            <Form2.TextField
+              maxlength={32}
+              name="category"
+              control={editGroup.controls.category}
+              label={t`Category`}
+              helper={t`Free text. Sounds sharing a category are grouped together.`}
+              helper-on-focus={true}
+              autocomplete="off"
+            />
+          </Campos>
+
+          <Row align gap="md">
+            <Form2.Submit group={editGroup}>
+              <Trans>Add sound</Trans>
+            </Form2.Submit>
+            <Switch
+              fallback={
+                <Text class="label" size="small">
+                  <Trans>
+                    {instance.globalLimits.server_sounds -
+                      props.server.sounds.length}{" "}
+                    slots left
+                  </Trans>
+                </Text>
+              }
+            >
+              <Match when={editGroup.errors?.error}>
+                {err(editGroup.errors!.error)}
+              </Match>
+              <Match when={editGroup.isPending}>
+                <CircularProgress />
+              </Match>
+            </Switch>
           </Row>
-        </Column>
+        </Formulario>
       </form>
 
       <Column gap="sm">
@@ -168,24 +199,49 @@ export function SoundList(props: { server: Server }) {
               </Text>
             }
           >
-            <For
-              each={props.server.sounds.toSorted((b, a) =>
-                a.id.localeCompare(b.id),
-              )}
-            >
-              {(sound) => (
-                <CategoryButton
-                  roundedIcon={false}
-                  icon={<Symbol>music_note</Symbol>}
-                  onClick={() => openModal({ type: "delete_sound", sound })}
-                  description={
-                    <Show when={sound.category} fallback={t`Uncategorised`}>
-                      {sound.category}
+            {/* Agrupa por categoria: com dezenas de sons uma lista corrida
+                vira um paredao sem hierarquia. */}
+            <For each={porCategoria()}>
+              {([categoria, sons]) => (
+                <Column gap="sm">
+                  <Text class="label" size="small">
+                    <Show
+                      when={categoria !== SEM_CATEGORIA}
+                      fallback={<Trans>Uncategorised</Trans>}
+                    >
+                      {categoria}
                     </Show>
-                  }
-                >
-                  {sound.name}
-                </CategoryButton>
+                  </Text>
+                  <For each={sons}>
+                    {(sound) => (
+                      <Linha>
+                        <Row gap="sm" align>
+                          <Symbol size={20}>music_note</Symbol>
+                          <Column gap="none">
+                            <Text class="label" size="large">
+                              {sound.name}
+                            </Text>
+                            <Show when={sound.duration}>
+                              <Text class="label" size="small">
+                                {formatarDuracao(sound.duration!)}
+                              </Text>
+                            </Show>
+                          </Column>
+                        </Row>
+                        <IconButton
+                          size="xs"
+                          variant="standard"
+                          aria-label={t`Delete`}
+                          onPress={() =>
+                            openModal({ type: "delete_sound", sound })
+                          }
+                        >
+                          <Symbol size={18}>delete</Symbol>
+                        </IconButton>
+                      </Linha>
+                    )}
+                  </For>
+                </Column>
               )}
             </For>
           </Show>
@@ -194,6 +250,49 @@ export function SoundList(props: { server: Server }) {
     </Column>
   );
 }
+
+/** mm:ss a partir de milissegundos */
+function formatarDuracao(ms: number): string {
+  const total = Math.round(ms / 1000);
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+const Formulario = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-md)",
+    padding: "var(--gap-lg)",
+    borderRadius: "var(--borderRadius-md)",
+    background: "var(--md-sys-color-surface-container)",
+  },
+});
+
+const Campos = styled("div", {
+  base: {
+    display: "grid",
+    gap: "var(--gap-md)",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  },
+});
+
+const Linha = styled("div", {
+  base: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
+    padding: "var(--gap-sm) var(--gap-md)",
+    borderRadius: "var(--borderRadius-md)",
+    background: "var(--md-sys-color-surface-container)",
+
+    _hover: {
+      background: "var(--md-sys-color-surface-container-high)",
+    },
+  },
+});
 
 /**
  * Read how long an audio file plays for.
