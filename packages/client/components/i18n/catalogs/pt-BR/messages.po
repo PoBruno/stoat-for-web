@@ -3410,6 +3410,10 @@ msgstr "Nome do som"
 msgid "Soundboard"
 msgstr "Soundboard"
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard volume"
+msgstr "Volume do soundboard"
+
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Sounds"
 msgstr "Sons"

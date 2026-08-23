@@ -4,7 +4,10 @@ import { Trans, useLingui } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { useVoice } from "@revolt/rtc";
+import { useState } from "@revolt/state";
 import { IconButton, Row, Symbol, Text } from "@revolt/ui";
+
+import { ContextMenu } from "../../../../components/app/menus/ContextMenu";
 
 /**
  * Voice status pinned to the bottom of the channel sidebar.
@@ -81,6 +84,15 @@ export function VoiceDock() {
               aria-label={t`Soundboard`}
               isDisabled={!voice.soundboardPermission}
               onPress={() => voice.toggleSoundboard()}
+              // Botao direito abre o volume aqui mesmo, sem precisar abrir o
+              // painel inteiro so para mexer no controle deslizante.
+              use:floating={{
+                contextMenu: () => (
+                  <ContextMenu>
+                    <VolumeSoundboard />
+                  </ContextMenu>
+                ),
+              }}
             >
               <Symbol size={18}>graphic_eq</Symbol>
             </IconButton>
@@ -99,6 +111,59 @@ export function VoiceDock() {
     </Show>
   );
 }
+
+/**
+ * Volume do soundboard, dentro do menu de contexto.
+ *
+ * Fica no menu e nao numa faixa fixa na barra: o controle e usado de vez em
+ * quando, e a barra lateral e estreita demais para carregar um slider o tempo
+ * todo. O menu fecha ao clicar fora, entao ele some sozinho.
+ */
+function VolumeSoundboard() {
+  const state = useState();
+  const { t } = useLingui();
+
+  return (
+    <Volume>
+      <Row gap="xs" align>
+        <Symbol size={16}>volume_up</Symbol>
+        <Text class="label" size="small">
+          <Trans>Soundboard volume</Trans>
+        </Text>
+      </Row>
+      <Row gap="sm" align>
+        <input
+          type="range"
+          min="0"
+          max="100"
+          aria-label={t`Soundboard volume`}
+          value={Math.round(state.voice.soundboardVolume * 100)}
+          onInput={(e) =>
+            (state.voice.soundboardVolume = Number(e.currentTarget.value) / 100)
+          }
+        />
+        <Text class="label" size="small">
+          {Math.round(state.voice.soundboardVolume * 100)}%
+        </Text>
+      </Row>
+    </Volume>
+  );
+}
+
+const Volume = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-sm)",
+    padding: "var(--gap-sm) var(--gap-md)",
+    minWidth: "190px",
+
+    "& input[type=range]": {
+      flex: 1,
+      minWidth: 0,
+    },
+  },
+});
 
 const Dock = styled("div", {
   base: {

@@ -3464,6 +3464,10 @@ msgstr ""
 msgid "Soundboard"
 msgstr ""
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard volume"
+msgstr ""
+
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Sounds"
 msgstr "Sounds"
