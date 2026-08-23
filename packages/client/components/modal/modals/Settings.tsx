@@ -63,6 +63,7 @@ export function SettingsModal(
             >
               <Settings
                 onClose={props.onClose}
+                page={props.page}
                 render={config.render}
                 title={config.title}
                 list={config.list}

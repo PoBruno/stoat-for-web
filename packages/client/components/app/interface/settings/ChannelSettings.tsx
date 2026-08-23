@@ -8,11 +8,11 @@ import { ColouredText } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import { SettingsConfiguration } from ".";
+import { ForumSettings } from "./channel/ForumSettings";
 import ChannelOverview from "./channel/Overview";
 import { ChannelPermissionsEditor } from "./channel/permissions/ChannelPermissionsEditor";
 import { ChannelPermissionsOverview } from "./channel/permissions/ChannelPermissionsOverview";
 import { ViewWebhook } from "./channel/webhooks/ViewWebhook";
-import { ForumSettings } from "./channel/ForumSettings";
 import { WebhooksList } from "./channel/webhooks/WebhooksList";
 import { BackCard } from "./user/_AccountCard";
 

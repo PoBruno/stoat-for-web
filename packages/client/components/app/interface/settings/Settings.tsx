@@ -23,6 +23,15 @@ export interface SettingsProps {
   onClose?: () => void;
 
   /**
+   * Page to open on
+   *
+   * Deep link into a specific settings page. The initial page used to be read
+   * off the context object, which only works when the context is a plain bag;
+   * for server settings the context is the Server itself.
+   */
+  page?: string;
+
+  /**
    * Settings context
    */
   context: never;
@@ -50,7 +59,7 @@ const SettingsNavigationContext = createContext<{
 export function Settings(props: SettingsProps & SettingsConfiguration<never>) {
   const [page, setPage] = createSignal<undefined | string>(
     // eslint-disable-next-line
-    (props.context as any)?.page,
+    props.page ?? (props.context as any)?.page,
   );
   const [transition, setTransition] =
     createSignal<SettingsTransition>("normal");

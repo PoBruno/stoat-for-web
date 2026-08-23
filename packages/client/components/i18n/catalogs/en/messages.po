@@ -1240,6 +1240,10 @@ msgstr "Custom window frame"
 msgid "Customisation"
 msgstr "Customisation"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Customise"
+msgstr "Customise"
+
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Dark"
@@ -3462,6 +3466,7 @@ msgstr "Sound actions"
 msgid "Sound name"
 msgstr "Sound name"
 
+#: components/app/interface/settings/ServerSettings.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 #: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx

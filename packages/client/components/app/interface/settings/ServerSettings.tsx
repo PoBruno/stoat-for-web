@@ -12,10 +12,10 @@ import { ChannelPermissionsEditor } from "./channel/permissions/ChannelPermissio
 import Overview from "./server/Overview";
 import { ListServerBans } from "./server/bans/ListBans";
 import { EmojiList } from "./server/emojis/EmojiList";
-import { SoundList } from "./server/sounds/SoundList";
 import { ListServerInvites } from "./server/invites/ListServerInvites";
 import { ServerRoleEditor } from "./server/roles/ServerRoleEditor";
 import { ServerRoleOverview } from "./server/roles/ServerRoleOverview";
+import { SoundList } from "./server/sounds/SoundList";
 import { BackCard } from "./user/_AccountCard";
 
 const Config: SettingsConfiguration<Server> = {
@@ -65,6 +65,8 @@ const Config: SettingsConfiguration<Server> = {
         return <Overview server={server} />;
       case "emojis":
         return <EmojiList server={server} />;
+      case "sounds":
+        return <SoundList server={server} />;
       case "roles":
         return <ServerRoleOverview context={server} />;
       case "invites":
@@ -108,6 +110,11 @@ const Config: SettingsConfiguration<Server> = {
               id: "emojis",
               icon: <Symbol size={20}>mood</Symbol>,
               title: <Trans>Emojis</Trans>,
+            },
+            {
+              id: "sounds",
+              icon: <Symbol size={20}>graphic_eq</Symbol>,
+              title: <Trans>Soundboard</Trans>,
             },
           ],
         },

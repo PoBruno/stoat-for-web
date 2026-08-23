@@ -248,6 +248,8 @@ export type Modals =
   | {
       type: "settings";
       config: keyof typeof SettingsConfigurations;
+      /** Open straight on this page instead of the first one */
+      page?: string;
       // eslint-disable-next-line
       context?: any;
     }

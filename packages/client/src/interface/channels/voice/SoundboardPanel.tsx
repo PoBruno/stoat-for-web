@@ -19,7 +19,7 @@ import { useClient } from "@revolt/client";
 import { useModals } from "@revolt/modal";
 import { useVoice } from "@revolt/rtc";
 import { useState } from "@revolt/state";
-import { IconButton, Row, Symbol, Text } from "@revolt/ui";
+import { Button, IconButton, Row, Symbol, Text } from "@revolt/ui";
 
 import {
   ContextMenu,
@@ -155,6 +155,28 @@ export function SoundboardPanel(props: {
           </Titulo>
         </Row>
         <Row gap="sm" align>
+          <Show when={props.server.havePermission("ManageCustomisation")}>
+            <Button
+              size="xs"
+              variant="tonal"
+              onPress={() =>
+                openModal({
+                  type: "settings",
+                  config: "server",
+                  context: props.server,
+                  // Abre direto na aba de sons: fazer o usuario procurar a
+                  // engrenagem do servidor e depois a aba certa e o caminho
+                  // que ele nao encontrou sozinho.
+                  page: "sounds",
+                })
+              }
+            >
+              <Row gap="xs" align>
+                <Symbol size={16}>edit</Symbol>
+                <Trans>Customise</Trans>
+              </Row>
+            </Button>
+          </Show>
           <IconButton
             size="sm"
             variant="standard"

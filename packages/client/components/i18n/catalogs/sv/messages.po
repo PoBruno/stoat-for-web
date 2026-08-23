@@ -1235,6 +1235,10 @@ msgstr "Anpassad fönsterram"
 msgid "Customisation"
 msgstr "Anpassning"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Customise"
+msgstr ""
+
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Dark"
@@ -3448,6 +3452,7 @@ msgstr ""
 msgid "Sound name"
 msgstr ""
 
+#: components/app/interface/settings/ServerSettings.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 #: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
