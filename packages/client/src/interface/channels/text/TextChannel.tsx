@@ -16,6 +16,7 @@ import { DraftMessages, Messages } from "@revolt/app";
 import { useClient } from "@revolt/client";
 import { Keybind, KeybindAction, createKeybind } from "@revolt/keybinds";
 import { useNavigate, useSmartParams } from "@revolt/routing";
+import { useVoice } from "@revolt/rtc";
 import { useState } from "@revolt/state";
 import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
 import {
@@ -76,6 +77,7 @@ const LARGE_SERVERS = [
 export function TextChannel(props: ChannelPageProps) {
   const state = useState();
   const client = useClient();
+  const voice = useVoice();
 
   // Last unread message id
   const [lastId, setLastId] = createSignal<string>();
@@ -92,6 +94,16 @@ export function TextChannel(props: ChannelPageProps) {
 
   const canConnect = () =>
     props.channel.isVoice && props.channel.havePermission("Connect");
+
+  /**
+   * Whether the text chat is shown.
+   *
+   * While connected to *this* voice channel the chat is hidden by default so
+   * the call card can use the entire channel body; toggled from the call
+   * controls and persisted in the voice store.
+   */
+  const showChat = () =>
+    voice.channel()?.id !== props.channel.id || state.voice.showCallChat;
 
   // Get a reference to the message box's load latest function
   let jumpToBottomRef: ((nearby?: string) => void) | undefined;
@@ -219,28 +231,30 @@ export function TextChannel(props: ChannelPageProps) {
             <VoiceChannelCallCardMount channel={props.channel} />
           </Show>
 
-          <Messages
-            channel={props.channel}
-            lastReadId={lastId}
-            pendingMessages={(pendingProps) => (
-              <DraftMessages
-                channel={props.channel}
-                tail={pendingProps.tail}
-                sentIds={pendingProps.ids}
-              />
-            )}
-            highlightedMessageId={highlightMessageId}
-            clearHighlightedMessage={() => navigate(".")}
-            jumpToBottomRef={(ref) => (jumpToBottomRef = ref)}
-            atEnd={[atEnd, setEnd]}
-          />
+          <Show when={showChat()}>
+            <Messages
+              channel={props.channel}
+              lastReadId={lastId}
+              pendingMessages={(pendingProps) => (
+                <DraftMessages
+                  channel={props.channel}
+                  tail={pendingProps.tail}
+                  sentIds={pendingProps.ids}
+                />
+              )}
+              highlightedMessageId={highlightMessageId}
+              clearHighlightedMessage={() => navigate(".")}
+              jumpToBottomRef={(ref) => (jumpToBottomRef = ref)}
+              atEnd={[atEnd, setEnd]}
+            />
 
-          <CompositionInfo channel={props.channel} />
+            <CompositionInfo channel={props.channel} />
 
-          <MessageComposition
-            channel={props.channel}
-            onMessageSend={() => jumpToBottomRef?.()}
-          />
+            <MessageComposition
+              channel={props.channel}
+              onMessageSend={() => jumpToBottomRef?.()}
+            />
+          </Show>
         </main>
         <Show
           when={

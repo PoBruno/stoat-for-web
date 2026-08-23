@@ -42,12 +42,50 @@ msgstr "dddd [pada] LT"
 msgid "(changes are being saved…)"
 msgstr "(perubahan akan disimpan...)"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "(edited)"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "[comment deleted]"
+msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {no comments} one {# comment} other {# comments}}"
+#~ msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {sem comentários} one {# comentário} other {# comentários}}"
+#~ msgstr ""
+
 #. placeholder {0}: props.count
 #: components/ui/components/features/messaging/elements/BlockedMessage.tsx
 msgid "{0, plural, one {# blocked message} other {# blocked messages}}"
 msgstr "{0, plural, one {# pesan terblokir} other {# pesan terblokir}}"
 
+#. placeholder {0}: post.commentCount
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "{0, plural, one {# comment} other {# comments}}"
+#~ msgstr ""
+
 #~ msgid "{0, plural, one {# Member} other {# Members}}"
+#~ msgstr ""
+
+#. placeholder {0}: participants().length
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# participant} other {# participants}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# view} other {# views}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, one {# visualização} other {# visualizações}}"
 #~ msgstr ""
 
 #. placeholder {0}: items().length
@@ -57,7 +95,7 @@ msgstr "{0, plural, one {Mengunggah sebuah berkas} other {Mengunggah # berkas}}"
 
 #. placeholder {0}: users() .slice(0, -1) .map((user) => user!.username) .join(", ")
 #. placeholder {1}: users().slice(-1)[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} and {1} are typing…"
 msgstr "{0} dan {1} sedang mengetik…"
 
@@ -82,7 +120,7 @@ msgid "{0} files exceed the maximum size limit of {maxSizeFormatted} and were no
 msgstr "{0} file melebihi batas ukuran maksimum {maxSizeFormatted} dan tidak berhasil diunggah."
 
 #. placeholder {0}: users()[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} is typing…"
 msgstr "{0} sedang mengetik…"
 
@@ -321,6 +359,10 @@ msgid "Able to access this channel"
 msgstr "Dapat mengakses saluran ini"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Able to access this forum"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Able to speak in voice call"
 msgstr "Dapat berbicara di panggilan suara"
 
@@ -339,6 +381,10 @@ msgstr "Terima permintaan pertemanan"
 #: components/modal/modals/PolicyChange.tsx
 msgid "Acknowledge"
 msgstr "Menerima"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Active"
+msgstr ""
 
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/AddMembersToGroup.tsx
@@ -371,6 +417,10 @@ msgstr "Tambahkan member baru ke grup"
 msgid "Add status text"
 msgstr "Tambah teks status"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Add tag"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "Admin"
@@ -391,6 +441,7 @@ msgstr "Lanjutan"
 #~ msgid "Affects all roles and users"
 #~ msgstr "Mempengaruhi semua peran dan pengguna"
 
+#: src/interface/channels/forum/ForumChannel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "Semua"
@@ -479,6 +530,18 @@ msgstr "Berikan peran dengan peringkat lebih rendah kepada anggota dengan pering
 msgid "Assign Roles"
 msgstr "Berikan Peran"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach files"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Attach files to posts and comments"
+msgstr ""
+
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Audio disabled by browser"
 msgstr ""
@@ -504,6 +567,10 @@ msgstr "Avatar"
 #: src/interface/channels/AgeGate.tsx
 msgid "Back"
 msgstr "Kembali"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Back to forum"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Badges"
@@ -550,6 +617,10 @@ msgstr "Banner"
 msgid "Bans"
 msgstr "Ban"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Be the first to write one."
+msgstr ""
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Block user"
 msgstr "Blokir pengguna"
@@ -561,6 +632,14 @@ msgstr "Diblokir"
 #: components/ui/components/features/messaging/elements/MessageReply.tsx
 msgid "Blocked User"
 msgstr "Pengguna Diblokir"
+
+#: components/modal/modals/CreateForumPost.tsx
+#~ msgid "Body"
+#~ msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bold"
+msgstr ""
 
 #: components/app/interface/channels/text/Message.tsx
 msgid "Bot"
@@ -581,6 +660,10 @@ msgstr "Pembatalan Gema Browser"
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Bug Tracker"
 msgstr "Pelacak Bug"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bulleted list"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileStatus.tsx
 #: src/interface/channels/text/MemberSidebar.tsx
@@ -634,6 +717,8 @@ msgstr ""
 #: components/modal/modals/ScreenShareSettings.tsx
 #: components/modal/modals/ServerIdentity.tsx
 #: components/modal/modals/SignOutSessions.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Cancel"
 msgstr "Batal"
 
@@ -793,6 +878,7 @@ msgstr "Pengaturan Klien"
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
+#: components/modal/modals/CreateForumPost.tsx
 #: components/modal/modals/CreateGroup.tsx
 #: components/modal/modals/CreateRole.tsx
 #: components/modal/modals/CreateServer.tsx
@@ -824,11 +910,37 @@ msgid "Close conversation with {0}?"
 msgstr "Tutup percakpaan dengan {0}?"
 
 #: components/modal/modals/JoinServer.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Code"
 msgstr "Kode"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Code block"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse post"
+msgstr ""
+
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Coming soon! 👀"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comments"
 msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
@@ -1050,6 +1162,10 @@ msgstr "Buat Undangan"
 msgid "Create invites for others to use"
 msgstr "Buat undangan untuk pengguna lain"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Create posts and comments in this forum"
+msgstr ""
+
 #: components/modal/modals/CreateRole.tsx
 msgid "Create Role"
 msgstr "Buat Peran"
@@ -1135,6 +1251,10 @@ msgstr "Bawaan"
 #~ msgid "Default Permissions"
 #~ msgstr "Izin Bawaan"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Default sorting"
+msgstr ""
+
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 #~ msgid "Defean"
 #~ msgstr ""
@@ -1150,6 +1270,8 @@ msgstr ""
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
 #: components/modal/modals/EmojiPreview.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Delete"
 msgstr "Hapus"
 
@@ -1307,6 +1429,11 @@ msgstr "Selesai"
 msgid "Drugs or illegal goods"
 msgstr "Narkoba dan barang ilegal"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit"
+msgstr ""
+
 #. placeholder {0}: props.member.displayName
 #: components/modal/modals/UserProfileRoles.tsx
 msgid "Edit {0}'s roles"
@@ -1323,6 +1450,10 @@ msgstr "Sunting semua izin pada server"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
 msgstr "Sunting peran pada saluran spesifik dan izin bawaan"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit comment"
+msgstr ""
 
 #: components/app/interface/settings/user/profile/EditProfile.tsx
 msgid "Edit Global Profile"
@@ -1370,6 +1501,10 @@ msgstr "Efektif <0/> (<1/>)"
 #: components/modal/modals/EditEmail.tsx
 msgid "Email"
 msgstr "Email"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Emoji"
+msgstr ""
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
 msgid "Emoji Name"
@@ -1450,11 +1585,23 @@ msgstr ""
 msgid "Enter your preferred username."
 msgstr "Masukkan nama pengguna yang kamu inginkan."
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Every new post must carry at least one tag."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 #: components/app/interface/settings/ChannelSettings.tsx
 #: components/app/interface/settings/server/roles/ServerRoleOverview.tsx
 #: components/app/interface/settings/ServerSettings.tsx
 msgid "Everyone"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand post"
 msgstr ""
 
 #: components/modal/modals/LinkWarning.tsx
@@ -1514,6 +1661,14 @@ msgstr "Temukan ko0/>munitasmu,<1/>terhubung dengan dunia."
 msgid "Focus"
 msgstr "Fokus"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Follow"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Following"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 1 hour"
@@ -1538,6 +1693,14 @@ msgstr "Selama 3 jam"
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 8 hours"
 msgstr "Selama 8 jam"
+
+#: components/app/interface/settings/ChannelSettings.tsx
+msgid "Forum"
+msgstr ""
+
+#: components/modal/modals/CreateChannel.tsx
+msgid "Forum Channel"
+msgstr ""
 
 #: src/interface/Friends.tsx
 #: src/interface/navigation/channels/HomeSidebar.tsx
@@ -1650,6 +1813,10 @@ msgstr "Pelecehan atau perundungan siber"
 msgid "Hardware Acceleration"
 msgstr "Akselerasi Perangkat Keras"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Heading {level}"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Hear other people and see their video"
 msgstr "Dengarkan orang lain atau lihat video mereka"
@@ -1672,8 +1839,12 @@ msgid "Here is your new invite code: <0>{0}</0>"
 msgstr "Berikut adalah kode undangan baru kamu: <0>{0}</0>"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Hide Others"
+msgid "Hide chat"
 msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#~ msgid "Hide Others"
+#~ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "High Contrast"
@@ -1687,6 +1858,14 @@ msgstr ""
 #: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Home"
 msgstr "Beranda"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Hot"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "How the feed is ordered when someone opens this forum."
+msgstr ""
 
 #: src/interface/channels/AgeGate.tsx
 msgid "I confirm that I am at least 18 years old."
@@ -1725,6 +1904,10 @@ msgstr ""
 
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Input Volume"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Insert image"
 msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
@@ -1779,6 +1962,10 @@ msgstr "lencana lelucon tak relevan 2"
 #: components/app/interface/settings/user/Language.tsx
 msgid "ISO Standard (YYYY-MM-DD)"
 msgstr "Standar ISO (YYYY-MM-DD)"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Italic"
+msgstr ""
 
 #: components/modal/modals/Invite.tsx
 #: components/modal/modals/JoinServer.tsx
@@ -1856,6 +2043,26 @@ msgstr "Terbaru"
 msgid "Launch Stoat when you log into your computer."
 msgstr "Luncurkan Stoat ketika kamu masuk ke komputermu."
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: automatic"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: grid"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: one large"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: side by side"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: stacked"
+msgstr ""
+
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Learn more"
 msgstr ""
@@ -1897,6 +2104,10 @@ msgstr "Beritahu kami bagaimana kami dapat meningkatkan aplikasi dengan memberik
 msgid "Light"
 msgstr "Terang"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Link"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "Dengarkan"
@@ -1905,6 +2116,27 @@ msgstr "Dengarkan"
 #: components/ui/components/features/messaging/elements/TextFile.tsx
 msgid "Load file ({0})"
 msgstr "Muat berkas ({0})"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Loading comments…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Loading post…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Loading posts…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Lock"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Locked"
+msgstr ""
 
 #: components/auth/src/flows/FlowHome.tsx
 msgid "Log In"
@@ -2007,7 +2239,7 @@ msgid "Members"
 msgstr "Anggota"
 
 #. placeholder {0}: slowmodeWaitTime()
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Members can send one message every {0}."
 msgstr ""
 
@@ -2090,6 +2322,10 @@ msgstr "Kecilkan ke dalam Tray"
 msgid "Missing permission"
 msgstr "Izin yang Hilang"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Moderate the forum: delete, pin and lock posts by other members"
+msgstr ""
+
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Monochrome"
 msgstr "Monokrom"
@@ -2131,6 +2367,10 @@ msgstr "Bisukan anggota dengan peringkat lebih rendah di dalam saluran suara"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Mute Members"
 msgstr "Bisukan Anggota"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Mute screen audio"
+msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Mute Screen Share"
@@ -2175,6 +2415,10 @@ msgstr "Nama"
 msgid "Neutral"
 msgstr "Netral"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New"
+msgstr ""
+
 #: components/ui/components/features/messaging/elements/MessageDivider.tsx
 msgid "NEW"
 msgstr "BARU"
@@ -2193,6 +2437,15 @@ msgstr ""
 msgid "New Password"
 msgstr "Kata Sandi Baru"
 
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New post"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "New tag name"
+msgstr ""
+
 #: components/app/interface/channels/text/Message.tsx
 msgid "New to Stoat"
 msgstr "Pendatang Baru di Stoat"
@@ -2201,9 +2454,21 @@ msgstr "Pendatang Baru di Stoat"
 msgid "New to the server"
 msgstr "Pendatang Baru di Server"
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Newest"
+msgstr ""
+
 #: components/modal/modals/ServerIdentity.tsx
 msgid "Nickname"
 msgstr "Nama panggilan"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "No audio shared"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "No comments yet."
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "No GIFs found"
@@ -2213,8 +2478,20 @@ msgstr ""
 msgid "No permissions set yet"
 msgstr "Belum ada izin yang diberikan"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "No posts yet"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "No posts yet. Be the first to write one."
+#~ msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "No role overrides have been configured."
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "No tags yet."
 msgstr ""
 
 #: src/interface/Friends.tsx
@@ -2234,11 +2511,19 @@ msgstr "Normal"
 msgid "Not of minimum age to use the platform"
 msgstr "Belum mencapai usia minimum untuk menggunakan platform ini"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Nothing to preview yet."
+msgstr ""
+
 #: components/app/interface/settings/UserSettings.tsx
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "Notifications"
 msgstr "Notifikasi"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Numbered list"
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/MessageReplyPreview.tsx
 msgid "Off"
@@ -2265,6 +2550,7 @@ msgstr "Luring"
 msgid "OK"
 msgstr "OK"
 
+#: src/interface/channels/forum/ForumThread.tsx
 #: src/interface/channels/text/TextSearchSidebar.tsx
 msgid "Oldest"
 msgstr "Terlama"
@@ -2334,6 +2620,18 @@ msgstr "Buka pengaturan"
 msgid "Other"
 msgstr "Lainnya"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: hidden"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: side"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Output Volume"
 msgstr "Volume Luaran"
@@ -2390,6 +2688,7 @@ msgid "Pick a username that you want people to be able to find you by. This can 
 msgstr "Pilih nama pengguna yang kamu inginkan agar orang lain dapat menemukanmu. Nama pengguna dapat diubah nanti di pengaturan pengguna kamu."
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Pin"
 msgstr ""
 
@@ -2397,6 +2696,11 @@ msgstr ""
 #: components/modal/modals/PinMessage.tsx
 msgid "Pin message"
 msgstr "Sematkan pesan"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Pinned"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Platform Moderator"
@@ -2434,11 +2738,20 @@ msgstr "Pilih metode untuk mengautentikasi permintaanmu."
 msgid "Please select a reason"
 msgstr "Silakan pilih sebuah alasan"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post not found."
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Powered by RNNoise"
 msgstr ""
 
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Preview"
 msgstr ""
 
@@ -2476,6 +2789,14 @@ msgstr ""
 msgid "Provided email or password is wrong."
 msgstr "Email atau kata sandi yang disediakan salah."
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Publish"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Quote"
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Raid or spam attack"
 msgstr "Radi atau serangan spam"
@@ -2504,6 +2825,10 @@ msgstr "Baca pesan yang dikirim sebelumnya pada saluran"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Read past messages sent in channels"
 msgstr "Baca pesan yang dikirim sebelumnya pada saluran"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Read posts and comments in this forum"
+msgstr ""
 
 #: components/app/interface/settings/server/bans/ListBans.tsx
 #: components/modal/modals/BanMember.tsx
@@ -2567,6 +2892,7 @@ msgstr ""
 msgid "Remote Server"
 msgstr ""
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
 #: components/modal/modals/RemoveMember.tsx
 msgid "Remove"
 msgstr ""
@@ -2574,6 +2900,10 @@ msgstr ""
 #: components/app/menus/MessageContextMenu.tsx
 msgid "Remove all reactions"
 msgstr "Hapus semua reaksi"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Remove attachment"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Remove Authenticator"
@@ -2600,6 +2930,11 @@ msgstr "Hapus avatar anggota lainnya"
 msgid "Remove reaction"
 msgstr "Hapus reaksi"
 
+#. placeholder {0}: tag.name
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Remove tag {0}"
+msgstr ""
+
 #: components/app/interface/settings/user/Sessions.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/RenameSession.tsx
@@ -2620,6 +2955,7 @@ msgid "Rep Stoat using Discord rich presence."
 msgstr "Rep Stoat menggunakan Discord rich presence."
 
 #: components/app/menus/MessageContextMenu.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
 msgstr "Balas"
 
@@ -2643,6 +2979,10 @@ msgstr "Laporkan server"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Report user"
 msgstr "Laporkan pengguna"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Require a tag"
+msgstr ""
 
 #: components/auth/src/flows/FlowResend.tsx
 msgid "Resend"
@@ -2736,6 +3076,8 @@ msgstr ""
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 #: components/modal/modals/CustomStatus.tsx
 #: components/modal/modals/ServerIdentity.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Save"
 msgstr "Simpan"
 
@@ -2816,6 +3158,10 @@ msgstr ""
 #: components/app/interface/settings/user/Language.tsx
 msgid "Select your language"
 msgstr "Pilih bahasamu"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Send"
+msgstr ""
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Send attachments to chat"
@@ -2927,7 +3273,7 @@ msgstr "Siapkan autentikator kata sandi sekali pakai"
 msgid "Setup recovery codes"
 msgstr "Siapkan kode pemulihan"
 
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Several people are typing…"
 msgstr "Beberapa orang sedang mengetik…"
 
@@ -2944,13 +3290,17 @@ msgstr "Bagikan kamera atau layar di panggilan suara"
 msgid "Share screen"
 msgstr ""
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show chat"
+msgstr ""
+
 #: components/app/interface/settings/user/Native.tsx
 msgid "Show corrections and suggestions as you type."
 msgstr "Tampilkan koreksi atau saran saat kamu mengetik."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Show Others"
-msgstr ""
+#~ msgid "Show Others"
+#~ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Show send message button"
@@ -2968,11 +3318,11 @@ msgstr "Daftar"
 msgid "Silent"
 msgstr "Hening"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode Immune"
 msgstr ""
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode is enabled."
 msgstr ""
 
@@ -3087,6 +3437,10 @@ msgstr ""
 msgid "Stream Start"
 msgstr ""
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Strikethrough"
+msgstr ""
+
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Submit feature suggestion"
 msgstr "Kirim saran fitur"
@@ -3135,6 +3489,15 @@ msgstr "Sistem"
 msgid "System message channels"
 msgstr "Saluran pesan sistem"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Tags"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Tags let people file a post under a topic and filter the feed by it."
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Tell us what's wrong with this message"
 msgstr "Beritahu kami apa yang salah dengan pesan ini"
@@ -3179,6 +3542,15 @@ msgstr "Kata sandi terlalu singkat."
 #: components/app/interface/settings/user/Sync.tsx
 msgid "Theme"
 msgstr "Tema"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "There is already a tag called {name}."
+msgstr ""
+
+#. placeholder {0}: names.join(", ")
+#: components/modal/modals/CreateForumPost.tsx
+msgid "These files are too large or over the limit: {0}"
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "This account is not activated! Please check your account's inbox and try again."
@@ -3245,6 +3617,10 @@ msgstr "Pesan ini kosong dan belum terkirim."
 msgid "This password has previously appeared in security leaks, please use another password."
 msgstr "Kata sandi ini sebelumnya pernah muncul dalam kebocoran keamanan, harap gunakan kata sandi lain."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "This post is locked. No new comments."
+msgstr ""
+
 #: components/app/interface/settings/server/Overview.tsx
 msgid "This server is about..."
 msgstr "Server ini tentang..."
@@ -3281,6 +3657,10 @@ msgstr ""
 msgid "Timeout Members"
 msgstr "Anggota yang di batas-waktukan"
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Title"
+msgstr ""
+
 #: src/interface/common/CommonHeader.tsx
 msgid "Toggle main sidebar"
 msgstr "Alihkan bilah sisi utama"
@@ -3292,6 +3672,11 @@ msgstr ""
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Tonal Spot"
 msgstr "Titik Nada"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Top"
+msgstr ""
 
 #: components/app/interface/settings/user/Language.tsx
 msgid "Traditional (DD/MM/YYYY)"
@@ -3328,6 +3713,10 @@ msgstr ""
 msgid "Unknown Server"
 msgstr "Server Tidak Dikenal"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Unlock"
+msgstr ""
+
 #: components/modal/modals/ChannelToggleMature.tsx
 msgid "Unmark as mature"
 msgstr "Hapus tandai sebagai dewasa"
@@ -3349,12 +3738,21 @@ msgstr ""
 msgid "Unmute Channel"
 msgstr "Bunyikan Saluran"
 
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Unmute screen audio"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 msgid "Unmute Server"
 msgstr "Bunyikan Server"
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Unpin"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Unpin all"
 msgstr ""
 
 #: components/app/menus/MessageContextMenu.tsx
@@ -3381,6 +3779,15 @@ msgstr "Unggah Berkas"
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Upload to Gifbox"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Uploading…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Upvote"
 msgstr ""
 
 #: components/modal/modals/JoinServer.tsx
@@ -3609,6 +4016,23 @@ msgstr "Apakah kamu ingin membuat grup atau server baru?"
 #: components/modal/modals/CreateOrJoinServer.tsx
 msgid "Would you like to create a new server or join an existing one?"
 msgstr "Apakah kamu ingin membuat server baru atau bergabung dengan server yang sudah ada?"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Write"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a reply"
+msgstr ""
+
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Write your post…"
+msgstr ""
 
 #: components/app/interface/settings/user/bots/MyBots.tsx
 msgid "You agree that your bot is subject to the Acceptable Usage Policy."

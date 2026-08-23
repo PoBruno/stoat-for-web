@@ -2,6 +2,7 @@ import { Show } from "solid-js";
 import {
   TrackLoop,
   TrackReference,
+  TrackReferenceOrPlaceholder,
   useEnsureParticipant,
   useIsMuted,
   useIsSpeaking,
@@ -29,8 +30,13 @@ export function VoiceCallCardPiP() {
     { onlySubscribed: false },
   );
 
+  /** First pinned track, falling back to any screen share in the call */
+  const pipTrack = () =>
+    voice.pinnedTracks()[0] ??
+    voice.vidTracks().find((t) => t.source === Track.Source.ScreenShare);
+
   const hasFocusVideo = () => {
-    const track = voice.focusTrack();
+    const track = pipTrack();
     if (!track) return false;
 
     return (
@@ -45,7 +51,10 @@ export function VoiceCallCardPiP() {
   return (
     <MiniCard>
       <VoiceCallCardStatus pip />
-      <Show when={!hasFocusVideo()} fallback={<MiniVideoTile />}>
+      <Show
+        when={!hasFocusVideo()}
+        fallback={<MiniVideoTile track={pipTrack} />}
+      >
         <Row align justify grow wrap>
           <TrackLoop tracks={audTracks}>{() => <ConnectedUser />}</TrackLoop>
         </Row>
@@ -81,13 +90,11 @@ function ConnectedUser() {
   );
 }
 
-function MiniVideoTile() {
-  const voice = useVoice();
-
+function MiniVideoTile(props: {
+  track: () => TrackReferenceOrPlaceholder | undefined;
+}) {
   return (
-    <TrackLoop tracks={() => [voice.focusTrack()!]}>
-      {() => <MiniVideo />}
-    </TrackLoop>
+    <TrackLoop tracks={() => [props.track()!]}>{() => <MiniVideo />}</TrackLoop>
   );
 }
 

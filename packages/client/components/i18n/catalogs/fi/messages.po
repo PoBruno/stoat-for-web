@@ -42,12 +42,50 @@ msgstr "dddd [klo] LT"
 msgid "(changes are being saved…)"
 msgstr "(muutoksia tallennetaan...)"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "(edited)"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "[comment deleted]"
+msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {no comments} one {# comment} other {# comments}}"
+#~ msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {sem comentários} one {# comentário} other {# comentários}}"
+#~ msgstr ""
+
 #. placeholder {0}: props.count
 #: components/ui/components/features/messaging/elements/BlockedMessage.tsx
 msgid "{0, plural, one {# blocked message} other {# blocked messages}}"
 msgstr "{0, plural, one {# estetty viesti} other {# estettyä viestiä}}"
 
+#. placeholder {0}: post.commentCount
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "{0, plural, one {# comment} other {# comments}}"
+#~ msgstr ""
+
 #~ msgid "{0, plural, one {# Member} other {# Members}}"
+#~ msgstr ""
+
+#. placeholder {0}: participants().length
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# participant} other {# participants}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# view} other {# views}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, one {# visualização} other {# visualizações}}"
 #~ msgstr ""
 
 #. placeholder {0}: items().length
@@ -57,7 +95,7 @@ msgstr "{0, plural, one {Pudota tiedosto} other {Pudota # tiedostoa}}"
 
 #. placeholder {0}: users() .slice(0, -1) .map((user) => user!.username) .join(", ")
 #. placeholder {1}: users().slice(-1)[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} and {1} are typing…"
 msgstr "{0} ja {1} kirjoittavat…"
 
@@ -82,7 +120,7 @@ msgid "{0} files exceed the maximum size limit of {maxSizeFormatted} and were no
 msgstr "{0} tiedostoa ylittivät {maxSizeFormatted} enimmäiskokorajan eikä niitä voitu ladata."
 
 #. placeholder {0}: users()[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} is typing…"
 msgstr "{0} kirjoittaa…"
 
@@ -300,6 +338,10 @@ msgid "Able to access this channel"
 msgstr "Pääsee tälle kanavalle"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Able to access this forum"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Able to speak in voice call"
 msgstr "Pystyy puhumaan puhekanavilla"
 
@@ -318,6 +360,10 @@ msgstr "Hyväksy kaveripyyntö"
 #: components/modal/modals/PolicyChange.tsx
 msgid "Acknowledge"
 msgstr "Hyväksy"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Active"
+msgstr ""
 
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/AddMembersToGroup.tsx
@@ -350,6 +396,10 @@ msgstr "Lisätä uusia jäseniä ryhmään"
 msgid "Add status text"
 msgstr "Lisää statusteksti"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Add tag"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "Ylläpitäjä"
@@ -368,6 +418,7 @@ msgstr "Edistynyt"
 #~ msgid "Affects all roles and users"
 #~ msgstr "Vaikuttaa kaikkiin rooleihin ja käyttäjiin"
 
+#: src/interface/channels/forum/ForumChannel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "Kaikki"
@@ -456,6 +507,18 @@ msgstr "Voi asettaa alemman tason rooleja alemman tason jäsenille"
 msgid "Assign Roles"
 msgstr "Roolien asettaminen"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach files"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Attach files to posts and comments"
+msgstr ""
+
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Audio disabled by browser"
 msgstr ""
@@ -481,6 +544,10 @@ msgstr "Kuva"
 #: src/interface/channels/AgeGate.tsx
 msgid "Back"
 msgstr "Takaisin"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Back to forum"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Badges"
@@ -527,6 +594,10 @@ msgstr "Banneri"
 msgid "Bans"
 msgstr "Bannit"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Be the first to write one."
+msgstr ""
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Block user"
 msgstr "Estä käyttäjä"
@@ -538,6 +609,14 @@ msgstr "Estetty"
 #: components/ui/components/features/messaging/elements/MessageReply.tsx
 msgid "Blocked User"
 msgstr "Estetty käyttäjä"
+
+#: components/modal/modals/CreateForumPost.tsx
+#~ msgid "Body"
+#~ msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bold"
+msgstr ""
 
 #: components/app/interface/channels/text/Message.tsx
 msgid "Bot"
@@ -557,6 +636,10 @@ msgstr "Selaimen kaiun poisto"
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Bug Tracker"
 msgstr "Bugiseuranta"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bulleted list"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileStatus.tsx
 #: src/interface/channels/text/MemberSidebar.tsx
@@ -610,6 +693,8 @@ msgstr ""
 #: components/modal/modals/ScreenShareSettings.tsx
 #: components/modal/modals/ServerIdentity.tsx
 #: components/modal/modals/SignOutSessions.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Cancel"
 msgstr "Peruuta"
 
@@ -768,6 +853,7 @@ msgstr "Sovelluksen asetukset"
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
+#: components/modal/modals/CreateForumPost.tsx
 #: components/modal/modals/CreateGroup.tsx
 #: components/modal/modals/CreateRole.tsx
 #: components/modal/modals/CreateServer.tsx
@@ -799,11 +885,37 @@ msgid "Close conversation with {0}?"
 msgstr "Sulje keskustelu {0}n kanssa?"
 
 #: components/modal/modals/JoinServer.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Code"
 msgstr "Koodi"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Code block"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse post"
+msgstr ""
+
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Coming soon! 👀"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comments"
 msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
@@ -1024,6 +1136,10 @@ msgstr "Luo kutsu"
 msgid "Create invites for others to use"
 msgstr "Voi luoda kutsuja muiden käytettäviksi"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Create posts and comments in this forum"
+msgstr ""
+
 #: components/modal/modals/CreateRole.tsx
 msgid "Create Role"
 msgstr "Luo rooli"
@@ -1105,6 +1221,10 @@ msgstr "Oletus"
 #~ msgid "Default Permissions"
 #~ msgstr "Oletusarvoiset valtuudet"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Default sorting"
+msgstr ""
+
 #~ msgid "Defean"
 #~ msgstr ""
 
@@ -1119,6 +1239,8 @@ msgstr ""
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
 #: components/modal/modals/EmojiPreview.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Delete"
 msgstr "Poista"
 
@@ -1276,6 +1398,11 @@ msgstr "Valmis"
 msgid "Drugs or illegal goods"
 msgstr "Huumeet tai laittomat tavarat"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit"
+msgstr ""
+
 #. placeholder {0}: props.member.displayName
 #: components/modal/modals/UserProfileRoles.tsx
 msgid "Edit {0}'s roles"
@@ -1292,6 +1419,10 @@ msgstr "Voi muokata mitä vain palvelimen valtuuksia"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
 msgstr "Voi muokata kanavakohtaista roolia ja oletusvaltuuksia"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit comment"
+msgstr ""
 
 #: components/app/interface/settings/user/profile/EditProfile.tsx
 msgid "Edit Global Profile"
@@ -1339,6 +1470,10 @@ msgstr ""
 #: components/modal/modals/EditEmail.tsx
 msgid "Email"
 msgstr "Sähköpostiosoite"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Emoji"
+msgstr ""
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
 msgid "Emoji Name"
@@ -1419,11 +1554,23 @@ msgstr ""
 msgid "Enter your preferred username."
 msgstr "Syötä haluamasi käyttäjätunnuksesi."
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Every new post must carry at least one tag."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 #: components/app/interface/settings/ChannelSettings.tsx
 #: components/app/interface/settings/server/roles/ServerRoleOverview.tsx
 #: components/app/interface/settings/ServerSettings.tsx
 msgid "Everyone"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand post"
 msgstr ""
 
 #: components/modal/modals/LinkWarning.tsx
@@ -1483,6 +1630,14 @@ msgstr ""
 msgid "Focus"
 msgstr "Keskity"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Follow"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Following"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 1 hour"
@@ -1507,6 +1662,14 @@ msgstr "3 tunnin ajan"
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 8 hours"
 msgstr "8 tunnin ajan"
+
+#: components/app/interface/settings/ChannelSettings.tsx
+msgid "Forum"
+msgstr ""
+
+#: components/modal/modals/CreateChannel.tsx
+msgid "Forum Channel"
+msgstr ""
 
 #: src/interface/Friends.tsx
 #: src/interface/navigation/channels/HomeSidebar.tsx
@@ -1619,6 +1782,10 @@ msgstr "Häirintä tai nettikiusaaminen"
 msgid "Hardware Acceleration"
 msgstr "Laitteistokiihdytys"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Heading {level}"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Hear other people and see their video"
 msgstr "Voi kuulla muita käyttäjiä ja nähdä heidän videokuvansa"
@@ -1641,8 +1808,12 @@ msgid "Here is your new invite code: <0>{0}</0>"
 msgstr "Tässä on uusi kutsukoodisi: <0>{0}</0>"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Hide Others"
+msgid "Hide chat"
 msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#~ msgid "Hide Others"
+#~ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "High Contrast"
@@ -1656,6 +1827,14 @@ msgstr ""
 #: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Home"
 msgstr "Koti"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Hot"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "How the feed is ordered when someone opens this forum."
+msgstr ""
 
 #: src/interface/channels/AgeGate.tsx
 msgid "I confirm that I am at least 18 years old."
@@ -1693,6 +1872,10 @@ msgstr ""
 
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Input Volume"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Insert image"
 msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
@@ -1747,6 +1930,10 @@ msgstr "asiakuulumaton vitsi merkki 2"
 #: components/app/interface/settings/user/Language.tsx
 msgid "ISO Standard (YYYY-MM-DD)"
 msgstr "ISO-Standardi (YYYY-MM-DD)"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Italic"
+msgstr ""
 
 #: components/modal/modals/Invite.tsx
 #: components/modal/modals/JoinServer.tsx
@@ -1824,6 +2011,26 @@ msgstr "Viimeisin"
 msgid "Launch Stoat when you log into your computer."
 msgstr "Käynnistä Stoat kun kirjaudut tietokoneellesi."
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: automatic"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: grid"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: one large"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: side by side"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: stacked"
+msgstr ""
+
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Learn more"
 msgstr ""
@@ -1865,6 +2072,10 @@ msgstr "Kerro meille, miten voimme parantaa sovellustamme antamalla palautetta."
 msgid "Light"
 msgstr "Vaalea"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Link"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "Kuuntelu"
@@ -1873,6 +2084,27 @@ msgstr "Kuuntelu"
 #: components/ui/components/features/messaging/elements/TextFile.tsx
 msgid "Load file ({0})"
 msgstr "Lataa tiedosto ({0})"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Loading comments…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Loading post…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Loading posts…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Lock"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Locked"
+msgstr ""
 
 #: components/auth/src/flows/FlowHome.tsx
 msgid "Log In"
@@ -1975,7 +2207,7 @@ msgid "Members"
 msgstr "Jäsenet"
 
 #. placeholder {0}: slowmodeWaitTime()
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Members can send one message every {0}."
 msgstr ""
 
@@ -2058,6 +2290,10 @@ msgstr ""
 msgid "Missing permission"
 msgstr "Puuttuva käyttöoikeus"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Moderate the forum: delete, pin and lock posts by other members"
+msgstr ""
+
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Monochrome"
 msgstr "Yksivärinen"
@@ -2099,6 +2335,10 @@ msgstr "Voi mykistää alemman tason käyttäjiä äänipuhelussa"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Mute Members"
 msgstr "Jäsenien hiljentäminen"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Mute screen audio"
+msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Mute Screen Share"
@@ -2143,6 +2383,10 @@ msgstr "Nimi"
 msgid "Neutral"
 msgstr "Neutraali"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New"
+msgstr ""
+
 #: components/ui/components/features/messaging/elements/MessageDivider.tsx
 msgid "NEW"
 msgstr "UUSI"
@@ -2161,6 +2405,15 @@ msgstr ""
 msgid "New Password"
 msgstr "Uusi salasana"
 
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New post"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "New tag name"
+msgstr ""
+
 #: components/app/interface/channels/text/Message.tsx
 msgid "New to Stoat"
 msgstr "Uusi Stoatiin"
@@ -2169,9 +2422,21 @@ msgstr "Uusi Stoatiin"
 msgid "New to the server"
 msgstr "Uusi palvelimelle"
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Newest"
+msgstr ""
+
 #: components/modal/modals/ServerIdentity.tsx
 msgid "Nickname"
 msgstr "Nimimerkki"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "No audio shared"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "No comments yet."
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "No GIFs found"
@@ -2181,8 +2446,20 @@ msgstr ""
 msgid "No permissions set yet"
 msgstr "Valtuuksia ei vielä asetettu"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "No posts yet"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "No posts yet. Be the first to write one."
+#~ msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "No role overrides have been configured."
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "No tags yet."
 msgstr ""
 
 #: src/interface/Friends.tsx
@@ -2202,11 +2479,19 @@ msgstr "Normaali"
 msgid "Not of minimum age to use the platform"
 msgstr "Ei tarpeeksi ikää käyttääkseen alustaa"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Nothing to preview yet."
+msgstr ""
+
 #: components/app/interface/settings/UserSettings.tsx
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "Notifications"
 msgstr "Ilmoitukset"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Numbered list"
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/MessageReplyPreview.tsx
 msgid "Off"
@@ -2233,6 +2518,7 @@ msgstr "Ei paikalla"
 msgid "OK"
 msgstr "OK"
 
+#: src/interface/channels/forum/ForumThread.tsx
 #: src/interface/channels/text/TextSearchSidebar.tsx
 msgid "Oldest"
 msgstr "Vanhin"
@@ -2302,6 +2588,18 @@ msgstr "Avaa asetukset"
 msgid "Other"
 msgstr "Muu"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: hidden"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: side"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Output Volume"
 msgstr "Lähteen äänenvoimakkuus"
@@ -2358,6 +2656,7 @@ msgid "Pick a username that you want people to be able to find you by. This can 
 msgstr "Valitse käyttäjätunnus, jolla haluat ihmisten löytävän sinut. Tätä voi muuttaa myöhemmin asetuksissa."
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Pin"
 msgstr ""
 
@@ -2365,6 +2664,11 @@ msgstr ""
 #: components/modal/modals/PinMessage.tsx
 msgid "Pin message"
 msgstr "Kiinnitä viesti"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Pinned"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Platform Moderator"
@@ -2402,11 +2706,20 @@ msgstr "Valitse menetelmä pyyntösi valtuuttamiseksi."
 msgid "Please select a reason"
 msgstr "Valitse syy"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post not found."
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Powered by RNNoise"
 msgstr ""
 
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Preview"
 msgstr ""
 
@@ -2444,6 +2757,14 @@ msgstr ""
 msgid "Provided email or password is wrong."
 msgstr "Annettu sähköposti tai salasana on väärä."
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Publish"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Quote"
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Raid or spam attack"
 msgstr ""
@@ -2471,6 +2792,10 @@ msgstr "Voi lukea kanavalla aiemmin lähetettyjä viestejä"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Read past messages sent in channels"
 msgstr "Voi lukea kaikilla kanavilla aiemmin lähetettyjä viestejä"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Read posts and comments in this forum"
+msgstr ""
 
 #: components/app/interface/settings/server/bans/ListBans.tsx
 #: components/modal/modals/BanMember.tsx
@@ -2534,6 +2859,7 @@ msgstr ""
 msgid "Remote Server"
 msgstr ""
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
 #: components/modal/modals/RemoveMember.tsx
 msgid "Remove"
 msgstr ""
@@ -2541,6 +2867,10 @@ msgstr ""
 #: components/app/menus/MessageContextMenu.tsx
 msgid "Remove all reactions"
 msgstr "Poista kaikki reaktiot"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Remove attachment"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Remove Authenticator"
@@ -2567,6 +2897,11 @@ msgstr "Voi poistaa muiden käyttäjien profiilikuvia"
 msgid "Remove reaction"
 msgstr "Poista reaktio"
 
+#. placeholder {0}: tag.name
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Remove tag {0}"
+msgstr ""
+
 #: components/app/interface/settings/user/Sessions.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/RenameSession.tsx
@@ -2587,6 +2922,7 @@ msgid "Rep Stoat using Discord rich presence."
 msgstr "Edusta Stoattia käyttämällä Discordin rikasta läsnäoloa."
 
 #: components/app/menus/MessageContextMenu.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
 msgstr "Vastaa"
 
@@ -2610,6 +2946,10 @@ msgstr "Ilmoita palvelin"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Report user"
 msgstr "Ilmoita käyttäjä"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Require a tag"
+msgstr ""
 
 #: components/auth/src/flows/FlowResend.tsx
 msgid "Resend"
@@ -2703,6 +3043,8 @@ msgstr ""
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 #: components/modal/modals/CustomStatus.tsx
 #: components/modal/modals/ServerIdentity.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Save"
 msgstr "Tallenna"
 
@@ -2783,6 +3125,10 @@ msgstr ""
 #: components/app/interface/settings/user/Language.tsx
 msgid "Select your language"
 msgstr "Valitse kieli"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Send"
+msgstr ""
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Send attachments to chat"
@@ -2894,7 +3240,7 @@ msgstr "Ota käyttöön kertakäyttösalasanan todennussovellus"
 msgid "Setup recovery codes"
 msgstr "Määritä palautuskoodit"
 
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Several people are typing…"
 msgstr "Useat ihmiset kirjoittavat…"
 
@@ -2911,13 +3257,17 @@ msgstr "Voi jakaa kameran tai näytön puhelussa"
 msgid "Share screen"
 msgstr ""
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show chat"
+msgstr ""
+
 #: components/app/interface/settings/user/Native.tsx
 msgid "Show corrections and suggestions as you type."
 msgstr "Näytä korjauksia ja ehdotuksia kun kirjoitat."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Show Others"
-msgstr ""
+#~ msgid "Show Others"
+#~ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Show send message button"
@@ -2935,11 +3285,11 @@ msgstr "Rekisteröidy"
 msgid "Silent"
 msgstr "Hiljainen"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode Immune"
 msgstr ""
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode is enabled."
 msgstr ""
 
@@ -3054,6 +3404,10 @@ msgstr ""
 msgid "Stream Start"
 msgstr ""
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Strikethrough"
+msgstr ""
+
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Submit feature suggestion"
 msgstr "Lähetä ominaisuusehdotus"
@@ -3102,6 +3456,15 @@ msgstr "Järjestelmä"
 msgid "System message channels"
 msgstr "Järjestelmän viestikanavat"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Tags"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Tags let people file a post under a topic and filter the feed by it."
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Tell us what's wrong with this message"
 msgstr "Kerro meille mikä viestissä on vikana"
@@ -3146,6 +3509,15 @@ msgstr "Salasana on liian lyhyt."
 #: components/app/interface/settings/user/Sync.tsx
 msgid "Theme"
 msgstr "Teema"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "There is already a tag called {name}."
+msgstr ""
+
+#. placeholder {0}: names.join(", ")
+#: components/modal/modals/CreateForumPost.tsx
+msgid "These files are too large or over the limit: {0}"
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "This account is not activated! Please check your account's inbox and try again."
@@ -3212,6 +3584,10 @@ msgstr "Tämä viesti on tyhjä, joten sitä ei lähetetty."
 msgid "This password has previously appeared in security leaks, please use another password."
 msgstr "Tämä salasana on aiemmin esiintynyt tietoturvavuodoissa, käytä toista salasanaa."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "This post is locked. No new comments."
+msgstr ""
+
 #: components/app/interface/settings/server/Overview.tsx
 msgid "This server is about..."
 msgstr "Tämä palvelin käsittelee..."
@@ -3248,6 +3624,10 @@ msgstr ""
 msgid "Timeout Members"
 msgstr "Jäsenien mykistäminen"
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Title"
+msgstr ""
+
 #: src/interface/common/CommonHeader.tsx
 msgid "Toggle main sidebar"
 msgstr "Näytä/piilota pääsivupalkki"
@@ -3259,6 +3639,11 @@ msgstr ""
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Tonal Spot"
 msgstr "Tonaalinen Kohta"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Top"
+msgstr ""
 
 #: components/app/interface/settings/user/Language.tsx
 msgid "Traditional (DD/MM/YYYY)"
@@ -3295,6 +3680,10 @@ msgstr ""
 msgid "Unknown Server"
 msgstr "Tuntematon Palvelin"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Unlock"
+msgstr ""
+
 #: components/modal/modals/ChannelToggleMature.tsx
 msgid "Unmark as mature"
 msgstr "Poista aikuisille suunnattu -merkintä"
@@ -3316,12 +3705,21 @@ msgstr ""
 msgid "Unmute Channel"
 msgstr "Poista kanavan mykistys"
 
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Unmute screen audio"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 msgid "Unmute Server"
 msgstr "Poista palvelimen mykistys"
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Unpin"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Unpin all"
 msgstr ""
 
 #: components/app/menus/MessageContextMenu.tsx
@@ -3348,6 +3746,15 @@ msgstr "Tiedostojen lähettäminen"
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Upload to Gifbox"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Uploading…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Upvote"
 msgstr ""
 
 #: components/modal/modals/JoinServer.tsx
@@ -3574,6 +3981,23 @@ msgstr "Haluatko luoda uuden ryhmän tai palvelimen?"
 #: components/modal/modals/CreateOrJoinServer.tsx
 msgid "Would you like to create a new server or join an existing one?"
 msgstr "Haluatko luoda uuden palvelimen vai liittyä olemassa olevalle palvelimelle?"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Write"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a reply"
+msgstr ""
+
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Write your post…"
+msgstr ""
 
 #: components/app/interface/settings/user/bots/MyBots.tsx
 msgid "You agree that your bot is subject to the Acceptable Usage Policy."

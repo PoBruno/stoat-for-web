@@ -79,8 +79,9 @@ class Voice {
   fullscreen: Accessor<boolean>;
   #setFullscreen: Setter<boolean>;
 
-  focusId: Accessor<string | undefined>;
-  #setFocus: Setter<string | undefined>;
+  /** Ids of tracks promoted to the stage, in the order they were pinned */
+  pinnedIds: Accessor<string[]>;
+  #setPinnedIds: Setter<string[]>;
 
   showBar: Accessor<boolean>;
   #setShowBar: Setter<boolean>;
@@ -133,9 +134,9 @@ class Voice {
     this.fullscreen = fullscreen;
     this.#setFullscreen = setFullscreen;
 
-    const [focus, setFocus] = createSignal<string>();
-    this.focusId = focus;
-    this.#setFocus = setFocus;
+    const [pinnedIds, setPinnedIds] = createSignal<string[]>([]);
+    this.pinnedIds = pinnedIds;
+    this.#setPinnedIds = setPinnedIds;
 
     const [showBar, setShowBar] = createSignal(true);
     this.showBar = showBar;
@@ -282,7 +283,7 @@ class Voice {
       this.sound.playSound("userLeaveVoice");
     });
 
-    room.addListener("trackPublished", (pub) => {
+    room.addListener("trackPublished", (pub, participant) => {
       if (pub.source === Track.Source.ScreenShare) {
         pub.once("subscribed", (track) => {
           // Play the sound once playback starts, which might be quite a bit after subscription
@@ -292,6 +293,18 @@ class Voice {
             if (track.sid) {
               this.screenShareTracks.add(track.sid);
             }
+
+            // Promote the share to the stage - that is almost always what you
+            // want to look at, and it composes with shares already pinned
+            // instead of replacing them.
+            //
+            // Done here rather than on `trackPublished` because a share is
+            // published muted (paused for the quality modal) and a muted
+            // screen share renders nothing, which would leave the stage blank.
+            const id = `${Track.Source.ScreenShare}_${participant.sid}`;
+            this.#setPinnedIds((ids) =>
+              ids.includes(id) ? ids : [...ids, id],
+            );
           });
         });
       }
@@ -307,7 +320,15 @@ class Voice {
     // Gather latency
     const selected = await Promise.any(
       this.config.features.livekit.nodes.map(async (node) => {
-        return fetch(node.public_url.replace("wss", "https")).then(() => {
+        // fetch() only accepts http(s); map the websocket URL onto it.
+        // Anchored per-scheme so plain `ws://` (non-TLS self-hosted instances)
+        // is handled too - a bare .replace("wss", "https") leaves `ws://`
+        // untouched and fetch() then throws "URL scheme is not supported".
+        const probeUrl = node.public_url
+          .replace(/^wss:/i, "https:")
+          .replace(/^ws:/i, "http:");
+
+        return fetch(probeUrl).then(() => {
           return node.name;
         });
       }),
@@ -412,9 +433,11 @@ class Voice {
    * Get the enabled screen share qualities. "low" will always be enabled.
    * Each screen share quality is checked against the limit if the limit is available on the client.
    *
+   * The server only limits resolution and aspect ratio, never framerate, so the
+   * 60FPS variants are gated by the same resolution check as their 30FPS twin.
+   *
    * TODO: Translate the fullNames here, I can't figure out how to do it.
    *
-   * @param name The name of the screen share quality to get
    * @returns A partial record of ScreenShareQualityName to ScreenShareQuality. Will always contain "low" quality.
    */
   getEnabledScreenShareQualities(): Partial<
@@ -430,11 +453,19 @@ class Voice {
         fullName: `720p 30FPS`,
         contentHint: "motion",
       },
+      hd60: {
+        name: "hd60",
+        resolution: {
+          ...ScreenSharePresets.h720fps30.resolution,
+          frameRate: 60,
+        },
+        fullName: `720p 60FPS`,
+        contentHint: "motion",
+      },
     };
 
     const limit = this.limits().video_resolution;
 
-    // TODO: Add more resolutions to stream from if they're enabled. May tie into premium users in the future?
     if (
       (limit[0] === 0 || limit[0] >= 1920) &&
       (limit[1] === 0 || limit[1] >= 1080)
@@ -445,13 +476,27 @@ class Voice {
         fullName: `1080p 30FPS`,
         contentHint: "motion",
       };
-      const originalResolution = ScreenSharePresets.original.resolution;
-      originalResolution.frameRate = 5;
-      originalResolution.aspectRatio = 0;
 
-      const limit = this.limits().video_resolution;
-      originalResolution.width = limit[0];
-      originalResolution.height = limit[1];
+      qualities.fhd60 = {
+        name: "fhd60",
+        resolution: {
+          ...ScreenSharePresets.h1080fps30.resolution,
+          frameRate: 60,
+        },
+        fullName: `1080p 60FPS`,
+        contentHint: "motion",
+      };
+
+      // Copy rather than mutate: ScreenSharePresets is a module-level object
+      // shared with livekit-client, and the upstream code was writing into it.
+      const originalResolution = {
+        ...ScreenSharePresets.original.resolution,
+        frameRate: 5,
+        aspectRatio: 0,
+        width: limit[0],
+        height: limit[1],
+      };
+
       // If both resolutions are limited, set aspect ratio
       if (originalResolution.height !== 0 && originalResolution.width !== 0) {
         originalResolution.aspectRatio =
@@ -638,22 +683,55 @@ class Voice {
     return `${t.source}_${t.participant.sid}`;
   }
 
-  toggleFocus(t?: TrackReferenceOrPlaceholder) {
-    const id = t ? this.trackId(t) : undefined;
-    this.#setFocus(
-      this.focusId() === id || this.vidTracks().length < 2 ? undefined : id,
+  /**
+   * Promote or demote a track from the stage.
+   *
+   * Multiple tracks may be pinned at once; the order is preserved so the
+   * arrangement can treat the first pin as the primary one.
+   */
+  togglePin(t?: TrackReferenceOrPlaceholder) {
+    if (!t) return this.#setPinnedIds([]);
+
+    const id = this.trackId(t);
+    this.#setPinnedIds((ids) =>
+      ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id],
     );
   }
 
-  isFocus(t: TrackReferenceOrPlaceholder) {
-    return this.trackId(t) === this.focusId();
+  /** Remove every track from the stage */
+  clearPins() {
+    this.#setPinnedIds([]);
   }
 
-  focusTrack() {
-    const id = this.focusId();
-    return id
-      ? this.vidTracks().find((t) => this.trackId(t) === id)
-      : undefined;
+  isPinned(t: TrackReferenceOrPlaceholder) {
+    return this.pinnedIds().includes(this.trackId(t));
+  }
+
+  /** Tracks currently on the stage, in pin order */
+  pinnedTracks(): TrackReferenceOrPlaceholder[] {
+    const tracks = this.vidTracks();
+    return this.pinnedIds()
+      .map((id) => tracks.find((t) => this.trackId(t) === id))
+      .filter((t): t is TrackReferenceOrPlaceholder => !!t);
+  }
+
+  /** Tracks not on the stage */
+  unpinnedTracks(): TrackReferenceOrPlaceholder[] {
+    return this.vidTracks().filter((t) => !this.isPinned(t));
+  }
+
+  /**
+   * Drop pins whose track has gone away (participant left, screen share
+   * stopped, ...) so the stage never holds a dangling reference.
+   */
+  prunePins() {
+    const tracks = this.vidTracks();
+    this.#setPinnedIds((ids) => {
+      const alive = ids.filter((id) =>
+        tracks.some((t) => this.trackId(t) === id),
+      );
+      return alive.length === ids.length ? ids : alive;
+    });
   }
 
   toggleShowBar() {

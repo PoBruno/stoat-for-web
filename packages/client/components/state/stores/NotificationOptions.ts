@@ -24,7 +24,10 @@ export const DEFAULT_STATES: {
   SavedMessages: "all",
   DirectMessage: "all",
   Group: "all",
+  // Server channels intentionally have no default of their own: they fall
+  // through to DEFAULT_SERVER_STATE ("mention").
   TextChannel: undefined!,
+  ForumChannel: undefined!,
 };
 
 /**

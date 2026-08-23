@@ -42,14 +42,52 @@ msgstr "dddd [at] LT"
 msgid "(changes are being saved…)"
 msgstr "(changes are being saved…)"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "(edited)"
+msgstr "(edited)"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "[comment deleted]"
+msgstr "[comment deleted]"
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {no comments} one {# comment} other {# comments}}"
+#~ msgstr "{0, plural, =0 {no comments} one {# comment} other {# comments}}"
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {sem comentários} one {# comentário} other {# comentários}}"
+#~ msgstr "{0, plural, =0 {sem comentários} one {# comentário} other {# comentários}}"
+
 #. placeholder {0}: props.count
 #: components/ui/components/features/messaging/elements/BlockedMessage.tsx
 msgid "{0, plural, one {# blocked message} other {# blocked messages}}"
 msgstr "{0, plural, one {# blocked message} other {# blocked messages}}"
 
+#. placeholder {0}: post.commentCount
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "{0, plural, one {# comment} other {# comments}}"
+#~ msgstr "{0, plural, one {# comment} other {# comments}}"
+
 #: src/interface/navigation/channels/HomeSidebar.tsx
 #~ msgid "{0, plural, one {# Member} other {# Members}}"
 #~ msgstr "{0, plural, one {# Member} other {# Members}}"
+
+#. placeholder {0}: participants().length
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# participant} other {# participants}}"
+msgstr "{0, plural, one {# participant} other {# participants}}"
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# view} other {# views}}"
+msgstr "{0, plural, one {# view} other {# views}}"
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, one {# visualização} other {# visualizações}}"
+#~ msgstr "{0, plural, one {# visualização} other {# visualizações}}"
 
 #. placeholder {0}: items().length
 #: components/ui/components/utils/files/FileDropAnywhereCollector.tsx
@@ -58,7 +96,7 @@ msgstr "{0, plural, one {Drop a file} other {Drop # files}}"
 
 #. placeholder {0}: users() .slice(0, -1) .map((user) => user!.username) .join(", ")
 #. placeholder {1}: users().slice(-1)[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} and {1} are typing…"
 msgstr "{0} and {1} are typing…"
 
@@ -83,7 +121,7 @@ msgid "{0} files exceed the maximum size limit of {maxSizeFormatted} and were no
 msgstr "{0} files exceed the maximum size limit of {maxSizeFormatted} and were not uploaded."
 
 #. placeholder {0}: users()[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} is typing…"
 msgstr "{0} is typing…"
 
@@ -322,6 +360,10 @@ msgid "Able to access this channel"
 msgstr "Able to access this channel"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Able to access this forum"
+msgstr "Able to access this forum"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Able to speak in voice call"
 msgstr "Able to speak in voice call"
 
@@ -340,6 +382,10 @@ msgstr "Accept friend request"
 #: components/modal/modals/PolicyChange.tsx
 msgid "Acknowledge"
 msgstr "Acknowledge"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Active"
+msgstr "Active"
 
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/AddMembersToGroup.tsx
@@ -372,6 +418,10 @@ msgstr "Add new members to the group"
 msgid "Add status text"
 msgstr "Add status text"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Add tag"
+msgstr "Add tag"
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "Admin"
@@ -392,6 +442,7 @@ msgstr "Advanced"
 #~ msgid "Affects all roles and users"
 #~ msgstr "Affects all roles and users"
 
+#: src/interface/channels/forum/ForumChannel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "All"
@@ -481,6 +532,18 @@ msgstr "Assign lower-ranked roles to lower-ranking members"
 msgid "Assign Roles"
 msgstr "Assign Roles"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach"
+msgstr "Attach"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach files"
+msgstr "Attach files"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Attach files to posts and comments"
+msgstr "Attach files to posts and comments"
+
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Audio disabled by browser"
 msgstr "Audio disabled by browser"
@@ -506,6 +569,10 @@ msgstr "Avatar"
 #: src/interface/channels/AgeGate.tsx
 msgid "Back"
 msgstr "Back"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Back to forum"
+msgstr "Back to forum"
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Badges"
@@ -552,6 +619,10 @@ msgstr "Banner"
 msgid "Bans"
 msgstr "Bans"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Be the first to write one."
+msgstr "Be the first to write one."
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Block user"
 msgstr "Block user"
@@ -563,6 +634,14 @@ msgstr "Blocked"
 #: components/ui/components/features/messaging/elements/MessageReply.tsx
 msgid "Blocked User"
 msgstr "Blocked User"
+
+#: components/modal/modals/CreateForumPost.tsx
+#~ msgid "Body"
+#~ msgstr "Body"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bold"
+msgstr "Bold"
 
 #: components/app/interface/channels/text/Message.tsx
 msgid "Bot"
@@ -583,6 +662,10 @@ msgstr "Browser Echo Cancellation"
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Bug Tracker"
 msgstr "Bug Tracker"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bulleted list"
+msgstr "Bulleted list"
 
 #: components/ui/components/features/profiles/ProfileStatus.tsx
 #: src/interface/channels/text/MemberSidebar.tsx
@@ -636,6 +719,8 @@ msgstr "Can't find the perfect GIF? Head to Gifbox and upload your own for every
 #: components/modal/modals/ScreenShareSettings.tsx
 #: components/modal/modals/ServerIdentity.tsx
 #: components/modal/modals/SignOutSessions.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -795,6 +880,7 @@ msgstr "Client Settings"
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
+#: components/modal/modals/CreateForumPost.tsx
 #: components/modal/modals/CreateGroup.tsx
 #: components/modal/modals/CreateRole.tsx
 #: components/modal/modals/CreateServer.tsx
@@ -826,12 +912,38 @@ msgid "Close conversation with {0}?"
 msgstr "Close conversation with {0}?"
 
 #: components/modal/modals/JoinServer.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Code"
 msgstr "Code"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Code block"
+msgstr "Code block"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse"
+msgstr "Collapse"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse post"
+msgstr "Collapse post"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Coming soon! 👀"
 msgstr "Coming soon! 👀"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment"
+msgstr "Comment"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment actions"
+msgstr "Comment actions"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comments"
+msgstr "Comments"
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Configure a way to get back into your account in case your 2FA is lost"
@@ -1053,6 +1165,10 @@ msgstr "Create Invite"
 msgid "Create invites for others to use"
 msgstr "Create invites for others to use"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Create posts and comments in this forum"
+msgstr "Create posts and comments in this forum"
+
 #: components/modal/modals/CreateRole.tsx
 msgid "Create Role"
 msgstr "Create Role"
@@ -1138,6 +1254,10 @@ msgstr "Default"
 #~ msgid "Default Permissions"
 #~ msgstr "Default Permissions"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Default sorting"
+msgstr "Default sorting"
+
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 #~ msgid "Defean"
 #~ msgstr "Defean"
@@ -1153,6 +1273,8 @@ msgstr "Degraded Performance"
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
 #: components/modal/modals/EmojiPreview.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Delete"
 msgstr "Delete"
 
@@ -1311,6 +1433,11 @@ msgstr "Done"
 msgid "Drugs or illegal goods"
 msgstr "Drugs or illegal goods"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit"
+msgstr "Edit"
+
 #. placeholder {0}: props.member.displayName
 #: components/modal/modals/UserProfileRoles.tsx
 msgid "Edit {0}'s roles"
@@ -1327,6 +1454,10 @@ msgstr "Edit any permissions on the server"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
 msgstr "Edit channel-specific role and default permissions"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit comment"
+msgstr "Edit comment"
 
 #: components/app/interface/settings/user/profile/EditProfile.tsx
 msgid "Edit Global Profile"
@@ -1374,6 +1505,10 @@ msgstr "Effective <0/> (<1/>)"
 #: components/modal/modals/EditEmail.tsx
 msgid "Email"
 msgstr "Email"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Emoji"
+msgstr "Emoji"
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
 msgid "Emoji Name"
@@ -1454,12 +1589,24 @@ msgstr "Enter your invite code."
 msgid "Enter your preferred username."
 msgstr "Enter your preferred username."
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Every new post must carry at least one tag."
+msgstr "Every new post must carry at least one tag."
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 #: components/app/interface/settings/ChannelSettings.tsx
 #: components/app/interface/settings/server/roles/ServerRoleOverview.tsx
 #: components/app/interface/settings/ServerSettings.tsx
 msgid "Everyone"
 msgstr "Everyone"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand"
+msgstr "Expand"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand post"
+msgstr "Expand post"
 
 #: components/modal/modals/LinkWarning.tsx
 msgid "External links can be dangerous!"
@@ -1518,6 +1665,14 @@ msgstr "Find your com<0/>munity,<1/>connect with the world."
 msgid "Focus"
 msgstr "Focus"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Follow"
+msgstr "Follow"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Following"
+msgstr "Following"
+
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 1 hour"
@@ -1542,6 +1697,14 @@ msgstr "For 3 hours"
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 8 hours"
 msgstr "For 8 hours"
+
+#: components/app/interface/settings/ChannelSettings.tsx
+msgid "Forum"
+msgstr "Forum"
+
+#: components/modal/modals/CreateChannel.tsx
+msgid "Forum Channel"
+msgstr "Forum Channel"
 
 #: src/interface/Friends.tsx
 #: src/interface/navigation/channels/HomeSidebar.tsx
@@ -1655,6 +1818,10 @@ msgstr "Harassment or cyberbullying"
 msgid "Hardware Acceleration"
 msgstr "Hardware Acceleration"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Heading {level}"
+msgstr "Heading {level}"
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Hear other people and see their video"
 msgstr "Hear other people and see their video"
@@ -1677,8 +1844,12 @@ msgid "Here is your new invite code: <0>{0}</0>"
 msgstr "Here is your new invite code: <0>{0}</0>"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Hide Others"
-msgstr "Hide Others"
+msgid "Hide chat"
+msgstr "Hide chat"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#~ msgid "Hide Others"
+#~ msgstr "Hide Others"
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "High Contrast"
@@ -1692,6 +1863,14 @@ msgstr "Hoist Role"
 #: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Home"
 msgstr "Home"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Hot"
+msgstr "Hot"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "How the feed is ordered when someone opens this forum."
+msgstr "How the feed is ordered when someone opens this forum."
 
 #: src/interface/channels/AgeGate.tsx
 msgid "I confirm that I am at least 18 years old."
@@ -1731,6 +1910,10 @@ msgstr "In the meantime, install Stoat from Google Play for a faster, smoother e
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Input Volume"
 msgstr "Input Volume"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Insert image"
+msgstr "Insert image"
 
 #: components/app/interface/settings/user/Native.tsx
 msgid "Instead of closing, Stoat will hide in your tray."
@@ -1784,6 +1967,10 @@ msgstr "irrelevant joke badge 2"
 #: components/app/interface/settings/user/Language.tsx
 msgid "ISO Standard (YYYY-MM-DD)"
 msgstr "ISO Standard (YYYY-MM-DD)"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Italic"
+msgstr "Italic"
 
 #: components/modal/modals/Invite.tsx
 #: components/modal/modals/JoinServer.tsx
@@ -1862,6 +2049,26 @@ msgstr "Latest"
 msgid "Launch Stoat when you log into your computer."
 msgstr "Launch Stoat when you log into your computer."
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: automatic"
+msgstr "Layout: automatic"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: grid"
+msgstr "Layout: grid"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: one large"
+msgstr "Layout: one large"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: side by side"
+msgstr "Layout: side by side"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: stacked"
+msgstr "Layout: stacked"
+
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Learn more"
 msgstr "Learn more"
@@ -1903,6 +2110,10 @@ msgstr "Let us know how we can improve our app by giving us feedback."
 msgid "Light"
 msgstr "Light"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Link"
+msgstr "Link"
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "Listen"
@@ -1911,6 +2122,27 @@ msgstr "Listen"
 #: components/ui/components/features/messaging/elements/TextFile.tsx
 msgid "Load file ({0})"
 msgstr "Load file ({0})"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Loading comments…"
+msgstr "Loading comments…"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Loading post…"
+msgstr "Loading post…"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Loading posts…"
+msgstr "Loading posts…"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Lock"
+msgstr "Lock"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Locked"
+msgstr "Locked"
 
 #: components/auth/src/flows/FlowHome.tsx
 msgid "Log In"
@@ -2013,7 +2245,7 @@ msgid "Members"
 msgstr "Members"
 
 #. placeholder {0}: slowmodeWaitTime()
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Members can send one message every {0}."
 msgstr "Members can send one message every {0}."
 
@@ -2096,6 +2328,10 @@ msgstr "Minimise to Tray"
 msgid "Missing permission"
 msgstr "Missing permission"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Moderate the forum: delete, pin and lock posts by other members"
+msgstr "Moderate the forum: delete, pin and lock posts by other members"
+
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Monochrome"
 msgstr "Monochrome"
@@ -2137,6 +2373,10 @@ msgstr "Mute lower-ranking members in voice call"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Mute Members"
 msgstr "Mute Members"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Mute screen audio"
+msgstr "Mute screen audio"
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Mute Screen Share"
@@ -2181,6 +2421,10 @@ msgstr "Name"
 msgid "Neutral"
 msgstr "Neutral"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New"
+msgstr "New"
+
 #: components/ui/components/features/messaging/elements/MessageDivider.tsx
 msgid "NEW"
 msgstr "NEW"
@@ -2199,6 +2443,15 @@ msgstr "New name"
 msgid "New Password"
 msgstr "New Password"
 
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New post"
+msgstr "New post"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "New tag name"
+msgstr "New tag name"
+
 #: components/app/interface/channels/text/Message.tsx
 msgid "New to Stoat"
 msgstr "New to Stoat"
@@ -2207,9 +2460,21 @@ msgstr "New to Stoat"
 msgid "New to the server"
 msgstr "New to the server"
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Newest"
+msgstr "Newest"
+
 #: components/modal/modals/ServerIdentity.tsx
 msgid "Nickname"
 msgstr "Nickname"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "No audio shared"
+msgstr "No audio shared"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "No comments yet."
+msgstr "No comments yet."
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "No GIFs found"
@@ -2219,9 +2484,21 @@ msgstr "No GIFs found"
 msgid "No permissions set yet"
 msgstr "No permissions set yet"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "No posts yet"
+msgstr "No posts yet"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "No posts yet. Be the first to write one."
+#~ msgstr "No posts yet. Be the first to write one."
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "No role overrides have been configured."
 msgstr "No role overrides have been configured."
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "No tags yet."
+msgstr "No tags yet."
 
 #: src/interface/Friends.tsx
 msgid "Nobody here right now!"
@@ -2240,11 +2517,19 @@ msgstr "Normal"
 msgid "Not of minimum age to use the platform"
 msgstr "Not of minimum age to use the platform"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Nothing to preview yet."
+msgstr "Nothing to preview yet."
+
 #: components/app/interface/settings/UserSettings.tsx
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "Notifications"
 msgstr "Notifications"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Numbered list"
+msgstr "Numbered list"
 
 #: components/ui/components/features/messaging/composition/MessageReplyPreview.tsx
 msgid "Off"
@@ -2271,6 +2556,7 @@ msgstr "Offline"
 msgid "OK"
 msgstr "OK"
 
+#: src/interface/channels/forum/ForumThread.tsx
 #: src/interface/channels/text/TextSearchSidebar.tsx
 msgid "Oldest"
 msgstr "Oldest"
@@ -2340,6 +2626,18 @@ msgstr "Open settings"
 msgid "Other"
 msgstr "Other"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: bottom"
+msgstr "Others: bottom"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: hidden"
+msgstr "Others: hidden"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: side"
+msgstr "Others: side"
+
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Output Volume"
 msgstr "Output Volume"
@@ -2396,6 +2694,7 @@ msgid "Pick a username that you want people to be able to find you by. This can 
 msgstr "Pick a username that you want people to be able to find you by. This can be changed later in your user settings."
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Pin"
 msgstr "Pin"
 
@@ -2403,6 +2702,11 @@ msgstr "Pin"
 #: components/modal/modals/PinMessage.tsx
 msgid "Pin message"
 msgstr "Pin message"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Pinned"
+msgstr "Pinned"
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Platform Moderator"
@@ -2440,11 +2744,20 @@ msgstr "Please select a method to authenticate your request."
 msgid "Please select a reason"
 msgstr "Please select a reason"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post actions"
+msgstr "Post actions"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post not found."
+msgstr "Post not found."
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Powered by RNNoise"
 msgstr "Powered by RNNoise"
 
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Preview"
 msgstr "Preview"
 
@@ -2482,6 +2795,14 @@ msgstr "Pronouns"
 msgid "Provided email or password is wrong."
 msgstr "Provided email or password is wrong."
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Publish"
+msgstr "Publish"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Quote"
+msgstr "Quote"
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Raid or spam attack"
 msgstr "Raid or spam attack"
@@ -2510,6 +2831,10 @@ msgstr "Read past messages sent in channel"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Read past messages sent in channels"
 msgstr "Read past messages sent in channels"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Read posts and comments in this forum"
+msgstr "Read posts and comments in this forum"
 
 #: components/app/interface/settings/server/bans/ListBans.tsx
 #: components/modal/modals/BanMember.tsx
@@ -2573,6 +2898,7 @@ msgstr "Remote Channel"
 msgid "Remote Server"
 msgstr "Remote Server"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
 #: components/modal/modals/RemoveMember.tsx
 msgid "Remove"
 msgstr "Remove"
@@ -2580,6 +2906,10 @@ msgstr "Remove"
 #: components/app/menus/MessageContextMenu.tsx
 msgid "Remove all reactions"
 msgstr "Remove all reactions"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Remove attachment"
+msgstr "Remove attachment"
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Remove Authenticator"
@@ -2606,6 +2936,11 @@ msgstr "Remove other members' avatars"
 msgid "Remove reaction"
 msgstr "Remove reaction"
 
+#. placeholder {0}: tag.name
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Remove tag {0}"
+msgstr "Remove tag {0}"
+
 #: components/app/interface/settings/user/Sessions.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/RenameSession.tsx
@@ -2626,6 +2961,7 @@ msgid "Rep Stoat using Discord rich presence."
 msgstr "Rep Stoat using Discord rich presence."
 
 #: components/app/menus/MessageContextMenu.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
 msgstr "Reply"
 
@@ -2649,6 +2985,10 @@ msgstr "Report server"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Report user"
 msgstr "Report user"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Require a tag"
+msgstr "Require a tag"
 
 #: components/auth/src/flows/FlowResend.tsx
 msgid "Resend"
@@ -2743,6 +3083,8 @@ msgstr "Roles with No Overrides"
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 #: components/modal/modals/CustomStatus.tsx
 #: components/modal/modals/ServerIdentity.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Save"
 msgstr "Save"
 
@@ -2824,6 +3166,10 @@ msgstr "Select video input"
 #: components/app/interface/settings/user/Language.tsx
 msgid "Select your language"
 msgstr "Select your language"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Send"
+msgstr "Send"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Send attachments to chat"
@@ -2935,7 +3281,7 @@ msgstr "Setup one-time password authenticator"
 msgid "Setup recovery codes"
 msgstr "Setup recovery codes"
 
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Several people are typing…"
 msgstr "Several people are typing…"
 
@@ -2952,13 +3298,17 @@ msgstr "Share camera or screen in voice call"
 msgid "Share screen"
 msgstr "Share screen"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show chat"
+msgstr "Show chat"
+
 #: components/app/interface/settings/user/Native.tsx
 msgid "Show corrections and suggestions as you type."
 msgstr "Show corrections and suggestions as you type."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Show Others"
-msgstr "Show Others"
+#~ msgid "Show Others"
+#~ msgstr "Show Others"
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Show send message button"
@@ -2976,11 +3326,11 @@ msgstr "Sign Up"
 msgid "Silent"
 msgstr "Silent"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode Immune"
 msgstr "Slowmode Immune"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode is enabled."
 msgstr "Slowmode is enabled."
 
@@ -3097,6 +3447,10 @@ msgstr "Stream End"
 msgid "Stream Start"
 msgstr "Stream Start"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Strikethrough"
+msgstr "Strikethrough"
+
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Submit feature suggestion"
 msgstr "Submit feature suggestion"
@@ -3145,6 +3499,15 @@ msgstr "System"
 msgid "System message channels"
 msgstr "System message channels"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Tags"
+msgstr "Tags"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Tags let people file a post under a topic and filter the feed by it."
+msgstr "Tags let people file a post under a topic and filter the feed by it."
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Tell us what's wrong with this message"
 msgstr "Tell us what's wrong with this message"
@@ -3189,6 +3552,15 @@ msgstr "The password is too short."
 #: components/app/interface/settings/user/Sync.tsx
 msgid "Theme"
 msgstr "Theme"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "There is already a tag called {name}."
+msgstr "There is already a tag called {name}."
+
+#. placeholder {0}: names.join(", ")
+#: components/modal/modals/CreateForumPost.tsx
+msgid "These files are too large or over the limit: {0}"
+msgstr "These files are too large or over the limit: {0}"
 
 #: components/i18n/errors.tsx
 msgid "This account is not activated! Please check your account's inbox and try again."
@@ -3255,6 +3627,10 @@ msgstr "This message is empty and has not been sent."
 msgid "This password has previously appeared in security leaks, please use another password."
 msgstr "This password has previously appeared in security leaks, please use another password."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "This post is locked. No new comments."
+msgstr "This post is locked. No new comments."
+
 #: components/app/interface/settings/server/Overview.tsx
 msgid "This server is about..."
 msgstr "This server is about..."
@@ -3291,6 +3667,10 @@ msgstr "Time format"
 msgid "Timeout Members"
 msgstr "Timeout Members"
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Title"
+msgstr "Title"
+
 #: src/interface/common/CommonHeader.tsx
 msgid "Toggle main sidebar"
 msgstr "Toggle main sidebar"
@@ -3302,6 +3682,11 @@ msgstr "Token copied to clipboard"
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Tonal Spot"
 msgstr "Tonal Spot"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Top"
+msgstr "Top"
 
 #: components/app/interface/settings/user/Language.tsx
 msgid "Traditional (DD/MM/YYYY)"
@@ -3338,6 +3723,10 @@ msgstr "Unknown"
 msgid "Unknown Server"
 msgstr "Unknown Server"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Unlock"
+msgstr "Unlock"
+
 #: components/modal/modals/ChannelToggleMature.tsx
 msgid "Unmark as mature"
 msgstr "Unmark as mature"
@@ -3359,13 +3748,22 @@ msgstr "Unmute"
 msgid "Unmute Channel"
 msgstr "Unmute Channel"
 
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Unmute screen audio"
+msgstr "Unmute screen audio"
+
 #: components/app/menus/ServerContextMenu.tsx
 msgid "Unmute Server"
 msgstr "Unmute Server"
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Unpin"
 msgstr "Unpin"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Unpin all"
+msgstr "Unpin all"
 
 #: components/app/menus/MessageContextMenu.tsx
 #: components/modal/modals/PinMessage.tsx
@@ -3392,6 +3790,15 @@ msgstr "Upload Files"
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Upload to Gifbox"
 msgstr "Upload to Gifbox"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Uploading…"
+msgstr "Uploading…"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Upvote"
+msgstr "Upvote"
 
 #: components/modal/modals/JoinServer.tsx
 msgid "Use a code or invite link"
@@ -3622,6 +4029,23 @@ msgstr "Would you like to create a new group or server?"
 #: components/modal/modals/CreateOrJoinServer.tsx
 msgid "Would you like to create a new server or join an existing one?"
 msgstr "Would you like to create a new server or join an existing one?"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Write"
+msgstr "Write"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a comment"
+msgstr "Write a comment"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a reply"
+msgstr "Write a reply"
+
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Write your post…"
+msgstr "Write your post…"
 
 #: components/app/interface/settings/user/bots/MyBots.tsx
 msgid "You agree that your bot is subject to the Acceptable Usage Policy."

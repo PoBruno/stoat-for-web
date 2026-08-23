@@ -5,8 +5,7 @@ msgstr ""
 "POT-Creation-Date: 2025-09-29 18:29-0500\n"
 "PO-Revision-Date: 2026-08-15 17:15+0000\n"
 "Last-Translator: コピ <cpy@ik.me>\n"
-"Language-Team: Japanese <https://translate.stoat.chat/projects/revolt/revolt-"
-"for-web/ja/>\n"
+"Language-Team: Japanese <https://translate.stoat.chat/projects/revolt/revolt-for-web/ja/>\n"
 "Language: ja\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
@@ -43,10 +42,48 @@ msgstr ""
 msgid "(changes are being saved…)"
 msgstr "(変更を保存しています...)"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "(edited)"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "[comment deleted]"
+msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {no comments} one {# comment} other {# comments}}"
+#~ msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {sem comentários} one {# comentário} other {# comentários}}"
+#~ msgstr ""
+
 #. placeholder {0}: props.count
 #: components/ui/components/features/messaging/elements/BlockedMessage.tsx
 msgid "{0, plural, one {# blocked message} other {# blocked messages}}"
 msgstr "{0} 件のブロックしたメッセージ"
+
+#. placeholder {0}: post.commentCount
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "{0, plural, one {# comment} other {# comments}}"
+#~ msgstr ""
+
+#. placeholder {0}: participants().length
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# participant} other {# participants}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# view} other {# views}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, one {# visualização} other {# visualizações}}"
+#~ msgstr ""
 
 #. placeholder {0}: items().length
 #: components/ui/components/utils/files/FileDropAnywhereCollector.tsx
@@ -55,7 +92,7 @@ msgstr "{0, plural, one {ファイルをドロップ} other {# 個のファイ�
 
 #. placeholder {0}: users() .slice(0, -1) .map((user) => user!.username) .join(", ")
 #. placeholder {1}: users().slice(-1)[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} and {1} are typing…"
 msgstr "{0} と {1} が入力中…"
 
@@ -76,15 +113,11 @@ msgstr "あと {0} 個追加可能"
 
 #. placeholder {0}: rejectedFiles.length
 #: src/interface/channels/text/Composition.tsx
-msgid ""
-"{0} files exceed the maximum size limit of {maxSizeFormatted} and were not "
-"uploaded."
-msgstr ""
-"{0} 個のファイルは、最大容量の {maxSizeFormatted} を超過していたためアップ"
-"ロードされませんでした。"
+msgid "{0} files exceed the maximum size limit of {maxSizeFormatted} and were not uploaded."
+msgstr "{0} 個のファイルは、最大容量の {maxSizeFormatted} を超過していたためアップロードされませんでした。"
 
 #. placeholder {0}: users()[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} is typing…"
 msgstr "{0} が入力中…"
 
@@ -227,8 +260,7 @@ msgid "<0/> updated the group name to <1>{0}</1>"
 msgstr "<0/> がグループの名前を <1>{0}</1> に変更しました"
 
 #: components/modal/modals/LinkWarning.tsx
-msgid ""
-"<0>Be careful!</0><1/>This is not the same as the link that was displayed:"
+msgid "<0>Be careful!</0><1/>This is not the same as the link that was displayed:"
 msgstr "<0>警告！</0><1/>表示されていたリンクとは異なります:"
 
 #: components/ui/components/features/messaging/elements/Reactions.tsx
@@ -252,6 +284,10 @@ msgid "Able to access this channel"
 msgstr "このチャンネルにアクセスできます"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Able to access this forum"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Able to speak in voice call"
 msgstr "通話で喋れるようになります"
 
@@ -271,12 +307,17 @@ msgstr "フレンド申請を承認"
 msgid "Acknowledge"
 msgstr "確認しました"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Active"
+msgstr ""
+
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/AddMembersToGroup.tsx
 msgid "Add"
 msgstr "追加"
 
-#: components/modal/modals/AddFriend.tsx src/interface/Friends.tsx
+#: components/modal/modals/AddFriend.tsx
+#: src/interface/Friends.tsx
 msgid "Add a new friend"
 msgstr "フレンドを追加"
 
@@ -301,6 +342,10 @@ msgstr "新しいメンバーをグループに追加できます"
 msgid "Add status text"
 msgstr "ステータスを設定"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Add tag"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "管理者"
@@ -316,6 +361,10 @@ msgstr "管理者パネル"
 msgid "Advanced"
 msgstr "詳細設定"
 
+#~ msgid "Affects all roles and users"
+#~ msgstr "全てのロールとユーザーに影響します"
+
+#: src/interface/channels/forum/ForumChannel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "全て"
@@ -401,6 +450,18 @@ msgstr "この権限を持つメンバーは、自分よりも低い位置にあ
 msgid "Assign Roles"
 msgstr "ロールを付与"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach files"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Attach files to posts and comments"
+msgstr ""
+
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Audio disabled by browser"
 msgstr ""
@@ -421,10 +482,15 @@ msgstr "アバター"
 #: components/app/interface/settings/user/_AccountCard.tsx
 #: components/auth/src/flows/FlowCheck.tsx
 #: components/auth/src/flows/FlowCreate.tsx
-#: components/auth/src/flows/FlowLogin.tsx components/modal/modals/MFAFlow.tsx
+#: components/auth/src/flows/FlowLogin.tsx
+#: components/modal/modals/MFAFlow.tsx
 #: src/interface/channels/AgeGate.tsx
 msgid "Back"
 msgstr "戻る"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Back to forum"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Badges"
@@ -471,6 +537,10 @@ msgstr "バナー"
 msgid "Bans"
 msgstr "BANされたユーザー"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Be the first to write one."
+msgstr ""
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Block user"
 msgstr "ユーザーをブロック"
@@ -482,6 +552,14 @@ msgstr "ブロック"
 #: components/ui/components/features/messaging/elements/MessageReply.tsx
 msgid "Blocked User"
 msgstr "ブロックされたユーザー"
+
+#: components/modal/modals/CreateForumPost.tsx
+#~ msgid "Body"
+#~ msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bold"
+msgstr ""
 
 #: components/app/interface/channels/text/Message.tsx
 msgid "Bot"
@@ -499,6 +577,10 @@ msgstr "エコー除去"
 msgid "Bug Tracker"
 msgstr "バグトラッカー"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bulleted list"
+msgstr ""
+
 #: components/ui/components/features/profiles/ProfileStatus.tsx
 #: src/interface/channels/text/MemberSidebar.tsx
 #: src/interface/navigation/channels/HomeSidebar.tsx
@@ -507,15 +589,11 @@ msgstr "忙しい"
 
 #: components/modal/modals/CreateBot.tsx
 msgid "By creating this bot, you agree to the <0>Acceptable Use Policy</0>."
-msgstr ""
-"ボットを作成することで、あなたは<0>コミュニティガイドライン</0>に同意したこと"
-"になります。"
+msgstr "ボットを作成することで、あなたは<0>コミュニティガイドライン</0>に同意したことになります。"
 
 #: components/modal/modals/CreateServer.tsx
 msgid "By creating this server, you agree to the <0>Acceptable Use Policy</0>."
-msgstr ""
-"サーバーを作成することで、あなたは<0>コミュニティガイドライン</0>に同意したこ"
-"とになります。"
+msgstr "サーバーを作成することで、あなたは<0>コミュニティガイドライン</0>に同意したことになります。"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Bypass Slowmode"
@@ -526,12 +604,11 @@ msgid "Bypasses slowmode in channels"
 msgstr "チャンネルの低速モードを回避"
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
-msgid ""
-"Can't find the perfect GIF? Head to Gifbox and upload your own for everyone "
-"to use."
+msgid "Can't find the perfect GIF? Head to Gifbox and upload your own for everyone to use."
 msgstr ""
 
-#: components/auth/src/flows/FlowLogin.tsx components/modal/modals/AddBot.tsx
+#: components/auth/src/flows/FlowLogin.tsx
+#: components/modal/modals/AddBot.tsx
 #: components/modal/modals/BanMember.tsx
 #: components/modal/modals/BanNonMember.tsx
 #: components/modal/modals/DeleteBot.tsx
@@ -540,11 +617,13 @@ msgstr ""
 #: components/modal/modals/DeleteMessage.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
-#: components/modal/modals/EditCategory.tsx components/modal/modals/Invite.tsx
+#: components/modal/modals/EditCategory.tsx
+#: components/modal/modals/Invite.tsx
 #: components/modal/modals/KickMember.tsx
 #: components/modal/modals/LeaveServer.tsx
 #: components/modal/modals/MFAEnableTOTP.tsx
-#: components/modal/modals/MFAFlow.tsx components/modal/modals/Onboarding.tsx
+#: components/modal/modals/MFAFlow.tsx
+#: components/modal/modals/Onboarding.tsx
 #: components/modal/modals/PinMessage.tsx
 #: components/modal/modals/RemoveMember.tsx
 #: components/modal/modals/RenameSession.tsx
@@ -554,6 +633,8 @@ msgstr ""
 #: components/modal/modals/ScreenShareSettings.tsx
 #: components/modal/modals/ServerIdentity.tsx
 #: components/modal/modals/SignOutSessions.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Cancel"
 msgstr "キャンセル"
 
@@ -567,9 +648,7 @@ msgstr "メッセージを取り消す"
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Cannot delete account until servers are deleted or transferred"
-msgstr ""
-"所有するサーバーが削除または譲渡されるまで、アカウントを削除することはできま"
-"せん"
+msgstr "所有するサーバーが削除または譲渡されるまで、アカウントを削除することはできません"
 
 #: components/i18n/errors.tsx
 msgid "Cannot edit this message."
@@ -711,6 +790,7 @@ msgstr "クライアントの設定"
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
+#: components/modal/modals/CreateForumPost.tsx
 #: components/modal/modals/CreateGroup.tsx
 #: components/modal/modals/CreateRole.tsx
 #: components/modal/modals/CreateServer.tsx
@@ -742,12 +822,38 @@ msgid "Close conversation with {0}?"
 msgstr "{0} とのDMを閉じますか？"
 
 #: components/modal/modals/JoinServer.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Code"
 msgstr "招待コード"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Code block"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse post"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Coming soon! 👀"
 msgstr "近日公開! 👀"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comments"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Configure a way to get back into your account in case your 2FA is lost"
@@ -757,7 +863,8 @@ msgstr "設定しておけば、二要素認証の手段を失ってもアカウ
 msgid "Configure one-time password authentication"
 msgstr "ワンタイムパスワード認証を設定"
 
-#: components/auth/src/flows/FlowLogin.tsx components/modal/modals/MFAFlow.tsx
+#: components/auth/src/flows/FlowLogin.tsx
+#: components/modal/modals/MFAFlow.tsx
 msgid "Confirm"
 msgstr "確認"
 
@@ -896,6 +1003,9 @@ msgstr "作成"
 msgid "Create a channel before inviting others!"
 msgstr "メンバーを招待する前に、まずはチャンネルを作りましょう!"
 
+#~ msgid "Create a group"
+#~ msgstr "グループの作成"
+
 #: src/interface/Home.tsx
 msgid "Create a group or server"
 msgstr "グループかサーバーを作成"
@@ -912,6 +1022,9 @@ msgstr "カテゴリーを作成"
 #: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Create a new group"
 msgstr "グループを作成"
+
+#~ msgid "Create a new role"
+#~ msgstr "新しくロールを作成する"
 
 #: components/modal/modals/CreateWebhook.tsx
 msgid "Create a webhook"
@@ -959,6 +1072,10 @@ msgstr "招待を作成"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Create invites for others to use"
 msgstr "招待リンクを発行できます"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Create posts and comments in this forum"
+msgstr ""
 
 #: components/modal/modals/CreateRole.tsx
 msgid "Create Role"
@@ -1014,9 +1131,7 @@ msgstr "ダーク"
 #. placeholder {0}: err.location
 #: components/i18n/errors.tsx
 msgid "Database error, please contact support. ({0})"
-msgstr ""
-"サーバー内部でデータベースエラーが発生しました。サポートまでご連絡ください。 "
-"({0})"
+msgstr "サーバー内部でデータベースエラーが発生しました。サポートまでご連絡ください。 ({0})"
 
 #: components/app/interface/settings/user/Language.tsx
 msgid "Date format"
@@ -1040,6 +1155,13 @@ msgstr "メンバーのスピーカーをミュート"
 msgid "Default"
 msgstr "デフォルト"
 
+#~ msgid "Default Permissions"
+#~ msgstr "デフォルトの権限"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Default sorting"
+msgstr ""
+
 #: components/ui/components/design/LoadingScreen.tsx
 msgid "Degraded Performance"
 msgstr ""
@@ -1051,6 +1173,8 @@ msgstr ""
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
 #: components/modal/modals/EmojiPreview.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Delete"
 msgstr "削除"
 
@@ -1070,9 +1194,7 @@ msgstr "アカウントを削除"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Delete and pin messages sent by other members"
-msgstr ""
-"他のメンバーが送信したメッセージを削除したり、ピン留めしたりすることができま"
-"す"
+msgstr "他のメンバーが送信したメッセージを削除したり、ピン留めしたりすることができます"
 
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Delete Bot"
@@ -1207,6 +1329,11 @@ msgstr "完了"
 msgid "Drugs or illegal goods"
 msgstr "薬物または違法物品"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit"
+msgstr ""
+
 #. placeholder {0}: props.member.displayName
 #: components/modal/modals/UserProfileRoles.tsx
 msgid "Edit {0}'s roles"
@@ -1223,6 +1350,10 @@ msgstr "このサーバー上で任意の権限を編集できます"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
 msgstr "チャンネルの権限設定を編集できます"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit comment"
+msgstr ""
 
 #: components/app/interface/settings/user/profile/EditProfile.tsx
 msgid "Edit Global Profile"
@@ -1266,9 +1397,14 @@ msgid "Effective <0/> (<1/>)"
 msgstr "<0/> に施行 (<1/>)"
 
 #: components/app/interface/settings/user/Account.tsx
-#: components/auth/src/flows/Form.tsx components/modal/modals/EditEmail.tsx
+#: components/auth/src/flows/Form.tsx
+#: components/modal/modals/EditEmail.tsx
 msgid "Email"
 msgstr "メールアドレス"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Emoji"
+msgstr ""
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
 msgid "Emoji Name"
@@ -1300,9 +1436,7 @@ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Enable transparency glass/blur effects (slow on older machines)"
-msgstr ""
-"透明感のあるガラス・ブラー効果を有効にする (古いPCでは動作が重くなる場合があ"
-"ります)"
+msgstr "透明感のあるガラス・ブラー効果を有効にする (古いPCでは動作が重くなる場合があります)"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "End call"
@@ -1320,7 +1454,8 @@ msgstr ""
 msgid "Enter a new name for this session"
 msgstr "セッションの新しい名前を入力"
 
-#: components/auth/src/flows/Form.tsx components/modal/modals/EditPassword.tsx
+#: components/auth/src/flows/Form.tsx
+#: components/modal/modals/EditPassword.tsx
 msgid "Enter a new password."
 msgstr "新しいパスワードを入力してください。"
 
@@ -1350,11 +1485,23 @@ msgstr ""
 msgid "Enter your preferred username."
 msgstr "好きなユーザー名を入力してください。"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Every new post must carry at least one tag."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 #: components/app/interface/settings/ChannelSettings.tsx
 #: components/app/interface/settings/server/roles/ServerRoleOverview.tsx
 #: components/app/interface/settings/ServerSettings.tsx
 msgid "Everyone"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand post"
 msgstr ""
 
 #: components/modal/modals/LinkWarning.tsx
@@ -1370,8 +1517,7 @@ msgid "Extreme violence, gore or animal cruelty"
 msgstr "過激な暴力、残虐な描写、または動物虐待"
 
 #: components/client/NotificationsController.ts
-msgid ""
-"Failed to enable notifications. Stoat does not have notification permission."
+msgid "Failed to enable notifications. Stoat does not have notification permission."
 msgstr ""
 
 #: components/client/NotificationsController.ts
@@ -1415,6 +1561,14 @@ msgstr "あなたの居場所<0/>を探そう、<1/>世界と繋がろう。"
 msgid "Focus"
 msgstr "集中"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Follow"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Following"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 1 hour"
@@ -1440,7 +1594,16 @@ msgstr "3時間"
 msgid "For 8 hours"
 msgstr "8時間"
 
-#: src/interface/Friends.tsx src/interface/navigation/channels/HomeSidebar.tsx
+#: components/app/interface/settings/ChannelSettings.tsx
+msgid "Forum"
+msgstr ""
+
+#: components/modal/modals/CreateChannel.tsx
+msgid "Forum Channel"
+msgstr ""
+
+#: src/interface/Friends.tsx
+#: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Friends"
 msgstr "フレンド"
 
@@ -1454,9 +1617,7 @@ msgstr "フルーツサラダ"
 
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Generate a new token if it gets lost or compromised"
-msgstr ""
-"トークンをなくしてしまったり、誰かにバレてしまったりした場合はトークンを再発"
-"行できます"
+msgstr "トークンをなくしてしまったり、誰かにバレてしまったりした場合はトークンを再発行できます"
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Generate Recovery Codes"
@@ -1479,9 +1640,7 @@ msgid "Get it on Google Play"
 msgstr ""
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
-msgid ""
-"Gifbox is our own GIF service, so you can keep sharing GIFs right here on "
-"Stoat."
+msgid "Gifbox is our own GIF service, so you can keep sharing GIFs right here on Stoat."
 msgstr ""
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
@@ -1512,9 +1671,13 @@ msgstr "ログイン画面に戻る"
 msgid "Go to account settings to edit your username"
 msgstr "ユーザー名はアカウント設定で変更できます"
 
-#: components/app/interface/settings/user/Feedback.tsx src/interface/Home.tsx
+#: components/app/interface/settings/user/Feedback.tsx
+#: src/interface/Home.tsx
 msgid "Go to the Stoat Lounge"
 msgstr "Stoat Loungeを開く"
+
+#~ msgid "Go to the testers server"
+#~ msgstr "テスターサーバーに移動する"
 
 #: components/modal/modals/Onboarding.tsx
 msgid "Good"
@@ -1550,6 +1713,10 @@ msgstr "ハラスメントやいじめ"
 msgid "Hardware Acceleration"
 msgstr "ハードウェアアクセラレーション"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Heading {level}"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Hear other people and see their video"
 msgstr "他の参加者の声を聞いたり、ビデオを表示できるようになります"
@@ -1572,8 +1739,12 @@ msgid "Here is your new invite code: <0>{0}</0>"
 msgstr "招待リンクを発行しました<0>{0}</0>"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Hide Others"
+msgid "Hide chat"
 msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#~ msgid "Hide Others"
+#~ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "High Contrast"
@@ -1583,9 +1754,18 @@ msgstr "コントラスト高め"
 msgid "Hoist Role"
 msgstr ""
 
-#: src/interface/Home.tsx src/interface/navigation/channels/HomeSidebar.tsx
+#: src/interface/Home.tsx
+#: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Home"
 msgstr "ホーム"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Hot"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "How the feed is ordered when someone opens this forum."
+msgstr ""
 
 #: src/interface/channels/AgeGate.tsx
 msgid "I confirm that I am at least 18 years old."
@@ -1615,13 +1795,15 @@ msgid "Impersonation"
 msgstr "なりすまし"
 
 #: src/AndroidNag.tsx
-msgid ""
-"In the meantime, install Stoat from Google Play for a faster, smoother "
-"experience designed for Android."
+msgid "In the meantime, install Stoat from Google Play for a faster, smoother experience designed for Android."
 msgstr ""
 
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Input Volume"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Insert image"
 msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
@@ -1638,8 +1820,7 @@ msgstr "オンライン状態を隠す"
 
 #: src/interface/Home.tsx
 msgid "Invite all of your friends, some cool bots, and throw a big party."
-msgstr ""
-"たくさんのフレンドと素敵なボットを招待して盛大なパーティを開きましょう。"
+msgstr "たくさんのフレンドと素敵なボットを招待して盛大なパーティを開きましょう。"
 
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Invite Bot"
@@ -1678,7 +1859,12 @@ msgstr "不適切なジョーク2"
 msgid "ISO Standard (YYYY-MM-DD)"
 msgstr "ISO標準 (西暦-月-日)"
 
-#: components/modal/modals/Invite.tsx components/modal/modals/JoinServer.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Italic"
+msgstr ""
+
+#: components/modal/modals/Invite.tsx
+#: components/modal/modals/JoinServer.tsx
 msgid "Join"
 msgstr "参加"
 
@@ -1686,7 +1872,8 @@ msgstr "参加"
 msgid "Join a server"
 msgstr "サーバーに参加"
 
-#: components/app/interface/settings/user/Feedback.tsx src/interface/Home.tsx
+#: components/app/interface/settings/user/Feedback.tsx
+#: src/interface/Home.tsx
 msgid "Join the Stoat Lounge"
 msgstr "Stoatラウンジに参加"
 
@@ -1749,6 +1936,26 @@ msgstr "最新"
 msgid "Launch Stoat when you log into your computer."
 msgstr "コンピューターへのログイン時にStoatを起動します。"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: automatic"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: grid"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: one large"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: side by side"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: stacked"
+msgstr ""
+
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Learn more"
 msgstr ""
@@ -1790,6 +1997,10 @@ msgstr "私たちのアプリをどのように改善するか、フィードバ
 msgid "Light"
 msgstr "ライト"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Link"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "会話を聞く"
@@ -1798,6 +2009,27 @@ msgstr "会話を聞く"
 #: components/ui/components/features/messaging/elements/TextFile.tsx
 msgid "Load file ({0})"
 msgstr "読み込む ({0})"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Loading comments…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Loading post…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Loading posts…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Lock"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Locked"
+msgstr ""
 
 #: components/auth/src/flows/FlowHome.tsx
 msgid "Log In"
@@ -1900,7 +2132,7 @@ msgid "Members"
 msgstr "メンバー"
 
 #. placeholder {0}: slowmodeWaitTime()
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Members can send one message every {0}."
 msgstr ""
 
@@ -1983,6 +2215,10 @@ msgstr "トレイに格納"
 msgid "Missing permission"
 msgstr "権限がありません"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Moderate the forum: delete, pin and lock posts by other members"
+msgstr ""
+
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Monochrome"
 msgstr "モノクローム"
@@ -2024,6 +2260,10 @@ msgstr "自分より低い権限を持つメンバーをミュートできます
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Mute Members"
 msgstr "メンバーをミュート"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Mute screen audio"
+msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Mute Screen Share"
@@ -2068,6 +2308,10 @@ msgstr "名前"
 msgid "Neutral"
 msgstr "ニュートラル"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New"
+msgstr ""
+
 #: components/ui/components/features/messaging/elements/MessageDivider.tsx
 msgid "NEW"
 msgstr "新規"
@@ -2081,9 +2325,19 @@ msgstr "{0}以来の新しいメッセージ"
 msgid "New name"
 msgstr ""
 
-#: components/auth/src/flows/Form.tsx components/modal/modals/EditPassword.tsx
+#: components/auth/src/flows/Form.tsx
+#: components/modal/modals/EditPassword.tsx
 msgid "New Password"
 msgstr "新しいパスワード"
+
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New post"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "New tag name"
+msgstr ""
 
 #: components/app/interface/channels/text/Message.tsx
 msgid "New to Stoat"
@@ -2093,9 +2347,21 @@ msgstr "新しいStoatユーザー"
 msgid "New to the server"
 msgstr "新しいサーバー参加者"
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Newest"
+msgstr ""
+
 #: components/modal/modals/ServerIdentity.tsx
 msgid "Nickname"
 msgstr "ニックネーム"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "No audio shared"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "No comments yet."
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "No GIFs found"
@@ -2105,8 +2371,20 @@ msgstr ""
 msgid "No permissions set yet"
 msgstr "権限の設定はまだありません"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "No posts yet"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "No posts yet. Be the first to write one."
+#~ msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "No role overrides have been configured."
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "No tags yet."
 msgstr ""
 
 #: src/interface/Friends.tsx
@@ -2126,11 +2404,19 @@ msgstr "ノーマル"
 msgid "Not of minimum age to use the platform"
 msgstr "このプラットフォームを使用できる最低年齢に達していない"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Nothing to preview yet."
+msgstr ""
+
 #: components/app/interface/settings/UserSettings.tsx
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "Notifications"
 msgstr "通知"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Numbered list"
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/MessageReplyPreview.tsx
 msgid "Off"
@@ -2151,11 +2437,13 @@ msgid "Offline"
 msgstr "オフライン"
 
 #: components/auth/src/flows/FlowHome.tsx
-#: components/modal/modals/CreateInvite.tsx components/modal/modals/Error2.tsx
+#: components/modal/modals/CreateInvite.tsx
+#: components/modal/modals/Error2.tsx
 #: components/modal/modals/SignedOut.tsx
 msgid "OK"
 msgstr "OK"
 
+#: src/interface/channels/forum/ForumThread.tsx
 #: src/interface/channels/text/TextSearchSidebar.tsx
 msgid "Oldest"
 msgstr "古い順"
@@ -2181,7 +2469,8 @@ msgid "Ongoing Maintenance"
 msgstr ""
 
 #: components/ui/components/features/profiles/ProfileStatus.tsx
-#: src/interface/channels/text/MemberSidebar.tsx src/interface/Friends.tsx
+#: src/interface/channels/text/MemberSidebar.tsx
+#: src/interface/Friends.tsx
 #: src/interface/navigation/channels/HomeSidebar.tsx
 #: src/interface/navigation/servers/UserMenu.tsx
 msgid "Online"
@@ -2224,6 +2513,18 @@ msgstr "設定を開く"
 msgid "Other"
 msgstr "その他"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: hidden"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: side"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Output Volume"
 msgstr "出力音量"
@@ -2246,7 +2547,8 @@ msgid "Partial Outage"
 msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
-#: components/auth/src/flows/Form.tsx components/modal/modals/MFAFlow.tsx
+#: components/auth/src/flows/Form.tsx
+#: components/modal/modals/MFAFlow.tsx
 msgid "Password"
 msgstr "パスワード"
 
@@ -2275,14 +2577,11 @@ msgid "Pick a Screen to Share"
 msgstr ""
 
 #: components/auth/src/flows/FlowLogin.tsx
-msgid ""
-"Pick a username that you want people to be able to find you by. This can be "
-"changed later in your user settings."
-msgstr ""
-"他のユーザーから検索されるように名前を決めましょう。この名前は後でもユーザー"
-"の設定から変更できます。"
+msgid "Pick a username that you want people to be able to find you by. This can be changed later in your user settings."
+msgstr "他のユーザーから検索されるように名前を決めましょう。この名前は後でもユーザーの設定から変更できます。"
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Pin"
 msgstr ""
 
@@ -2290,6 +2589,11 @@ msgstr ""
 #: components/modal/modals/PinMessage.tsx
 msgid "Pin message"
 msgstr "メッセージをピン留め"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Pinned"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Platform Moderator"
@@ -2317,8 +2621,7 @@ msgstr "安全な場所に保存しておいてください。"
 
 #: components/modal/modals/MFAEnableTOTP.tsx
 msgid "Please scan or use the token below in your authenticator app."
-msgstr ""
-"お使いの認証アプリで、下記のトークンをスキャンもしくは入力してください。"
+msgstr "お使いの認証アプリで、下記のトークンをスキャンもしくは入力してください。"
 
 #: components/modal/modals/MFAFlow.tsx
 msgid "Please select a method to authenticate your request."
@@ -2328,11 +2631,20 @@ msgstr "要求を認証する方法を選んでください。"
 msgid "Please select a reason"
 msgstr "理由を選択してください"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post not found."
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Powered by RNNoise"
 msgstr ""
 
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Preview"
 msgstr ""
 
@@ -2370,6 +2682,14 @@ msgstr ""
 msgid "Provided email or password is wrong."
 msgstr "メールアドレス、またはパスワードが間違っています。"
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Publish"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Quote"
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Raid or spam attack"
 msgstr "レイド、またはスパム攻撃"
@@ -2394,6 +2714,10 @@ msgstr "チャンネルで過去に送信されたメッセージを読むこと
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Read past messages sent in channels"
 msgstr "各チャンネルで過去に送信されたメッセージを読むことができます"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Read posts and comments in this forum"
+msgstr ""
 
 #: components/app/interface/settings/server/bans/ListBans.tsx
 #: components/modal/modals/BanMember.tsx
@@ -2457,6 +2781,7 @@ msgstr ""
 msgid "Remote Server"
 msgstr ""
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
 #: components/modal/modals/RemoveMember.tsx
 msgid "Remove"
 msgstr ""
@@ -2464,6 +2789,10 @@ msgstr ""
 #: components/app/menus/MessageContextMenu.tsx
 msgid "Remove all reactions"
 msgstr "全てのリアクションを削除"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Remove attachment"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Remove Authenticator"
@@ -2490,6 +2819,11 @@ msgstr "他のメンバーのアバターを変更できます"
 msgid "Remove reaction"
 msgstr "リアクションを削除"
 
+#. placeholder {0}: tag.name
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Remove tag {0}"
+msgstr ""
+
 #: components/app/interface/settings/user/Sessions.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/RenameSession.tsx
@@ -2510,6 +2844,7 @@ msgid "Rep Stoat using Discord rich presence."
 msgstr "Discord Rich Presenceを通じて、Stoatをみんなに伝えよう。"
 
 #: components/app/menus/MessageContextMenu.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
 msgstr "返信"
 
@@ -2533,6 +2868,10 @@ msgstr "サーバーを報告"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Report user"
 msgstr "ユーザーを報告"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Require a tag"
+msgstr ""
 
 #: components/auth/src/flows/FlowResend.tsx
 msgid "Resend"
@@ -2623,6 +2962,8 @@ msgstr ""
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 #: components/modal/modals/CustomStatus.tsx
 #: components/modal/modals/ServerIdentity.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Save"
 msgstr "保存"
 
@@ -2700,6 +3041,10 @@ msgstr ""
 #: components/app/interface/settings/user/Language.tsx
 msgid "Select your language"
 msgstr "言語の選択"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Send"
+msgstr ""
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Send attachments to chat"
@@ -2811,7 +3156,7 @@ msgstr ""
 msgid "Setup recovery codes"
 msgstr ""
 
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Several people are typing…"
 msgstr "複数人が入力中…"
 
@@ -2828,13 +3173,17 @@ msgstr ""
 msgid "Share screen"
 msgstr ""
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show chat"
+msgstr ""
+
 #: components/app/interface/settings/user/Native.tsx
 msgid "Show corrections and suggestions as you type."
 msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Show Others"
-msgstr ""
+#~ msgid "Show Others"
+#~ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Show send message button"
@@ -2852,11 +3201,11 @@ msgstr "登録"
 msgid "Silent"
 msgstr "サイレント"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode Immune"
 msgstr ""
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode is enabled."
 msgstr ""
 
@@ -2934,9 +3283,7 @@ msgid "Stoat Founder"
 msgstr ""
 
 #: components/auth/src/flows/FlowHome.tsx
-msgid ""
-"Stoat is one of the best ways to stay connected with your friends and "
-"community, anywhere, anytime."
+msgid "Stoat is one of the best ways to stay connected with your friends and community, anywhere, anytime."
 msgstr ""
 
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
@@ -2965,6 +3312,10 @@ msgstr ""
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Stream Start"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Strikethrough"
 msgstr ""
 
 #: components/app/interface/settings/user/Feedback.tsx
@@ -3015,6 +3366,15 @@ msgstr "システム"
 msgid "System message channels"
 msgstr ""
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Tags"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Tags let people file a post under a topic and filter the feed by it."
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Tell us what's wrong with this message"
 msgstr ""
@@ -3049,9 +3409,7 @@ msgstr ""
 
 #. placeholder {0}: file.name
 #: src/interface/channels/text/Composition.tsx
-msgid ""
-"The file \"{0}\" ({fileSize}) exceeds the maximum size limit of "
-"{maxSizeFormatted}."
+msgid "The file \"{0}\" ({fileSize}) exceeds the maximum size limit of {maxSizeFormatted}."
 msgstr ""
 
 #: components/i18n/errors.tsx
@@ -3062,10 +3420,17 @@ msgstr ""
 msgid "Theme"
 msgstr "テーマ"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "There is already a tag called {name}."
+msgstr ""
+
+#. placeholder {0}: names.join(", ")
+#: components/modal/modals/CreateForumPost.tsx
+msgid "These files are too large or over the limit: {0}"
+msgstr ""
+
 #: components/i18n/errors.tsx
-msgid ""
-"This account is not activated! Please check your account's inbox and try "
-"again."
+msgid "This account is not activated! Please check your account's inbox and try again."
 msgstr ""
 
 #: components/i18n/errors.tsx
@@ -3081,9 +3446,7 @@ msgid "This channel is marked as mature."
 msgstr ""
 
 #: src/interface/channels/AgeGate.tsx
-msgid ""
-"This channel is not available in your region while we review options on "
-"legal compliance."
+msgid "This channel is not available in your region while we review options on legal compliance."
 msgstr ""
 
 #: src/interface/channels/AgeGate.tsx
@@ -3128,9 +3491,11 @@ msgid "This message is empty and has not been sent."
 msgstr ""
 
 #: components/i18n/errors.tsx
-msgid ""
-"This password has previously appeared in security leaks, please use another "
-"password."
+msgid "This password has previously appeared in security leaks, please use another password."
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "This post is locked. No new comments."
 msgstr ""
 
 #: components/app/interface/settings/server/Overview.tsx
@@ -3158,9 +3523,7 @@ msgid "This username is not allowed."
 msgstr ""
 
 #: components/modal/modals/ResetBotToken.tsx
-msgid ""
-"This will invalidate the current token and stop any existing instances of "
-"the bot from running."
+msgid "This will invalidate the current token and stop any existing instances of the bot from running."
 msgstr ""
 
 #: components/app/interface/settings/user/Language.tsx
@@ -3170,6 +3533,10 @@ msgstr ""
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Timeout Members"
 msgstr "メンバーをタイムアウト"
+
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Title"
+msgstr ""
 
 #: src/interface/common/CommonHeader.tsx
 msgid "Toggle main sidebar"
@@ -3181,6 +3548,11 @@ msgstr ""
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Tonal Spot"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Top"
 msgstr ""
 
 #: components/app/interface/settings/user/Language.tsx
@@ -3218,6 +3590,10 @@ msgstr ""
 msgid "Unknown Server"
 msgstr ""
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Unlock"
+msgstr ""
+
 #: components/modal/modals/ChannelToggleMature.tsx
 msgid "Unmark as mature"
 msgstr ""
@@ -3239,12 +3615,21 @@ msgstr ""
 msgid "Unmute Channel"
 msgstr ""
 
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Unmute screen audio"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 msgid "Unmute Server"
 msgstr ""
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Unpin"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Unpin all"
 msgstr ""
 
 #: components/app/menus/MessageContextMenu.tsx
@@ -3271,6 +3656,15 @@ msgstr "ファイルのアップロード"
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Upload to Gifbox"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Uploading…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Upvote"
 msgstr ""
 
 #: components/modal/modals/JoinServer.tsx
@@ -3327,7 +3721,8 @@ msgid "User's profile has inappropriate content"
 msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
-#: components/auth/src/flows/Form.tsx components/modal/modals/AddFriend.tsx
+#: components/auth/src/flows/Form.tsx
+#: components/modal/modals/AddFriend.tsx
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/EditBotUsername.tsx
 #: components/modal/modals/EditUsername.tsx
@@ -3348,9 +3743,7 @@ msgid "Users will be asked to confirm their age before opening this channel."
 msgstr ""
 
 #: components/modal/modals/ChannelToggleMature.tsx
-msgid ""
-"Users will no longer be asked to confirm their age before joining this "
-"channel.<0/> Please ensure the content is appropriate for all ages."
+msgid "Users will no longer be asked to confirm their age before joining this channel.<0/> Please ensure the content is appropriate for all ages."
 msgstr ""
 
 #: src/interface/navigation/channels/ServerSidebar.tsx
@@ -3381,6 +3774,9 @@ msgstr "現在進行中のバグレポートはこちら。"
 #: src/interface/channels/ChannelHeader.tsx
 msgid "View members"
 msgstr "メンバーを表示"
+
+#~ msgid "View older updates"
+#~ msgstr "過去のアップデートを見る"
 
 #: src/interface/channels/ChannelHeader.tsx
 msgid "View pinned messages"
@@ -3428,9 +3824,7 @@ msgid "We are working hard on optimising our web app for mobile."
 msgstr ""
 
 #: components/auth/src/flows/FlowCheck.tsx
-msgid ""
-"We've sent you a verification email. Please allow up to 10 minutes for it to "
-"arrive."
+msgid "We've sent you a verification email. Please allow up to 10 minutes for it to arrive."
 msgstr "確認メールを送信しました。 到着まで最大 10 分ほどお待ちください。"
 
 #: components/app/interface/channels/text/Message.tsx
@@ -3449,6 +3843,9 @@ msgstr "ウェブフックの名前"
 #: components/app/interface/settings/ChannelSettings.tsx
 msgid "Webhooks"
 msgstr "ウェブフック"
+
+#~ msgid "Welcome to"
+#~ msgstr "ようこそ"
 
 #: components/auth/src/flows/FlowLogin.tsx
 msgid "Welcome!"
@@ -3489,6 +3886,23 @@ msgstr ""
 msgid "Would you like to create a new server or join an existing one?"
 msgstr ""
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Write"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a reply"
+msgstr ""
+
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Write your post…"
+msgstr ""
+
 #: components/app/interface/settings/user/bots/MyBots.tsx
 msgid "You agree that your bot is subject to the Acceptable Usage Policy."
 msgstr ""
@@ -3513,11 +3927,15 @@ msgstr ""
 msgid "You can also click the gear icon in the bottom left."
 msgstr ""
 
+#~ msgid "You can also right-click the user icon in the top left, or left click it if you're already home."
+#~ msgstr "左上のユーザーアイコンを右クリックするか、すでにホームにいる場合は左クリックしてください。"
+
 #: components/modal/modals/DeleteChannel.tsx
 msgid "You can re-open it later, but it will disappear on both sides."
 msgstr "また開き直すことは可能ですが、両者ともに消えてしまいます。"
 
-#: components/app/interface/settings/user/Feedback.tsx src/interface/Home.tsx
+#: components/app/interface/settings/user/Feedback.tsx
+#: src/interface/Home.tsx
 msgid "You can report issues and discuss improvements with us directly here."
 msgstr "こちらで直接、問題の報告や改善点の相談ができます。"
 
@@ -3574,9 +3992,7 @@ msgid "You don't have permission to send messages in this channel."
 msgstr "このチャンネルでメッセージを送信する権限がありません。"
 
 #: components/i18n/errors.tsx
-msgid ""
-"You have been locked out for entering a wrong password multiple times. "
-"Please wait a couple minutes and try again."
+msgid "You have been locked out for entering a wrong password multiple times. Please wait a couple minutes and try again."
 msgstr ""
 
 #: components/i18n/errors.tsx
@@ -3600,12 +4016,8 @@ msgid "You will not receive any notifications"
 msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
-msgid ""
-"You won't be able to access your account unless you contact support - "
-"however, your data will not be deleted."
-msgstr ""
-"サポートに連絡しない限り、アカウントにアクセスすることはできません。ただし、"
-"データは削除されません。"
+msgid "You won't be able to access your account unless you contact support - however, your data will not be deleted."
+msgstr "サポートに連絡しない限り、アカウントにアクセスすることはできません。ただし、データは削除されません。"
 
 #: components/modal/modals/DeleteChannel.tsx
 #: components/modal/modals/LeaveServer.tsx
@@ -3616,7 +4028,8 @@ msgstr "再招待されない限り、参加することはできません。"
 msgid "You're already part of this group."
 msgstr ""
 
-#: components/i18n/errors.tsx components/modal/modals/Invite.tsx
+#: components/i18n/errors.tsx
+#: components/modal/modals/Invite.tsx
 msgid "You're already part of this server."
 msgstr ""
 
@@ -3642,10 +4055,7 @@ msgid "You've sent too many friend requests, the maximum is {0}"
 msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
-msgid ""
-"Your account and all of your data (including your messages and friends list) "
-"will be queued for deletion. A confirmation email will be sent - you can "
-"cancel this within 7 days by contacting support."
+msgid "Your account and all of your data (including your messages and friends list) will be queued for deletion. A confirmation email will be sent - you can cancel this within 7 days by contacting support."
 msgstr ""
 
 #: components/auth/src/flows/FlowVerify.tsx
@@ -3669,35 +4079,5 @@ msgid "Your role ranking is too low to take this action."
 msgstr ""
 
 #: components/i18n/errors.tsx
-msgid ""
-"Your user has already been created? Try logging in again or refreshing the "
-"app."
+msgid "Your user has already been created? Try logging in again or refreshing the app."
 msgstr ""
-
-#~ msgid "Affects all roles and users"
-#~ msgstr "全てのロールとユーザーに影響します"
-
-#~ msgid "Create a group"
-#~ msgstr "グループの作成"
-
-#~ msgid "Create a new role"
-#~ msgstr "新しくロールを作成する"
-
-#~ msgid "Default Permissions"
-#~ msgstr "デフォルトの権限"
-
-#~ msgid "Go to the testers server"
-#~ msgstr "テスターサーバーに移動する"
-
-#~ msgid "View older updates"
-#~ msgstr "過去のアップデートを見る"
-
-#~ msgid "Welcome to"
-#~ msgstr "ようこそ"
-
-#~ msgid ""
-#~ "You can also right-click the user icon in the top left, or left click it "
-#~ "if you're already home."
-#~ msgstr ""
-#~ "左上のユーザーアイコンを右クリックするか、すでにホームにいる場合は左クリッ"
-#~ "クしてください。"

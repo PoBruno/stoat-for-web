@@ -162,7 +162,7 @@ export function ChannelPermissionsEditor(props: Props) {
     key: string;
     value: bigint;
     title: string;
-    description: Partial<Record<Context | "Any", string>>;
+    description: Partial<Record<Context | "Any", string | null>>;
   }[] = [
     {
       heading: t`Admin`,
@@ -189,6 +189,7 @@ export function ChannelPermissionsEditor(props: Props) {
       description: {
         Group: t`Whether other users can edit these settings`,
         TextChannel: t`Edit channel-specific role and default permissions`,
+        ForumChannel: t`Edit channel-specific role and default permissions`,
         Server: t`Edit any permissions on the server`,
       },
     },
@@ -280,6 +281,7 @@ export function ChannelPermissionsEditor(props: Props) {
       title: t`View Channel`,
       description: {
         TextChannel: t`Able to access this channel`,
+        ForumChannel: t`Able to access this forum`,
         Server: t`Able to access channels on this server`,
       },
     },
@@ -289,6 +291,7 @@ export function ChannelPermissionsEditor(props: Props) {
       title: t`Read Message History`,
       description: {
         TextChannel: t`Read past messages sent in channel`,
+        ForumChannel: t`Read posts and comments in this forum`,
         Server: t`Read past messages sent in channels`,
       },
     },
@@ -299,6 +302,7 @@ export function ChannelPermissionsEditor(props: Props) {
       description: {
         Group: t`Send messages in channel`,
         TextChannel: t`Send messages in channel`,
+        ForumChannel: t`Create posts and comments in this forum`,
         Server: t`Send messages in channels`,
       },
     },
@@ -309,6 +313,7 @@ export function ChannelPermissionsEditor(props: Props) {
       description: {
         Group: t`Delete and pin messages sent by other members`,
         TextChannel: t`Delete and pin messages sent by other members`,
+        ForumChannel: t`Moderate the forum: delete, pin and lock posts by other members`,
         Server: t`Delete and pin messages sent by other members`,
       },
     },
@@ -345,6 +350,7 @@ export function ChannelPermissionsEditor(props: Props) {
       value: 2n ** 27n,
       title: t`Upload Files`,
       description: {
+        ForumChannel: t`Attach files to posts and comments`,
         Any: t`Send attachments to chat`,
       },
     },
@@ -353,6 +359,8 @@ export function ChannelPermissionsEditor(props: Props) {
       value: 2n ** 28n,
       title: t`Masquerade`,
       description: {
+        // Posts carry no masquerade field.
+        ForumChannel: null,
         Any: t`Allow members to change name and avatar per-message`,
       },
     },
@@ -361,6 +369,8 @@ export function ChannelPermissionsEditor(props: Props) {
       value: 2n ** 29n,
       title: t`React`,
       description: {
+        // Posts use upvotes, not reactions.
+        ForumChannel: null,
         Any: t`React to messages with emoji`,
       },
     },
@@ -444,6 +454,8 @@ export function ChannelPermissionsEditor(props: Props) {
       value: 2n ** 37n,
       title: t`Mention Everyone`,
       description: {
+        // forum_post_create does not parse mentions yet.
+        ForumChannel: null,
         Any: t`Mention everyone and online members inside the server`,
       },
     },
@@ -452,6 +464,7 @@ export function ChannelPermissionsEditor(props: Props) {
       value: 2n ** 38n,
       title: t`Mention Roles`,
       description: {
+        ForumChannel: null,
         Any: t`Mention specific roles`,
       },
     },
@@ -460,12 +473,16 @@ export function ChannelPermissionsEditor(props: Props) {
   /**
    * Find description for this permission in context
    * If null, don't show this permission entry
+   *
+   * An explicit `null` for a context hides the entry even when `Any` is set;
+   * this is how permissions that make no sense for a channel type opt out.
    * @param entry Entry
    * @returns Description or null
    */
   function description(entry: (typeof Permissions)[number]) {
     const desc = entry.description;
-    return desc[context] ?? desc.Any;
+    const specific = desc[context];
+    return specific !== undefined ? specific : desc.Any;
   }
 
   return (

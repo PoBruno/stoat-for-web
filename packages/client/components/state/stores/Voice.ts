@@ -14,18 +14,55 @@ const NoiseSuppresionStates: NoiseSuppresionState[] = [
 ];
 
 /**
- * Possible screen share qualities. Low is 720p@30fps, high 1080p@30fps and text is source@5fps.
+ * Possible screen share qualities.
+ *
+ * `text` is the source resolution at 5fps, meant for reading code/documents.
+ * The rest are explicit resolution/framerate combinations.
+ *
+ * `low`/`high` are kept under their original names so preferences saved by
+ * older builds keep working.
  */
-export type ScreenShareQualityName = "low" | "high" | "text";
+export type ScreenShareQualityName =
+  | "low" // 720p 30FPS
+  | "hd60" // 720p 60FPS
+  | "high" // 1080p 30FPS
+  | "fhd60" // 1080p 60FPS
+  | "text"; // source 5FPS
 
 /**
  * Array of available screen share quality names.
  */
 export const ScreenShareQualityNames: ScreenShareQualityName[] = [
   "low",
+  "hd60",
   "high",
+  "fhd60",
   "text",
 ];
+
+/**
+ * How the pinned tiles are laid out on the stage.
+ *
+ * - `auto`      pick columns/rows from the tile count and container shape
+ * - `columns`   side by side
+ * - `rows`      stacked on top of each other
+ * - `grid`      square-ish grid
+ * - `primary`   first pin large, the remaining pins in a side column
+ */
+export type CallArrangement = "auto" | "columns" | "rows" | "grid" | "primary";
+
+export const CallArrangements: CallArrangement[] = [
+  "auto",
+  "columns",
+  "rows",
+  "grid",
+  "primary",
+];
+
+/** Where the non-pinned tiles live */
+export type CallFilmstrip = "bottom" | "side" | "hidden";
+
+export const CallFilmstrips: CallFilmstrip[] = ["bottom", "side", "hidden"];
 
 export interface TypeVoice {
   preferredAudioInputDevice?: string;
@@ -44,6 +81,20 @@ export interface TypeVoice {
   outputVolume: number;
   deafen: boolean;
   micOn: boolean;
+
+  /**
+   * Whether to keep the text chat visible underneath an active call.
+   *
+   * When false (the default) the call card expands to fill the entire channel
+   * body, giving all vertical space to participants and screen shares.
+   */
+  showCallChat: boolean;
+
+  /** How the pinned ("stage") tiles are arranged */
+  callArrangement: CallArrangement;
+
+  /** Where the tiles that are not pinned are shown */
+  callFilmstrip: CallFilmstrip;
 
   userVolumes: Record<string, number>;
   userMutes: Record<string, boolean>;
@@ -86,6 +137,9 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
       outputVolume: 1.0,
       deafen: false,
       micOn: true,
+      showCallChat: false,
+      callArrangement: "auto",
+      callFilmstrip: "bottom",
       userVolumes: {},
       userMutes: {},
       screenShareVolumes: {},
@@ -144,6 +198,21 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
     if (typeof input.screenShareAudio === "boolean") {
       data.screenShareAudio = input.screenShareAudio;
+    }
+
+    if (typeof input.showCallChat === "boolean") {
+      data.showCallChat = input.showCallChat;
+    }
+
+    if (
+      input.callArrangement &&
+      CallArrangements.includes(input.callArrangement)
+    ) {
+      data.callArrangement = input.callArrangement;
+    }
+
+    if (input.callFilmstrip && CallFilmstrips.includes(input.callFilmstrip)) {
+      data.callFilmstrip = input.callFilmstrip;
     }
 
     if (typeof input.inputVolume === "number") {
@@ -451,5 +520,48 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
    */
   get micOn(): boolean {
     return this.get().micOn;
+  }
+
+  /**
+   * Whether the text chat stays visible underneath an active call
+   */
+  get showCallChat(): boolean {
+    return this.get().showCallChat;
+  }
+
+  /**
+   * Show or hide the text chat underneath an active call
+   */
+  set showCallChat(value: boolean) {
+    this.set("showCallChat", value);
+  }
+
+  /**
+   * Toggle the text chat underneath an active call
+   */
+  toggleCallChat() {
+    this.set("showCallChat", !this.get().showCallChat);
+  }
+
+  /**
+   * How the pinned tiles are arranged on the stage
+   */
+  get callArrangement(): CallArrangement {
+    return this.get().callArrangement;
+  }
+
+  set callArrangement(value: CallArrangement) {
+    this.set("callArrangement", value);
+  }
+
+  /**
+   * Where the non-pinned tiles are shown
+   */
+  get callFilmstrip(): CallFilmstrip {
+    return this.get().callFilmstrip;
+  }
+
+  set callFilmstrip(value: CallFilmstrip) {
+    this.set("callFilmstrip", value);
   }
 }

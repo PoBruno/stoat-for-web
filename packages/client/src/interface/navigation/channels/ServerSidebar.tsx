@@ -499,6 +499,14 @@ function Entry(
         icon={
           <>
             <Switch fallback={<Symbol>grid_3x3</Symbol>}>
+              <Match when={props.channel.type === "ForumChannel"}>
+                {/*
+                  Mesmo simbolo da aba "Forum" nas configuracoes do canal
+                  (ChannelSettings.tsx), para o canal ser reconhecido pelo
+                  mesmo icone na sidebar, no header e nos ajustes.
+                */}
+                <Symbol>forum</Symbol>
+              </Match>
               <Match when={props.channel.isVoice}>
                 <Symbol
                   color={inCall() ? "var(--md-sys-color-primary)" : undefined}

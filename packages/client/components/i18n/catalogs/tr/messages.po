@@ -42,12 +42,50 @@ msgstr "dddd [saat] LT"
 msgid "(changes are being saved…)"
 msgstr "(değişiklikler kaydediliyor…)"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "(edited)"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "[comment deleted]"
+msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {no comments} one {# comment} other {# comments}}"
+#~ msgstr ""
+
+#. placeholder {0}: loaded().commentCount
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, =0 {sem comentários} one {# comentário} other {# comentários}}"
+#~ msgstr ""
+
 #. placeholder {0}: props.count
 #: components/ui/components/features/messaging/elements/BlockedMessage.tsx
 msgid "{0, plural, one {# blocked message} other {# blocked messages}}"
 msgstr "{0, plural, one {# engellenen mesaj} other {# engellenen mesajlar}}"
 
+#. placeholder {0}: post.commentCount
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "{0, plural, one {# comment} other {# comments}}"
+#~ msgstr ""
+
 #~ msgid "{0, plural, one {# Member} other {# Members}}"
+#~ msgstr ""
+
+#. placeholder {0}: participants().length
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# participant} other {# participants}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "{0, plural, one {# view} other {# views}}"
+msgstr ""
+
+#. placeholder {0}: loaded().views
+#: src/interface/channels/forum/ForumPostView.tsx
+#~ msgid "{0, plural, one {# visualização} other {# visualizações}}"
 #~ msgstr ""
 
 #. placeholder {0}: items().length
@@ -57,7 +95,7 @@ msgstr "{0, plural, one {Bir Dosya Bırak} other {Dosya # Bırak}}"
 
 #. placeholder {0}: users() .slice(0, -1) .map((user) => user!.username) .join(", ")
 #. placeholder {1}: users().slice(-1)[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} and {1} are typing…"
 msgstr "{0} ve {1} yazıyor…"
 
@@ -82,7 +120,7 @@ msgid "{0} files exceed the maximum size limit of {maxSizeFormatted} and were no
 msgstr "{0} dosya, {maxSizeFormatted} olan maksimum boyut sınırını aştığı için yüklenemedi."
 
 #. placeholder {0}: users()[0]!.username
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "{0} is typing…"
 msgstr "{0} yazıyor…"
 
@@ -300,6 +338,10 @@ msgid "Able to access this channel"
 msgstr "Bu kanala erişebilme"
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Able to access this forum"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Able to speak in voice call"
 msgstr "Sesli aramalarda konuşabilme"
 
@@ -318,6 +360,10 @@ msgstr "Arkadaş isteğini kabul et"
 #: components/modal/modals/PolicyChange.tsx
 msgid "Acknowledge"
 msgstr "Kabul et"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Active"
+msgstr ""
 
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/AddMembersToGroup.tsx
@@ -350,6 +396,10 @@ msgstr "Gruba yeni üye ekle"
 msgid "Add status text"
 msgstr "Durum metni ekle"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Add tag"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "Yönetici"
@@ -368,6 +418,7 @@ msgstr "Gelişmiş"
 #~ msgid "Affects all roles and users"
 #~ msgstr "Tüm rol ve kullanıcıları etkiler"
 
+#: src/interface/channels/forum/ForumChannel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "Tümü"
@@ -457,6 +508,18 @@ msgstr "Daha düşük yetkideki rolleri, düşük yetkileri olan üyelere verebi
 msgid "Assign Roles"
 msgstr "Rolleri Atayabilme"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Attach files"
+msgstr ""
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Attach files to posts and comments"
+msgstr ""
+
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Audio disabled by browser"
 msgstr "Tarayıcı tarafından ses devre dışı bırakıldı"
@@ -482,6 +545,10 @@ msgstr "Profil Resmi"
 #: src/interface/channels/AgeGate.tsx
 msgid "Back"
 msgstr "Geri"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Back to forum"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Badges"
@@ -528,6 +595,10 @@ msgstr "Afiş"
 msgid "Bans"
 msgstr "Yasaklananlar"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Be the first to write one."
+msgstr ""
+
 #: components/app/menus/UserContextMenu.tsx
 msgid "Block user"
 msgstr "Kullanıcıyı engelle"
@@ -539,6 +610,14 @@ msgstr "Engellendi"
 #: components/ui/components/features/messaging/elements/MessageReply.tsx
 msgid "Blocked User"
 msgstr "Engellenen Kullanıcı"
+
+#: components/modal/modals/CreateForumPost.tsx
+#~ msgid "Body"
+#~ msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bold"
+msgstr ""
 
 #: components/app/interface/channels/text/Message.tsx
 msgid "Bot"
@@ -558,6 +637,10 @@ msgstr "Tarayıcı Yankı Önleme"
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Bug Tracker"
 msgstr "Hata İzleyici"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Bulleted list"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileStatus.tsx
 #: src/interface/channels/text/MemberSidebar.tsx
@@ -611,6 +694,8 @@ msgstr "Mükemmel bir GİF bulamıyor musunuz? GifBox'a gidin ve kendinizinkini 
 #: components/modal/modals/ScreenShareSettings.tsx
 #: components/modal/modals/ServerIdentity.tsx
 #: components/modal/modals/SignOutSessions.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Cancel"
 msgstr "İptal et"
 
@@ -769,6 +854,7 @@ msgstr "İstemci Ayarları"
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
+#: components/modal/modals/CreateForumPost.tsx
 #: components/modal/modals/CreateGroup.tsx
 #: components/modal/modals/CreateRole.tsx
 #: components/modal/modals/CreateServer.tsx
@@ -800,12 +886,38 @@ msgid "Close conversation with {0}?"
 msgstr "{0} ile olan konuşmayı kapat?"
 
 #: components/modal/modals/JoinServer.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Code"
 msgstr "Kod"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Code block"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Collapse post"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Coming soon! 👀"
 msgstr "Çok yakında geliyor! 👀"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comment actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Comments"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Configure a way to get back into your account in case your 2FA is lost"
@@ -1025,6 +1137,10 @@ msgstr "Davet Oluştur"
 msgid "Create invites for others to use"
 msgstr "Başkalarının kullanması için davet oluştur"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Create posts and comments in this forum"
+msgstr ""
+
 #: components/modal/modals/CreateRole.tsx
 msgid "Create Role"
 msgstr "Rol Oluştur"
@@ -1106,6 +1222,10 @@ msgstr "Varsayılan"
 #~ msgid "Default Permissions"
 #~ msgstr "Varsayılan İzinler"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Default sorting"
+msgstr ""
+
 #~ msgid "Defean"
 #~ msgstr ""
 
@@ -1121,6 +1241,8 @@ msgstr "Performans Düşüşü"
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
 #: components/modal/modals/EmojiPreview.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Delete"
 msgstr "Sil"
 
@@ -1278,6 +1400,11 @@ msgstr "Bitti"
 msgid "Drugs or illegal goods"
 msgstr "Uyuşturucu veya yasadışı ürün"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit"
+msgstr ""
+
 #. placeholder {0}: props.member.displayName
 #: components/modal/modals/UserProfileRoles.tsx
 msgid "Edit {0}'s roles"
@@ -1294,6 +1421,10 @@ msgstr "Sunucudaki izinleri düzenleyebilme"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Edit channel-specific role and default permissions"
 msgstr "Kanala ait rol ve varsayılan izinleri düzenleyebilme"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Edit comment"
+msgstr ""
 
 #: components/app/interface/settings/user/profile/EditProfile.tsx
 msgid "Edit Global Profile"
@@ -1341,6 +1472,10 @@ msgstr "Şu tarihten itibaren geçerli <0/> (<1/>)"
 #: components/modal/modals/EditEmail.tsx
 msgid "Email"
 msgstr "E-posta"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Emoji"
+msgstr ""
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
 msgid "Emoji Name"
@@ -1422,12 +1557,24 @@ msgstr "Davet kodunuzu girin"
 msgid "Enter your preferred username."
 msgstr "Kullanmayı istediğiniz kullanıcı adınızı girin."
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Every new post must carry at least one tag."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 #: components/app/interface/settings/ChannelSettings.tsx
 #: components/app/interface/settings/server/roles/ServerRoleOverview.tsx
 #: components/app/interface/settings/ServerSettings.tsx
 msgid "Everyone"
 msgstr "Herkes"
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Expand post"
+msgstr ""
 
 #: components/modal/modals/LinkWarning.tsx
 msgid "External links can be dangerous!"
@@ -1486,6 +1633,14 @@ msgstr "Bir toplu<0/>luk bulun, <1/> ve dünyaya bağlanın."
 msgid "Focus"
 msgstr "Odaklanmış"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Follow"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Following"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 1 hour"
@@ -1510,6 +1665,14 @@ msgstr "3 saat boyunca"
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "For 8 hours"
 msgstr "8 saat boyunca"
+
+#: components/app/interface/settings/ChannelSettings.tsx
+msgid "Forum"
+msgstr ""
+
+#: components/modal/modals/CreateChannel.tsx
+msgid "Forum Channel"
+msgstr ""
 
 #: src/interface/Friends.tsx
 #: src/interface/navigation/channels/HomeSidebar.tsx
@@ -1622,6 +1785,10 @@ msgstr "Taciz veya siber zorbalık"
 msgid "Hardware Acceleration"
 msgstr "Donanımsal Hızlandırma"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Heading {level}"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Hear other people and see their video"
 msgstr "Başkalarını duyabilme ve videolarını görebilme"
@@ -1644,8 +1811,12 @@ msgid "Here is your new invite code: <0>{0}</0>"
 msgstr "İşte yeni davet kodun: <0>{0}</0>"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Hide Others"
-msgstr "Diyerlerini Gizle"
+msgid "Hide chat"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#~ msgid "Hide Others"
+#~ msgstr "Diyerlerini Gizle"
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "High Contrast"
@@ -1659,6 +1830,14 @@ msgstr "Rolü ayrı göster"
 #: src/interface/navigation/channels/HomeSidebar.tsx
 msgid "Home"
 msgstr "Ana Sayfa"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Hot"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "How the feed is ordered when someone opens this forum."
+msgstr ""
 
 #: src/interface/channels/AgeGate.tsx
 msgid "I confirm that I am at least 18 years old."
@@ -1697,6 +1876,10 @@ msgstr "Bu arada, Android için tasarlanmış daha hızlı ve sorunsuz bir deney
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Input Volume"
 msgstr "Giriş Sesi"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Insert image"
+msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
 msgid "Instead of closing, Stoat will hide in your tray."
@@ -1750,6 +1933,10 @@ msgstr "alakasız mizah rozeti 2"
 #: components/app/interface/settings/user/Language.tsx
 msgid "ISO Standard (YYYY-MM-DD)"
 msgstr "ISO Standartı (YYYY-AA-GG)"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Italic"
+msgstr ""
 
 #: components/modal/modals/Invite.tsx
 #: components/modal/modals/JoinServer.tsx
@@ -1827,6 +2014,26 @@ msgstr "En Son"
 msgid "Launch Stoat when you log into your computer."
 msgstr "Bilgisayarınıza giriş yaptığınızda Stoat'ı başlatın."
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: automatic"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: grid"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: one large"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: side by side"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Layout: stacked"
+msgstr ""
+
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Learn more"
 msgstr "Daha fazla bilgi edin"
@@ -1868,6 +2075,10 @@ msgstr "Bize uygulamamızı nasıl geliştirebileceğimiz hakkında geri bildiri
 msgid "Light"
 msgstr "Aydınlık"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Link"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "Diğer kullanıcıları duyabilme"
@@ -1876,6 +2087,27 @@ msgstr "Diğer kullanıcıları duyabilme"
 #: components/ui/components/features/messaging/elements/TextFile.tsx
 msgid "Load file ({0})"
 msgstr "({0}) adlı dosyayı yükle"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Loading comments…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Loading post…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "Loading posts…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Lock"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Locked"
+msgstr ""
 
 #: components/auth/src/flows/FlowHome.tsx
 msgid "Log In"
@@ -1978,7 +2210,7 @@ msgid "Members"
 msgstr "Üyeler"
 
 #. placeholder {0}: slowmodeWaitTime()
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Members can send one message every {0}."
 msgstr "Üyeler her {0}'da bir mesaj gönderebilir."
 
@@ -2061,6 +2293,10 @@ msgstr "Simge Durumuna Küçült"
 msgid "Missing permission"
 msgstr "Kayıp İzinler"
 
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Moderate the forum: delete, pin and lock posts by other members"
+msgstr ""
+
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Monochrome"
 msgstr "Tek renk"
@@ -2102,6 +2338,10 @@ msgstr "Düşük yetkideki üyeleri aramalarda susturabilme"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Mute Members"
 msgstr "Üyeleri Susturabilme"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Mute screen audio"
+msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Mute Screen Share"
@@ -2146,6 +2386,10 @@ msgstr "İsim"
 msgid "Neutral"
 msgstr "Sade"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New"
+msgstr ""
+
 #: components/ui/components/features/messaging/elements/MessageDivider.tsx
 msgid "NEW"
 msgstr "YENİ"
@@ -2164,6 +2408,15 @@ msgstr "Yeni ad"
 msgid "New Password"
 msgstr "Yeni Şifre"
 
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "New post"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "New tag name"
+msgstr ""
+
 #: components/app/interface/channels/text/Message.tsx
 msgid "New to Stoat"
 msgstr "Stoat'ta Yeni"
@@ -2172,9 +2425,21 @@ msgstr "Stoat'ta Yeni"
 msgid "New to the server"
 msgstr "Sunucuda Yeni"
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Newest"
+msgstr ""
+
 #: components/modal/modals/ServerIdentity.tsx
 msgid "Nickname"
 msgstr "Kullanıcı Adı"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "No audio shared"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "No comments yet."
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "No GIFs found"
@@ -2184,9 +2449,21 @@ msgstr "Hiç GİF bulunamadı"
 msgid "No permissions set yet"
 msgstr "Henüz bir izin ayarlanmadı"
 
+#: src/interface/channels/forum/ForumChannel.tsx
+msgid "No posts yet"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#~ msgid "No posts yet. Be the first to write one."
+#~ msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "No role overrides have been configured."
 msgstr "Hiçbir rol istisnası yapılandırılmadı."
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "No tags yet."
+msgstr ""
 
 #: src/interface/Friends.tsx
 msgid "Nobody here right now!"
@@ -2205,11 +2482,19 @@ msgstr "Normal"
 msgid "Not of minimum age to use the platform"
 msgstr "Bu platformu kullanmak için gereken yaşta değil"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Nothing to preview yet."
+msgstr ""
+
 #: components/app/interface/settings/UserSettings.tsx
 #: components/app/menus/ServerContextMenu.tsx
 #: components/app/menus/shared/NotificationContextMenu.tsx
 msgid "Notifications"
 msgstr "Bildirimler"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Numbered list"
+msgstr ""
 
 #: components/ui/components/features/messaging/composition/MessageReplyPreview.tsx
 msgid "Off"
@@ -2236,6 +2521,7 @@ msgstr "Çevrim dışı"
 msgid "OK"
 msgstr "Tamam"
 
+#: src/interface/channels/forum/ForumThread.tsx
 #: src/interface/channels/text/TextSearchSidebar.tsx
 msgid "Oldest"
 msgstr "En Eski"
@@ -2305,6 +2591,18 @@ msgstr "Ayarları aç"
 msgid "Other"
 msgstr "Diğer"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: hidden"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Others: side"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Output Volume"
 msgstr "Çıkış Ses Düzeyi"
@@ -2361,6 +2659,7 @@ msgid "Pick a username that you want people to be able to find you by. This can 
 msgstr "İnsanların seni rahatlıkla bulmasını istediğin bir kullanıcı adı seç. Bu daha sonra ayarlarından değiştirilebilir."
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Pin"
 msgstr "Sabitle"
 
@@ -2368,6 +2667,11 @@ msgstr "Sabitle"
 #: components/modal/modals/PinMessage.tsx
 msgid "Pin message"
 msgstr "Mesajı sabitle"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Pinned"
+msgstr ""
 
 #: components/ui/components/features/profiles/ProfileBadges.tsx
 msgid "Platform Moderator"
@@ -2405,11 +2709,20 @@ msgstr "Lütfen isteğinizi doğrulamak için bir yöntem seçin."
 msgid "Please select a reason"
 msgstr "Lütfen bir sebep seçin"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post actions"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Post not found."
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Powered by RNNoise"
 msgstr "RNNoise Tarafından desteklenmektedir"
 
 #: components/app/interface/settings/server/roles/ServerRoleEditor.tsx
+#: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Preview"
 msgstr "Önizleme"
 
@@ -2447,6 +2760,14 @@ msgstr "Zamirlerin"
 msgid "Provided email or password is wrong."
 msgstr "Girilen e-mail veya şifre yanlış."
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Publish"
+msgstr ""
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Quote"
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Raid or spam attack"
 msgstr "Baskın veya spam saldırısı"
@@ -2474,6 +2795,10 @@ msgstr "Kanal geçmişindeki mesajları okuyabilme"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Read past messages sent in channels"
 msgstr "Kanalların geçmişindeki mesajları okuyabilme"
+
+#: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
+msgid "Read posts and comments in this forum"
+msgstr ""
 
 #: components/app/interface/settings/server/bans/ListBans.tsx
 #: components/modal/modals/BanMember.tsx
@@ -2537,6 +2862,7 @@ msgstr "Dış Kanal"
 msgid "Remote Server"
 msgstr "Uzak Sunucu"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
 #: components/modal/modals/RemoveMember.tsx
 msgid "Remove"
 msgstr "Kaldır"
@@ -2544,6 +2870,10 @@ msgstr "Kaldır"
 #: components/app/menus/MessageContextMenu.tsx
 msgid "Remove all reactions"
 msgstr "Tüm tepkileri kaldır"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Remove attachment"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 msgid "Remove Authenticator"
@@ -2570,6 +2900,11 @@ msgstr "Diğer kullanıcıların profil resmini kaldırabilme"
 msgid "Remove reaction"
 msgstr "Tepkiyi kaldır"
 
+#. placeholder {0}: tag.name
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Remove tag {0}"
+msgstr ""
+
 #: components/app/interface/settings/user/Sessions.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/RenameSession.tsx
@@ -2590,6 +2925,7 @@ msgid "Rep Stoat using Discord rich presence."
 msgstr "Stoat'ı Discord RPC kullanarak temsil et."
 
 #: components/app/menus/MessageContextMenu.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
 msgstr "Yanıtla"
 
@@ -2613,6 +2949,10 @@ msgstr "Sunucuyu bildir"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Report user"
 msgstr "Kullanıcıyı bildir"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Require a tag"
+msgstr ""
 
 #: components/auth/src/flows/FlowResend.tsx
 msgid "Resend"
@@ -2706,6 +3046,8 @@ msgstr ""
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 #: components/modal/modals/CustomStatus.tsx
 #: components/modal/modals/ServerIdentity.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+#: src/interface/channels/forum/ForumThread.tsx
 msgid "Save"
 msgstr "Kaydet"
 
@@ -2786,6 +3128,10 @@ msgstr "Kamera Girişini seçin"
 #: components/app/interface/settings/user/Language.tsx
 msgid "Select your language"
 msgstr "Dilinizi seçin"
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Send"
+msgstr ""
 
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Send attachments to chat"
@@ -2897,7 +3243,7 @@ msgstr "Tek kullanımlık şifre doğrulaması ayarla"
 msgid "Setup recovery codes"
 msgstr "Kurtarma kodu ayarla"
 
-#: components/ui/components/features/messaging/composition/TypingIndicator.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Several people are typing…"
 msgstr "Birkaç kişi yazıyor…"
 
@@ -2915,13 +3261,17 @@ msgstr "Sesli aramalarda ekran veya kamera paylaşabilme"
 msgid "Share screen"
 msgstr "Ekran paylaş"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show chat"
+msgstr ""
+
 #: components/app/interface/settings/user/Native.tsx
 msgid "Show corrections and suggestions as you type."
 msgstr "Yazarken düzeltme ve önermeleri göster."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Show Others"
-msgstr "Diğerlerine göster"
+#~ msgid "Show Others"
+#~ msgstr "Diğerlerine göster"
 
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Show send message button"
@@ -2939,11 +3289,11 @@ msgstr "Kaydol"
 msgid "Silent"
 msgstr "Sessiz"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode Immune"
 msgstr "Yavaş mod bağışıklığı"
 
-#: src/interface/channels/text/Composition.tsx
+#: src/interface/channels/text/CompositionInfo.tsx
 msgid "Slowmode is enabled."
 msgstr "Yavaş mod aktif."
 
@@ -3058,6 +3408,10 @@ msgstr "Yayın bitti"
 msgid "Stream Start"
 msgstr "Yayın başladı"
 
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Strikethrough"
+msgstr ""
+
 #: components/app/interface/settings/user/Feedback.tsx
 msgid "Submit feature suggestion"
 msgstr "Özellik tavsiyesi gönder"
@@ -3106,6 +3460,15 @@ msgstr "Sistem"
 msgid "System message channels"
 msgstr "Sistem mesajı kanalları"
 
+#: components/app/interface/settings/channel/ForumSettings.tsx
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Tags"
+msgstr ""
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "Tags let people file a post under a topic and filter the feed by it."
+msgstr ""
+
 #: components/modal/modals/ReportContent.tsx
 msgid "Tell us what's wrong with this message"
 msgstr "Bu mesaj hakkındaki sorunlarınızı bize bildirin"
@@ -3150,6 +3513,15 @@ msgstr "Şifre çok kısa."
 #: components/app/interface/settings/user/Sync.tsx
 msgid "Theme"
 msgstr "Tema"
+
+#: components/app/interface/settings/channel/ForumSettings.tsx
+msgid "There is already a tag called {name}."
+msgstr ""
+
+#. placeholder {0}: names.join(", ")
+#: components/modal/modals/CreateForumPost.tsx
+msgid "These files are too large or over the limit: {0}"
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "This account is not activated! Please check your account's inbox and try again."
@@ -3216,6 +3588,10 @@ msgstr "Bu mesaj boş ve gönderilemedi."
 msgid "This password has previously appeared in security leaks, please use another password."
 msgstr "Bu şifre daha önce güvenlik sızıntılarına karıştı, lütfen başka bir şifre kullanın."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "This post is locked. No new comments."
+msgstr ""
+
 #: components/app/interface/settings/server/Overview.tsx
 msgid "This server is about..."
 msgstr "Bu sunucunun konusu..."
@@ -3252,6 +3628,10 @@ msgstr "Vakit formatı"
 msgid "Timeout Members"
 msgstr "Üyeleri Zaman Aşımına Uğratabilme"
 
+#: components/modal/modals/CreateForumPost.tsx
+msgid "Title"
+msgstr ""
+
 #: src/interface/common/CommonHeader.tsx
 msgid "Toggle main sidebar"
 msgstr "Yan çubuğu aç/kapa"
@@ -3263,6 +3643,11 @@ msgstr "Jeton panoya kopyalandı"
 #: components/app/interface/settings/user/appearance/AppearanceMenu.tsx
 msgid "Tonal Spot"
 msgstr "Vurgulu Tonlar"
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Top"
+msgstr ""
 
 #: components/app/interface/settings/user/Language.tsx
 msgid "Traditional (DD/MM/YYYY)"
@@ -3299,6 +3684,10 @@ msgstr "Bilinmeyen"
 msgid "Unknown Server"
 msgstr "Bilinmeyen Sunucu"
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Unlock"
+msgstr ""
+
 #: components/modal/modals/ChannelToggleMature.tsx
 msgid "Unmark as mature"
 msgstr "Yetişkin ibaresini kaldır"
@@ -3320,13 +3709,22 @@ msgstr "Susturmayı Aç"
 msgid "Unmute Channel"
 msgstr "Kanalın Susturmasını Kaldır"
 
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Unmute screen audio"
+msgstr ""
+
 #: components/app/menus/ServerContextMenu.tsx
 msgid "Unmute Server"
 msgstr "Sunucunun Susturmasını Kaldır"
 
 #: components/modal/modals/PinMessage.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
 msgid "Unpin"
 msgstr "Sabitlemeyi kaldır"
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Unpin all"
+msgstr ""
 
 #: components/app/menus/MessageContextMenu.tsx
 #: components/modal/modals/PinMessage.tsx
@@ -3353,6 +3751,15 @@ msgstr "Dosya Yükleme"
 #: components/ui/components/features/messaging/composition/picker/GifPicker.tsx
 msgid "Upload to Gifbox"
 msgstr "Gifbox'a yükle"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Uploading…"
+msgstr ""
+
+#: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Upvote"
+msgstr ""
 
 #: components/modal/modals/JoinServer.tsx
 msgid "Use a code or invite link"
@@ -3578,6 +3985,23 @@ msgstr "Yeni bir grup ya da sunucu oluşturmak ister misin?"
 #: components/modal/modals/CreateOrJoinServer.tsx
 msgid "Would you like to create a new server or join an existing one?"
 msgstr "Yeni bir sunucu oluşturmak mı yoksa var olan bir sunucuya katılmak mı istersin?"
+
+#: src/interface/channels/forum/MarkdownComposer.tsx
+msgid "Write"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a comment"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Write a reply"
+msgstr ""
+
+#: components/modal/modals/CreateForumPost.tsx
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Write your post…"
+msgstr ""
 
 #: components/app/interface/settings/user/bots/MyBots.tsx
 msgid "You agree that your bot is subject to the Acceptable Usage Policy."

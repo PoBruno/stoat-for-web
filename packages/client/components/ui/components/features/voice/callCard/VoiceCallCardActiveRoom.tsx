@@ -1,10 +1,20 @@
 import { useLingui } from "@lingui/solid/macro";
 import { createResizeObserver } from "@solid-primitives/resize-observer";
-import { createEffect, For, onMount, Show } from "solid-js";
+import {
+  createEffect,
+  createMemo,
+  createSignal,
+  For,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import { TrackLoop } from "solid-livekit-components";
 import { styled } from "styled-system/jsx";
 
 import { InRoom, useVoice } from "@revolt/rtc";
+import { useState } from "@revolt/state";
+import type { CallArrangement } from "@revolt/state/stores/Voice";
 import { IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { scrollableStyles } from "@revolt/ui/directives";
@@ -22,6 +32,8 @@ export function VoiceCallCardActiveRoom() {
       <Participants />
       <VoiceCallControls>
         <VoiceCallControlHolder right>
+          <VoiceCallArrangement />
+          <VoiceCallChatToggle />
           <VoiceCallFullscreen />
         </VoiceCallControlHolder>
         <VoiceCallCardActions size="sm" />
@@ -30,6 +42,94 @@ export function VoiceCallCardActiveRoom() {
         </VoiceCallControlHolder>
       </VoiceCallControls>
     </View>
+  );
+}
+
+/** Icon shown for each arrangement */
+const ARRANGEMENT_ICON: Record<CallArrangement, string> = {
+  auto: "auto_awesome_mosaic",
+  columns: "splitscreen_right",
+  rows: "splitscreen_bottom",
+  grid: "grid_view",
+  primary: "view_sidebar",
+};
+
+/**
+ * Cycle through the stage arrangements
+ */
+function VoiceCallArrangement() {
+  const voice = useVoice();
+  const state = useState();
+  const { t } = useLingui();
+
+  const order: CallArrangement[] = [
+    "auto",
+    "columns",
+    "rows",
+    "grid",
+    "primary",
+  ];
+
+  const label = () => {
+    switch (state.voice.callArrangement) {
+      case "columns":
+        return t`Layout: side by side`;
+      case "rows":
+        return t`Layout: stacked`;
+      case "grid":
+        return t`Layout: grid`;
+      case "primary":
+        return t`Layout: one large`;
+      default:
+        return t`Layout: automatic`;
+    }
+  };
+
+  return (
+    <Show when={voice.vidTracks().length > 1}>
+      <IconButton
+        size="sm"
+        variant={"standard"}
+        onPress={() => {
+          const i = order.indexOf(state.voice.callArrangement);
+          state.voice.callArrangement = order[(i + 1) % order.length];
+        }}
+        use:floating={{
+          tooltip: { placement: "top", content: label() },
+        }}
+      >
+        <Symbol>{ARRANGEMENT_ICON[state.voice.callArrangement]}</Symbol>
+      </IconButton>
+    </Show>
+  );
+}
+
+/**
+ * Show or hide the text chat underneath the call
+ */
+function VoiceCallChatToggle() {
+  const state = useState();
+  const { t } = useLingui();
+
+  return (
+    <IconButton
+      size="sm"
+      variant={"standard"}
+      onPress={() => state.voice.toggleCallChat()}
+      use:floating={{
+        tooltip: {
+          placement: "top",
+          content: state.voice.showCallChat ? t`Hide chat` : t`Show chat`,
+        },
+      }}
+    >
+      <Show
+        when={state.voice.showCallChat}
+        fallback={<Symbol>chat_bubble</Symbol>}
+      >
+        <Symbol>speaker_notes_off</Symbol>
+      </Show>
+    </IconButton>
   );
 }
 
@@ -49,30 +149,145 @@ function VoiceCallFullscreen() {
 }
 
 const TILE_MIN_WIDTH = "250px",
-  TILE_MIN_FOCUS_HEIGHT = "100px";
+  FILMSTRIP_MIN_HEIGHT = "100px";
 
 /**
- * Show a grid of participants
+ * Decide how many columns the stage should use.
+ *
+ * `count` tiles inside a box of `aspect` (width / height).
+ */
+function stageColumns(
+  count: number,
+  arrangement: CallArrangement,
+  aspect: number,
+): number {
+  if (count <= 1) return 1;
+
+  switch (arrangement) {
+    case "columns":
+      return count;
+    case "rows":
+      return 1;
+    case "grid":
+      return Math.ceil(Math.sqrt(count));
+    case "primary":
+      // handled with explicit grid areas, not a uniform column count
+      return 1;
+    case "auto":
+    default: {
+      // Maximise the area actually covered by 16:9 video once letterboxing is
+      // taken into account, rather than just aiming for square-ish cells.
+      const TARGET = 16 / 9;
+      const areaFor = (cols: number) => {
+        const rows = Math.ceil(count / cols);
+        // cell size in arbitrary units for a box of width `aspect`, height 1
+        const cw = aspect / cols;
+        const ch = 1 / rows;
+        // a 16:9 rect fitted inside the cell
+        return cw / ch > TARGET ? ch * ch * TARGET : (cw * cw) / TARGET;
+      };
+
+      let bestArea = 0;
+      for (let cols = 1; cols <= count; cols++) {
+        bestArea = Math.max(bestArea, areaFor(cols));
+      }
+
+      // Among the layouts that are within a few percent of optimal, take the
+      // widest one. Side by side reads better than stacked and is what people
+      // expect for two screen shares, even when stacking wins on raw pixels.
+      const TOLERANCE = 0.85;
+      let best = 1;
+      for (let cols = 1; cols <= count; cols++) {
+        if (areaFor(cols) >= bestArea * TOLERANCE) best = cols;
+      }
+      return best;
+    }
+  }
+}
+
+/**
+ * Show the stage (pinned tiles) and the filmstrip (everyone else)
  */
 function Participants() {
   const voice = useVoice();
+  const state = useState();
   const { t } = useLingui();
 
-  // Modify this value to get test tracks
-  const testTrackCount = 0;
+  // Dev affordance: `?tiles=6` adds placeholder tiles and `?arrangement=columns`
+  // forces a layout, so arrangements can be checked without gathering that
+  // many real participants.
+  const devParams = import.meta.env.DEV
+    ? new URLSearchParams(location.search)
+    : undefined;
+
+  const testTrackCount = Math.min(
+    24,
+    Math.max(0, parseInt(devParams?.get("tiles") ?? "0", 10) || 0),
+  );
+
+  const devArrangement = devParams?.get("arrangement") as
+    | CallArrangement
+    | undefined;
 
   let callRef: HTMLDivElement | undefined;
 
-  const tileWidth = () => {
-    const vidWidth = Math.round(
-      100 / (voice.vidTracks().length + testTrackCount),
-    );
-    return `max(${TILE_MIN_WIDTH}, ${vidWidth}% - var(--gap-md))`;
+  /**
+   * Shape of the area the tiles actually live in.
+   *
+   * Measured on the stage, not the whole call: the filmstrip eats a chunk of
+   * the height and would otherwise skew the arrangement towards stacking.
+   * Kept in a signal because reading element.style is not reactive.
+   */
+  const [stageBox, setStageBox] = createSignal({ w: 0, h: 0 });
+
+  const aspect = () => {
+    const { w, h } = stageBox();
+    return h > 0 ? w / h : 16 / 9;
   };
 
-  // Clear out any focus when the track that was focused is no longer available.
+  /** Attach a ResizeObserver as soon as the stage element exists */
+  function observeStage(el: HTMLDivElement) {
+    const ro = new ResizeObserver((entries) => {
+      const r = entries[0]?.contentRect;
+      if (r) setStageBox({ w: r.width, h: r.height });
+    });
+    ro.observe(el);
+    onCleanup(() => ro.disconnect());
+  }
+
+  /**
+   * Tiles shown on the stage.
+   *
+   * Falls back to everyone when nothing is pinned - and also when the pins no
+   * longer resolve to a live track, so a stale pin can never blank the stage.
+   */
+  const stageTracks = () => {
+    const pinned = voice.pinnedTracks();
+    return pinned.length ? pinned : voice.vidTracks();
+  };
+
+  /** Tiles shown in the filmstrip */
+  const stripTracks = () =>
+    voice.pinnedTracks().length ? voice.unpinnedTracks() : [];
+
+  const hasStrip = () =>
+    stripTracks().length > 0 && state.voice.callFilmstrip !== "hidden";
+
+  const arrangement = (): CallArrangement =>
+    devArrangement ?? state.voice.callArrangement;
+
+  const columns = createMemo(() =>
+    stageColumns(
+      stageTracks().length + testTrackCount,
+      arrangement(),
+      aspect(),
+    ),
+  );
+
+  // Drop pins whose track disappeared (participant left, share stopped, ...)
   createEffect(() => {
-    if (!voice.focusTrack()) voice.toggleFocus();
+    voice.vidTracks();
+    voice.prunePins();
   });
 
   onMount(() => {
@@ -85,70 +300,121 @@ function Participants() {
   });
 
   return (
-    <Call ref={callRef} class={voice.focusId() ? "" : scrollableStyles()}>
+    <Call
+      ref={callRef}
+      side={hasStrip() && state.voice.callFilmstrip === "side"}
+      data-pins={import.meta.env.DEV ? voice.pinnedIds().join(",") : undefined}
+      data-tracks={
+        import.meta.env.DEV
+          ? voice
+              .vidTracks()
+              .map((t) => voice.trackId(t))
+              .join(",")
+          : undefined
+      }
+      data-stage={import.meta.env.DEV ? stageTracks().length : undefined}
+      data-strip={import.meta.env.DEV ? stripTracks().length : undefined}
+      data-cols={import.meta.env.DEV ? columns() : undefined}
+      data-aspect={import.meta.env.DEV ? aspect().toFixed(3) : undefined}
+      data-arr={import.meta.env.DEV ? arrangement() : undefined}
+    >
       <InRoom>
-        <FocusedParticipant />
-        <Show when={voice.focusId()}>
-          <ShowBarButtonHolder>
-            <div style={{ "margin-bottom": "10px" }}>
-              <IconButton
-                size="xs"
-                variant={"tonal"}
-                onPress={() => voice.toggleShowBar()}
-                use:floating={{
-                  tooltip: {
-                    placement: "top",
-                    content: voice.showBar() ? t`Hide Others` : t`Show Others`,
-                  },
-                }}
-              >
-                <Show
-                  when={voice.showBar()}
-                  fallback={<Symbol>keyboard_arrow_up</Symbol>}
-                >
-                  <Symbol>keyboard_arrow_down</Symbol>
-                </Show>
-              </IconButton>
-            </div>
-          </ShowBarButtonHolder>
-        </Show>
-        <Grid
-          focus={!!voice.focusId()}
-          show={voice.showBar()}
-          class={voice.focusId() ? scrollableStyles({ direction: "x" }) : ""}
-          style={{ "--vc-tile-width": tileWidth() }}
+        <Stage
+          ref={observeStage}
+          primary={arrangement() === "primary"}
+          style={
+            arrangement() === "primary"
+              ? {
+                  // `grid-row: 1 / -1` on the primary tile only resolves
+                  // against explicit rows, so declare one per secondary tile.
+                  "grid-template-rows": `repeat(${Math.max(
+                    1,
+                    stageTracks().length + testTrackCount - 1,
+                  )}, minmax(0, 1fr))`,
+                }
+              : {
+                  "grid-template-columns": `repeat(${columns()}, minmax(0, 1fr))`,
+                }
+          }
         >
-          <TrackLoop
-            tracks={() => voice.vidTracks().filter((t) => !voice.isFocus(t))}
-          >
-            {() => <ParticipantTile />}
+          <TrackLoop tracks={stageTracks}>
+            {() => <ParticipantTile stage />}
           </TrackLoop>
           <For each={Array(testTrackCount)}>
-            {() => (
+            {(_, i) => (
               <div
-                class={tile({ fullscreen: voice.fullscreen() }) + " vc_tile"}
-              />
+                class={tile({ stage: true, video: true }) + " vc_tile"}
+                style={{
+                  display: "grid",
+                  "place-items": "center",
+                  color: "var(--md-sys-color-on-surface-variant)",
+                }}
+              >
+                {i() + 1}
+              </div>
             )}
           </For>
-        </Grid>
+        </Stage>
+
+        <Show when={hasStrip()}>
+          <Filmstrip
+            side={state.voice.callFilmstrip === "side"}
+            class={scrollableStyles({
+              direction: state.voice.callFilmstrip === "side" ? "y" : "x",
+            })}
+          >
+            <TrackLoop tracks={stripTracks}>
+              {() => <ParticipantTile />}
+            </TrackLoop>
+          </Filmstrip>
+        </Show>
+
+        <Show when={voice.pinnedTracks().length > 0}>
+          <StripControls>
+            <IconButton
+              size="xs"
+              variant={"tonal"}
+              onPress={() =>
+                (state.voice.callFilmstrip =
+                  state.voice.callFilmstrip === "bottom"
+                    ? "side"
+                    : state.voice.callFilmstrip === "side"
+                      ? "hidden"
+                      : "bottom")
+              }
+              use:floating={{
+                tooltip: {
+                  placement: "top",
+                  content:
+                    state.voice.callFilmstrip === "bottom"
+                      ? t`Others: bottom`
+                      : state.voice.callFilmstrip === "side"
+                        ? t`Others: side`
+                        : t`Others: hidden`,
+                },
+              }}
+            >
+              <Show
+                when={state.voice.callFilmstrip !== "hidden"}
+                fallback={<Symbol>bottom_panel_open</Symbol>}
+              >
+                <Symbol>bottom_panel_close</Symbol>
+              </Show>
+            </IconButton>
+            <IconButton
+              size="xs"
+              variant={"tonal"}
+              onPress={() => voice.clearPins()}
+              use:floating={{
+                tooltip: { placement: "top", content: t`Unpin all` },
+              }}
+            >
+              <Symbol>close_fullscreen</Symbol>
+            </IconButton>
+          </StripControls>
+        </Show>
       </InRoom>
     </Call>
-  );
-}
-
-function FocusedParticipant() {
-  const voice = useVoice();
-
-  return (
-    <Show when={voice.focusTrack()}>
-      <TrackLoop tracks={() => [voice.focusTrack()!]}>
-        {() => (
-          <FocusBox>
-            <ParticipantTile focus />
-          </FocusBox>
-        )}
-      </TrackLoop>
-    </Show>
   );
 }
 
@@ -207,13 +473,16 @@ const VoiceCallControlHolder = styled("div", {
   },
 });
 
-const ShowBarButtonHolder = styled("div", {
+const StripControls = styled("div", {
   base: {
-    height: "0px",
-    alignSelf: "center",
-    overflow: "visible",
+    position: "absolute",
+    top: "var(--gap-sm)",
+    right: "var(--gap-sm)",
+    zIndex: 2,
+
     display: "flex",
-    flexDirection: "column-reverse",
+    flexDirection: "row",
+    gap: "var(--gap-sm)",
   },
 });
 
@@ -226,47 +495,82 @@ const Call = styled("div", {
     flexGrow: 1,
     minHeight: 0,
   },
+  variants: {
+    side: {
+      true: {
+        flexDirection: "row",
+      },
+    },
+  },
 });
 
-const Grid = styled("div", {
+/** Pinned tiles - fills all remaining space */
+const Stage = styled("div", {
   base: {
-    display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "safe center",
-    alignContent: "safe center",
-    minHeight: "100%",
+    display: "grid",
     gap: "var(--gap-md)",
+    flexGrow: 1,
+    minHeight: 0,
+    minWidth: 0,
+    placeItems: "stretch",
+    gridAutoRows: "minmax(0, 1fr)",
+    transition: "grid-template-columns .25s ease, grid-template-rows .25s ease",
   },
-
   variants: {
-    focus: {
+    primary: {
       true: {
-        flexDirection: "column",
-        height: `max(20%, ${TILE_MIN_FOCUS_HEIGHT})`,
-        minHeight: 0,
-        transition: "height .3s ease",
+        // first tile takes the whole left side, the rest stack on the right
+        gridTemplateColumns: "minmax(0, 3fr) minmax(0, 1fr)",
+        gridAutoFlow: "row",
 
-        "& .vc_tile": {
-          width: "auto",
-          height: "100%",
+        "& > *:first-child": {
+          gridColumn: 1,
+          gridRow: "1 / -1",
         },
       },
     },
-    show: {
-      false: {
-        height: 0,
-      },
-    },
   },
 });
 
-const FocusBox = styled("div", {
+/** Non-pinned tiles */
+const Filmstrip = styled("div", {
   base: {
-    height: 0,
-    flexGrow: 1,
     display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    margin: "0 auto",
+    flexShrink: 0,
+    gap: "var(--gap-md)",
+    justifyContent: "safe center",
+    alignItems: "center",
+    transition: "height .3s ease, width .3s ease",
+
+    "& .vc_tile": {
+      flexShrink: 0,
+    },
+  },
+  variants: {
+    side: {
+      true: {
+        flexDirection: "column",
+        width: `max(18%, ${TILE_MIN_WIDTH})`,
+        maxWidth: "30%",
+        height: "auto",
+        overflowY: "auto",
+
+        "& .vc_tile": {
+          width: "100%",
+          height: "auto",
+        },
+      },
+      false: {
+        flexDirection: "row",
+        height: `max(18%, ${FILMSTRIP_MIN_HEIGHT})`,
+        width: "100%",
+        overflowX: "auto",
+
+        "& .vc_tile": {
+          height: "100%",
+          width: "auto",
+        },
+      },
+    },
   },
 });

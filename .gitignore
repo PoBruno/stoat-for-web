@@ -10,3 +10,8 @@ dev-dist
 .vercel
 
 .idea
+
+# Harness de teste local (Playwright) do harness de desenvolvimento
+.e2e*
+.playwright-output/
+.playwright-profile/

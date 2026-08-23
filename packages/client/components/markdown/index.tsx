@@ -1,4 +1,11 @@
-import { ComponentProps, JSX, createEffect, createSignal, on } from "solid-js";
+import {
+  ComponentProps,
+  JSX,
+  Show,
+  createEffect,
+  createSignal,
+  on,
+} from "solid-js";
 
 import "katex/dist/katex.min.css";
 import { all } from "lowlight";
@@ -11,6 +18,10 @@ import remarkMath from "remark-math";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
 import { unified } from "unified";
+
+import { css } from "styled-system/css";
+
+import { useInstance } from "@revolt/instance";
 import { VFile } from "vfile";
 
 import * as elements from "./elements";
@@ -53,6 +64,40 @@ import { defaults } from "./solid-markdown/defaults";
  * Empty component
  */
 const Null = () => null;
+
+/**
+ * Image that only renders when it comes from this instance's media server.
+ *
+ * Arbitrary remote images are blocked everywhere else in the app on purpose:
+ * loading one leaks the reader's IP to whoever wrote the message. Attachments
+ * uploaded here are already served by us, so they carry no such risk.
+ */
+function RenderTrustedImage(props: { src?: string; alt?: string }) {
+  const instance = useInstance();
+
+  const trusted = () => !!props.src && props.src.startsWith(instance.mediaUrl);
+
+  return (
+    <Show
+      when={trusted()}
+      fallback={
+        <RenderAnchor href={props.src}>{props.alt ?? props.src}</RenderAnchor>
+      }
+    >
+      <img
+        loading="lazy"
+        src={props.src}
+        alt={props.alt}
+        class={css({
+          maxWidth: "100%",
+          borderRadius: "var(--borderRadius-sm)",
+          display: "block",
+          marginBlock: "var(--gap-sm)",
+        })}
+      />
+    </Show>
+  );
+}
 
 function RenderOrderedList(props: {
   start?: string;
@@ -114,6 +159,12 @@ const components = () => ({
   audio: Null,
   script: Null,
   style: Null,
+});
+
+/** Same as `components`, but images from our own media server render */
+const componentsWithMedia = () => ({
+  ...components(),
+  img: RenderTrustedImage,
 });
 
 const changelogComponents = () => ({
@@ -301,6 +352,14 @@ export interface MarkdownProps {
    * Whether to prevent big emoji from rendering
    */
   disallowBigEmoji?: boolean;
+
+  /**
+   * Allow inline images that are served by this instance.
+   *
+   * Off by default: in a message stream a remote image is an IP leak. Forum
+   * posts opt in because their images are attachments we host ourselves.
+   */
+  allowInlineMedia?: boolean;
 }
 
 export { Emoji } from "./emoji/Emoji";
@@ -379,7 +438,9 @@ export function Markdown(props: MarkdownProps) {
         options: {
           ...defaults,
           // @ts-expect-error it doesn't like the td component
-          components: components(),
+          components: props.allowInlineMedia
+            ? componentsWithMedia()
+            : components(),
         },
         schema: html,
         listDepth: 0,

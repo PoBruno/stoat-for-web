@@ -42,7 +42,11 @@ const callCardContext = createContext<(info?: Info) => void>();
 /** Voice call card context */
 export function VoiceCallCardContext(props: { children: JSX.Element }) {
   const voice = useVoice();
+  const state = useState();
   const inCall = () => !!voice.channel();
+
+  /** Call is docked in a channel with the text chat hidden */
+  const filled = () => inCall() && !state.voice.showCallChat;
 
   const [mode, setMode] = createSignal<Mode>();
   const [info, setInfo] = createSignal<Info>();
@@ -109,14 +113,20 @@ export function VoiceCallCardContext(props: { children: JSX.Element }) {
     if (voice.fullscreen()) {
       sty.transform = ``;
       sty.width = `100%`;
+      sty.height = ``;
       setMode();
     } else if (inf?.pos && (!inf.drawer || inf.drawer === SlideState.SHOWN)) {
       sty.transform = `translate(${inf.pos.x}px, ${inf.pos.y}px)`;
       sty.width = `${inf.pos.width}px`;
+      // When the marker is allowed to grow (chat hidden during a call) it
+      // reports the full height of the channel body, so the card fills it.
+      // A zero-height marker falls back to the CSS default.
+      sty.height = inf.pos.height > 0 ? `${inf.pos.height}px` : ``;
       setMode();
     } else if (!inCall()) {
       const y = inf?.pos.y ?? ref.getBoundingClientRect().y;
       sty.transform = `translate(${innerWidth + 50}px, ${y}px)`;
+      sty.height = ``;
       setMode();
     } else if (!mode()) setFloat("tr");
   });
@@ -129,6 +139,7 @@ export function VoiceCallCardContext(props: { children: JSX.Element }) {
       y = float[0] === "t" ? PAD_Y : `calc(100vh - var(--flt-h) - ${PAD_Y})`;
     sty.transform = `translate(${x}, ${y})`;
     sty.width = "";
+    sty.height = "";
     setMode("floating");
   }
 
@@ -181,6 +192,7 @@ export function VoiceCallCardContext(props: { children: JSX.Element }) {
                 inCall={inCall()}
                 showCard={voice.showCard(channel()!)}
                 fullscreen={voice.fullscreen()}
+                filled={filled()}
               />
             </Match>
           </Switch>
@@ -237,6 +249,15 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
   const setInfo = useContext(callCardContext)!;
   let ref: HTMLDivElement | undefined;
 
+  /**
+   * Whether the marker should absorb all remaining space in the channel body.
+   *
+   * True while we are connected to *this* channel and the user has hidden the
+   * text chat, which is what lets the call card fill the whole view.
+   */
+  const grow = () =>
+    voice.channel()?.id === props.channel.id && !state.voice.showCallChat;
+
   function updateInfo() {
     const vc = voice.channel();
     setInfo(
@@ -250,19 +271,30 @@ export function VoiceChannelCallCardMount(props: { channel: Channel }) {
     );
   }
 
-  createEffect(updateInfo);
+  createEffect(() => {
+    // re-measure whenever the marker changes size
+    grow();
+    updateInfo();
+  });
 
   onMount(() => {
     const target = ref?.parentElement;
     if (!target) return;
 
     createResizeObserver(target, updateInfo);
+    // the marker itself changes size when the chat is toggled
+    createResizeObserver(ref!, updateInfo);
   });
   onCleanup(() => {
     setInfo();
   });
 
-  return <div ref={ref!} />;
+  return (
+    <div
+      ref={ref!}
+      style={grow() ? { flex: "1", "min-height": "0" } : undefined}
+    />
+  );
 }
 
 /**
@@ -273,11 +305,16 @@ function VoiceCallCard(props: {
   inCall: boolean;
   showCard: boolean;
   fullscreen: boolean;
+  filled: boolean;
 }) {
   return (
     <Show when={props.showCard}>
-      <Base fullscreen={props.fullscreen}>
-        <Card active={props.inCall} fullscreen={props.fullscreen}>
+      <Base fullscreen={props.fullscreen} filled={props.filled}>
+        <Card
+          active={props.inCall}
+          fullscreen={props.fullscreen}
+          filled={props.filled}
+        >
           <Show
             when={props.inCall}
             fallback={<VoiceCallCardPreview channel={props.channel} />}
@@ -314,6 +351,13 @@ const Base = styled("div", {
         padding: 0,
       },
     },
+    filled: {
+      true: {
+        top: 0,
+        height: "100%",
+      },
+      false: {},
+    },
   },
 });
 
@@ -346,18 +390,33 @@ const Card = styled("div", {
       },
       false: {},
     },
+    filled: {
+      true: {},
+      false: {},
+    },
   },
   compoundVariants: [
     {
       active: [true],
       fullscreen: [false],
+      filled: [false],
       css: {
         height: "40vh",
+      },
+    },
+    {
+      active: [true],
+      fullscreen: [false],
+      filled: [true],
+      css: {
+        // the Float wrapper is sized to the marker, so just fill it
+        height: "100%",
       },
     },
   ],
   defaultVariants: {
     active: false,
     fullscreen: false,
+    filled: false,
   },
 });

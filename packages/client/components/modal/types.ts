@@ -6,6 +6,7 @@ import {
   Client,
   Emoji,
   File,
+  ForumPost,
   ImageEmbed,
   Message,
   MFA,
@@ -76,6 +77,11 @@ export type Modals =
       server: Server;
       categoryId?: string;
       cb?: (channel: Channel) => void;
+    }
+  | {
+      type: "create_forum_post";
+      channel: Channel;
+      cb?: (post: ForumPost) => void;
     }
   | {
       type: "create_group";

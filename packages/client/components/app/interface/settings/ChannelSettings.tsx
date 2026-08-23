@@ -12,6 +12,7 @@ import ChannelOverview from "./channel/Overview";
 import { ChannelPermissionsEditor } from "./channel/permissions/ChannelPermissionsEditor";
 import { ChannelPermissionsOverview } from "./channel/permissions/ChannelPermissionsOverview";
 import { ViewWebhook } from "./channel/webhooks/ViewWebhook";
+import { ForumSettings } from "./channel/ForumSettings";
 import { WebhooksList } from "./channel/webhooks/WebhooksList";
 import { BackCard } from "./user/_AccountCard";
 
@@ -77,10 +78,13 @@ const Config: SettingsConfiguration<Channel> = {
           case "Group":
             return <ChannelPermissionsEditor type="group" context={channel} />;
           case "TextChannel":
+          case "ForumChannel":
             return <ChannelPermissionsOverview context={channel} />;
           default:
             return null;
         }
+      case "forum":
+        return <ForumSettings channel={channel} />;
       case "webhooks":
         return <WebhooksList channel={channel} />;
       default:
@@ -118,8 +122,19 @@ const Config: SettingsConfiguration<Channel> = {
             },
             {
               hidden:
-                !channel.havePermission("ManageWebhooks") &&
-                import.meta.env.DEV,
+                channel.type !== "ForumChannel" ||
+                !channel.havePermission("ManageChannel"),
+              id: "forum",
+              icon: <Symbol size={20}>forum</Symbol>,
+              title: <Trans>Forum</Trans>,
+            },
+            {
+              // Webhooks post messages; forum channels hold posts, not
+              // messages, so the backend rejects this with InvalidOperation.
+              hidden:
+                channel.type === "ForumChannel" ||
+                (!channel.havePermission("ManageWebhooks") &&
+                  import.meta.env.DEV),
               id: "webhooks",
               icon: <Symbol size={20}>webhook</Symbol>,
               title: <Trans>Webhooks</Trans>,

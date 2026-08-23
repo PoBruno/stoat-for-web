@@ -7,6 +7,7 @@ import { useClient } from "@revolt/client";
 import { Navigate, useParams } from "@revolt/routing";
 
 import { AgeGate } from "./AgeGate";
+import { ForumChannel } from "./forum/ForumChannel";
 import { TextChannel } from "./text/TextChannel";
 
 /**
@@ -57,7 +58,17 @@ export const ChannelPage: Component = () => {
             <TextChannel channel={channel()} />
           </AgeGate>
         </Match>
-        {/* <Match when={channel()!.type === "VoiceChannel"}>
+        <Match when={channel()!.type === "ForumChannel"}>
+          <AgeGate
+            enabled={channel().mature}
+            contentId={channel().id}
+            contentName={"#" + channel().name}
+            contentType="channel"
+          >
+            <ForumChannel channel={channel()} />
+          </AgeGate>
+        </Match>
+        {/* <Match when={channel()!.type === "VoiceChannel"}>>
             <Header placement="primary">
               <ChannelHeader channel={channel()} />
             </Header>

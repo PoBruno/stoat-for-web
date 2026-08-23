@@ -7,6 +7,7 @@ settings:
 overrides:
   prettier: ^3.8.1
   solid-js: 1.9.14
+  stoat-api: link:../javascript-client-api
 
 importers:
 
@@ -558,8 +559,8 @@ importers:
         specifier: 1.9.14
         version: 1.9.14
       stoat-api:
-        specifier: 0.14.3
-        version: 0.14.3
+        specifier: link:../../../javascript-client-api
+        version: link:../../../javascript-client-api
       ulid:
         specifier: ^3.0.2
         version: 3.0.2
@@ -4160,6 +4161,7 @@ packages:
   eslint@9.26.0:
     resolution: {integrity: sha512-Hx0MOjPh6uK9oq9nVsATZKE/Wlbai7KFjfCuw9UHaguDW3x+HF0O5nIi3ud39TWgrTjTO5nHxmL3R1eANinWHQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -4170,6 +4172,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -6182,9 +6185,6 @@ packages:
   stdin-discarder@0.3.2:
     resolution: {integrity: sha512-eCPu1qRxPVkl5605OTWF8Wz40b4Mf45NY5LQmVPQ599knfs5QhASUm9GbJ5BDMDOXgrnh0wyEdvzmL//YMlw0A==}
     engines: {node: '>=18'}
-
-  stoat-api@0.14.3:
-    resolution: {integrity: sha512-OCsHP8jPFp2pwwIxiSnLhgfI+bNJJ4kkUBOAOIGQedLR6iRYoJojxSB+uk/TJNinnc1ADGM+QZb8Q115p6+POA==}
 
   stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
@@ -13604,10 +13604,6 @@ snapshots:
   statuses@2.0.1: {}
 
   stdin-discarder@0.3.2: {}
-
-  stoat-api@0.14.3:
-    dependencies:
-      json-with-bigint: 3.4.4
 
   stop-iteration-iterator@1.1.0:
     dependencies:

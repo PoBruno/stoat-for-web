@@ -17,7 +17,36 @@ import { markPlugins } from "./codeMirrorMarks";
 import { markdownTheme } from "./codeMirrorTheme";
 import { codeMirrorWidgets } from "./codeMirrorWidgets";
 
+/**
+ * Editing primitives exposed to whoever renders a toolbar.
+ *
+ * These live here rather than in the toolbar because only this component has
+ * the CodeMirror view, and therefore the selection.
+ */
+export type EditorCommands = {
+  /** Insert text at the cursor, replacing any selection */
+  insert(text: string): void;
+  /**
+   * Wrap the selection, or insert the markers and place the cursor between
+   * them when nothing is selected.
+   */
+  wrap(before: string, after?: string): void;
+  /**
+   * Prefix every line touched by the selection.
+   *
+   * `prefix` receives the index of the line within the selection, which is
+   * what makes ordered lists number themselves.
+   */
+  prefixLines(prefix: string | ((index: number) => string)): void;
+  focus(): void;
+};
+
 interface Props {
+  /**
+   * Receives the editing commands once the editor is ready
+   */
+  commands?: (commands: EditorCommands) => void;
+
   /**
    * Auto focus the input on creation
    */
@@ -174,6 +203,68 @@ export function TextEditor2(props: Props) {
         }),
       ],
     }),
+  });
+
+  /** Push a change and keep the consumer's value in sync */
+  function apply(spec: Parameters<typeof view.dispatch>[0]) {
+    view.dispatch(spec);
+    props.onChange(view.state.doc.toString());
+    view.focus();
+  }
+
+  // Handed over once, at setup: these close over the CodeMirror view, which
+  // never changes for a mounted editor.
+  // eslint-disable-next-line solid/reactivity
+  props.commands?.({
+    insert(text) {
+      apply(view.state.replaceSelection(text));
+    },
+
+    wrap(before, after = before) {
+      const { from, to } = view.state.selection.main;
+      const selected = view.state.sliceDoc(from, to);
+
+      apply({
+        changes: { from, to, insert: `${before}${selected}${after}` },
+        // With no selection, park the cursor between the markers so typing
+        // continues inside them.
+        selection: {
+          anchor: from + before.length + selected.length,
+        },
+      });
+    },
+
+    prefixLines(prefix) {
+      const { from, to } = view.state.selection.main;
+      const first = view.state.doc.lineAt(from).number;
+      const last = view.state.doc.lineAt(to).number;
+
+      const changes = [];
+      let beforeFrom = 0;
+      let beforeTo = 0;
+
+      for (let n = first; n <= last; n++) {
+        const line = view.state.doc.line(n);
+        const marker =
+          typeof prefix === "string" ? prefix : prefix(n - first + 1);
+        changes.push({ from: line.from, insert: marker });
+
+        // An insertion exactly at the cursor leaves the cursor in front of it,
+        // so typing lands before the marker ("Um titulo## "). Move the
+        // selection past everything inserted ahead of it.
+        if (line.from <= from) beforeFrom += marker.length;
+        if (line.from <= to) beforeTo += marker.length;
+      }
+
+      apply({
+        changes,
+        selection: { anchor: from + beforeFrom, head: to + beforeTo },
+      });
+    },
+
+    focus() {
+      view.focus();
+    },
   });
 
   // Apply shared scrollbar styles from the exported scrollable style classes.

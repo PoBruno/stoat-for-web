@@ -74,11 +74,17 @@ export function ChannelHeader(props: Props) {
         <Match
           when={
             props.channel.type === "TextChannel" ||
+            props.channel.type === "ForumChannel" ||
             props.channel.type === "Group"
           }
         >
           <HeaderIcon>
-            <Symbol>grid_3x3</Symbol>
+            <Show
+              when={props.channel.type === "ForumChannel"}
+              fallback={<Symbol>grid_3x3</Symbol>}
+            >
+              <Symbol>forum</Symbol>
+            </Show>
           </HeaderIcon>
           <NonBreakingText
             class={

@@ -1,4 +1,4 @@
-import { createSignal, Show } from "solid-js";
+import { Show } from "solid-js";
 import {
   TrackReference,
   useEnsureParticipant,
@@ -8,6 +8,7 @@ import {
   VideoTrack,
 } from "solid-livekit-components";
 
+import { useLingui } from "@lingui/solid/macro";
 import { Track } from "livekit-client";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
@@ -24,7 +25,8 @@ import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { VoiceStatefulUserIcons } from "../VoiceStatefulUserIcons";
 
 type TileProps = {
-  focus?: boolean;
+  /** Rendered on the stage (fills its grid cell) rather than in the filmstrip */
+  stage?: boolean;
 };
 
 /**
@@ -32,17 +34,11 @@ type TileProps = {
  */
 export function ParticipantTile(props: TileProps) {
   const voice = useVoice();
-  const state = useState();
   const participant = useEnsureParticipant();
   const track = useTrackRefContext();
   const user = useUser(participant.identity);
 
   let videoRef: HTMLVideoElement | undefined;
-
-  const [videoDims, setVideoDims] = createSignal<{
-    height: number;
-    width: number;
-  }>({ height: 0, width: 0 });
 
   const isMuted = useIsMuted({
     participant,
@@ -59,11 +55,6 @@ export function ParticipantTile(props: TileProps) {
     source: Track.Source.ScreenShare,
   });
 
-  const isScreenShareAudioUserMuted = () =>
-    !user().user!.self && state.voice.getScreenShareMuted(user().user!.id)
-      ? "by-user"
-      : isScreenShareAudioMuted() || false;
-
   const isVideoMuted = useIsMuted({
     participant,
     source: Track.Source.Camera,
@@ -73,16 +64,6 @@ export function ParticipantTile(props: TileProps) {
   const isScreenShare = () => track.source === Track.Source.ScreenShare;
   const isSpeaking = useIsSpeaking(participant);
 
-  const getHeight = () => {
-    if (!props.focus || videoDims().height == 0) return {};
-    // Calculate the aspect ratio
-    const ratio = videoDims().width / videoDims().height;
-
-    return ratio > 1
-      ? { height: `min(var(--vc-w) / ${ratio}, 100%)` }
-      : { height: "100%" };
-  };
-
   return (
     <Show when={!isScreenShare() || !isRemoteScreenShareMuted()}>
       <div
@@ -91,10 +72,11 @@ export function ParticipantTile(props: TileProps) {
             speaking: !isScreenShare() && isSpeaking(),
             video: isVideo() || isScreenShare(),
             fullscreen: voice.fullscreen(),
-            ...props,
+            pinned: voice.isPinned(track),
+            stage: props.stage,
           }) + (isScreenShare() ? " vc_tile group" : " vc_tile")
         }
-        onClick={() => voice.toggleFocus(track)}
+        onClick={() => voice.togglePin(track)}
         use:floating={{
           // TODO: Conflicts with focusing, maybe only show if clicking name itself
           //   userCard: {
@@ -110,7 +92,6 @@ export function ParticipantTile(props: TileProps) {
             />
           ),
         }}
-        style={{ ...getHeight() }}
       >
         <Show
           when={isVideo() || isScreenShare()}
@@ -136,12 +117,6 @@ export function ParticipantTile(props: TileProps) {
             trackRef={track as TrackReference}
             manageSubscription={true}
             ref={videoRef}
-            on:resize={() => {
-              setVideoDims({
-                height: videoRef?.videoHeight || 0,
-                width: videoRef?.videoWidth || 0,
-              });
-            }}
           />
         </Show>
         <Overlay showOnHover={isScreenShare()}>
@@ -149,18 +124,11 @@ export function ParticipantTile(props: TileProps) {
             <OverflowingText>{user().username}</OverflowingText>
             <Row gap="md">
               {isScreenShare() ? (
-                <Show when={isScreenShareAudioUserMuted()}>
-                  <Symbol
-                    size={18}
-                    color={
-                      isScreenShareAudioUserMuted() === "by-user"
-                        ? "var(--md-sys-color-error)"
-                        : undefined
-                    }
-                  >
-                    no_sound
-                  </Symbol>
-                </Show>
+                <ScreenShareAudioButton
+                  userId={user().user!.id}
+                  self={!!user().user!.self}
+                  trackMuted={isScreenShareAudioMuted() || false}
+                />
               ) : (
                 <VoiceStatefulUserIcons
                   userId={participant.identity}
@@ -176,14 +144,91 @@ export function ParticipantTile(props: TileProps) {
   );
 }
 
+/**
+ * Mute / unmute a screen share's audio straight from its tile.
+ *
+ * Screen share audio arrives muted by default, and until now the only way to
+ * hear it was through the user's context menu - painful when watching two
+ * shares at once.
+ */
+function ScreenShareAudioButton(props: {
+  userId: string;
+  self: boolean;
+  trackMuted: boolean;
+}) {
+  const state = useState();
+  const { t } = useLingui();
+
+  /** Muted by us (the only thing we can change here) */
+  const mutedByUs = () =>
+    !props.self && state.voice.getScreenShareMuted(props.userId);
+
+  /** Nothing to listen to at all */
+  const noAudio = () => props.trackMuted;
+
+  return (
+    <button
+      type="button"
+      class={audioButton()}
+      disabled={noAudio() || props.self}
+      onClick={(e) => {
+        // never let this reach the tile's pin handler
+        e.stopPropagation();
+        if (props.self) return;
+        state.voice.setScreenShareMuted(props.userId, !mutedByUs());
+      }}
+      use:floating={{
+        tooltip: {
+          placement: "top",
+          content: noAudio()
+            ? t`No audio shared`
+            : mutedByUs()
+              ? t`Unmute screen audio`
+              : t`Mute screen audio`,
+        },
+      }}
+    >
+      <Symbol
+        size={18}
+        color={
+          mutedByUs() && !noAudio() ? "var(--md-sys-color-error)" : undefined
+        }
+      >
+        {noAudio() || mutedByUs() ? "no_sound" : "volume_up"}
+      </Symbol>
+    </button>
+  );
+}
+
+const audioButton = cva({
+  base: {
+    display: "grid",
+    placeItems: "center",
+    padding: "2px",
+    border: "none",
+    borderRadius: "var(--borderRadius-full)",
+    background: "transparent",
+    color: "inherit",
+    cursor: "pointer",
+
+    _hover: {
+      background: "#0003",
+    },
+
+    _disabled: {
+      cursor: "default",
+      opacity: 0.6,
+      _hover: { background: "transparent" },
+    },
+  },
+});
+
 export const tile = cva({
   base: {
     display: "grid",
     aspectRatio: "16/9",
-    transition: "all .3s ease, width 0s, height 0s",
+    transition: "outline-color .2s ease, background .2s ease",
     borderRadius: "var(--borderRadius-lg)",
-    width: "var(--vc-tile-width)",
-    maxWidth: "calc(var(--vc-h) * 16 / 9)",
     cursor: "pointer",
 
     color: "var(--md-sys-color-on-surface)",
@@ -201,38 +246,46 @@ export const tile = cva({
         outlineColor: "var(--md-sys-color-primary)",
       },
     },
-    focus: {
+    /**
+     * On the stage the tile fills its grid cell; the <video> inside keeps the
+     * real aspect ratio via object-fit: contain.
+     */
+    stage: {
       true: {
-        width: "auto",
-        maxWidth: "none",
+        width: "100%",
+        height: "100%",
+        minWidth: 0,
+        minHeight: 0,
+        aspectRatio: "auto",
       },
+      false: {},
+    },
+    pinned: {
+      true: {
+        outlineColor: "var(--md-sys-color-tertiary)",
+      },
+      false: {},
     },
     video: {
       true: {},
     },
     fullscreen: {
-      true: {
-        minWidth: "20%",
-      },
+      true: {},
     },
   },
   compoundVariants: [
     {
-      video: [false],
-      focus: [true],
+      speaking: [true],
+      pinned: [true],
       css: {
-        height: "100%",
-        maxHeight: "calc(var(--vc-w) * 9 / 16)",
-      },
-    },
-    {
-      video: [true],
-      focus: [true],
-      css: {
-        aspectRatio: "auto",
+        outlineColor: "var(--md-sys-color-primary)",
       },
     },
   ],
+  defaultVariants: {
+    stage: false,
+    pinned: false,
+  },
 });
 
 const AvatarOnly = styled("div", {
