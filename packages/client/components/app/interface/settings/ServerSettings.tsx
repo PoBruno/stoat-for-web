@@ -12,6 +12,7 @@ import { ChannelPermissionsEditor } from "./channel/permissions/ChannelPermissio
 import Overview from "./server/Overview";
 import { ListServerBans } from "./server/bans/ListBans";
 import { EmojiList } from "./server/emojis/EmojiList";
+import { SoundList } from "./server/sounds/SoundList";
 import { ListServerInvites } from "./server/invites/ListServerInvites";
 import { ServerRoleEditor } from "./server/roles/ServerRoleEditor";
 import { ServerRoleOverview } from "./server/roles/ServerRoleOverview";

@@ -28,6 +28,8 @@ import {
 } from "@revolt/ui";
 import { VoiceChannelCallCardMount } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
+import { SoundboardPanel } from "../voice/SoundboardPanel";
+
 import { ChannelHeader } from "../ChannelHeader";
 import { ChannelPageProps } from "../ChannelPage";
 
@@ -231,6 +233,28 @@ export function TextChannel(props: ChannelPageProps) {
             <VoiceChannelCallCardMount channel={props.channel} />
           </Show>
 
+          {/*
+            Painel do soundboard: so aparece na chamada em que o usuario esta
+            de fato conectado. Abrir num canal que ele apenas olha nao faria
+            sentido, porque nao ha para onde mandar o audio.
+          */}
+          <Show
+            when={
+              voice.soundboardOpen() &&
+              voice.channel()?.id === props.channel.id &&
+              props.channel.server
+            }
+          >
+            {(server) => (
+              <SoundboardHolder>
+                <SoundboardPanel
+                  server={server()}
+                  onClose={() => voice.toggleSoundboard()}
+                />
+              </SoundboardHolder>
+            )}
+          </Show>
+
           <Show when={showChat()}>
             <Messages
               channel={props.channel}
@@ -373,5 +397,20 @@ const SidebarTitle = styled("div", {
   base: {
     padding: "var(--gap-md)",
     color: "var(--md-sys-color-on-surface)",
+  },
+});
+
+/**
+ * Espaco do painel de soundboard dentro da view do canal.
+ *
+ * Altura fixa em vez de crescer com o conteudo: a lista de sons e rolavel por
+ * dentro, e deixar o painel empurrar as mensagens faria a chamada saltar toda
+ * vez que alguem subisse um som.
+ */
+const SoundboardHolder = styled("div", {
+  base: {
+    height: "min(46vh, 420px)",
+    padding: "0 var(--gap-md) var(--gap-md)",
+    flexShrink: 0,
   },
 });

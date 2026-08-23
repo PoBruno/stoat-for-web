@@ -75,6 +75,11 @@ msgstr "{0} 件のブロックしたメッセージ"
 msgid "{0, plural, one {# participant} other {# participants}}"
 msgstr ""
 
+#. placeholder {0}: sons().length
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "{0, plural, one {# sound} other {# sounds}}"
+msgstr ""
+
 #. placeholder {0}: loaded().views
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "{0, plural, one {# view} other {# views}}"
@@ -146,6 +151,11 @@ msgstr "{0} がメッセージをピン留めしました"
 #: components/client/NotificationsWorker.tsx
 msgid "{0} renamed the channel"
 msgstr "{0} がチャンネルの名前を変更しました"
+
+#. placeholder {0}: instance.globalLimits.server_sounds - props.server.sounds.length
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "{0} sound slots remaining"
+msgstr ""
 
 #. placeholder {0}: (message.systemMessage as MessagePinnedSystemMessage).by?.username
 #: components/client/NotificationsWorker.tsx
@@ -346,6 +356,10 @@ msgstr "ステータスを設定"
 msgid "Add tag"
 msgstr ""
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Add to favourites"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "管理者"
@@ -365,6 +379,7 @@ msgstr "詳細設定"
 #~ msgstr "全てのロールとユーザーに影響します"
 
 #: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "全て"
@@ -617,6 +632,7 @@ msgstr ""
 #: components/modal/modals/DeleteMessage.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/Invite.tsx
 #: components/modal/modals/KickMember.tsx
@@ -653,6 +669,10 @@ msgstr "所有するサーバーが削除または譲渡されるまで、アカ
 #: components/i18n/errors.tsx
 msgid "Cannot edit this message."
 msgstr "このメッセージは編集できません。"
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Category"
+msgstr ""
 
 #: components/modal/modals/EditBotUsername.tsx
 #: components/modal/modals/EditPassword.tsx
@@ -820,6 +840,10 @@ msgstr "閉じる"
 #: components/modal/modals/DeleteChannel.tsx
 msgid "Close conversation with {0}?"
 msgstr "{0} とのDMを閉じますか？"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Close soundboard"
+msgstr ""
 
 #: components/modal/modals/JoinServer.tsx
 #: src/interface/channels/forum/MarkdownComposer.tsx
@@ -989,6 +1013,7 @@ msgid "Couldn't fetch Stoat configuration from {hStr}."
 msgstr ""
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
+#: components/app/interface/settings/server/sounds/SoundList.tsx
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
@@ -1139,6 +1164,7 @@ msgstr "日付の形式"
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Deafen"
 msgstr ""
 
@@ -1172,9 +1198,11 @@ msgstr ""
 #: components/modal/modals/DeleteMessage.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 #: components/modal/modals/EmojiPreview.tsx
 #: src/interface/channels/forum/ForumPostView.tsx
 #: src/interface/channels/forum/ForumThread.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Delete"
 msgstr "削除"
 
@@ -1185,6 +1213,7 @@ msgstr "削除"
 #: components/modal/modals/DeleteChannel.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 msgid "Delete {0}?"
 msgstr "{0} を削除しますか？"
 
@@ -1261,6 +1290,10 @@ msgstr "二要素認証を無効化"
 msgid "Disabled"
 msgstr "無効"
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Disconnect"
+msgstr ""
+
 #: components/ui/components/features/voice/callCard/VoiceCallCardStatus.tsx
 msgid "Disconnected"
 msgstr "切断済み"
@@ -1328,6 +1361,10 @@ msgstr "完了"
 #: components/modal/modals/ReportContent.tsx
 msgid "Drugs or illegal goods"
 msgstr "薬物または違法物品"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Duration"
+msgstr ""
 
 #: src/interface/channels/forum/ForumPostView.tsx
 #: src/interface/channels/forum/ForumThread.tsx
@@ -1536,6 +1573,10 @@ msgstr "送信失敗"
 msgid "Failed to verify!"
 msgstr "認証に失敗しました!"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Favourites"
+msgstr ""
+
 #: components/app/interface/settings/user/Feedback.tsx
 #: components/app/interface/settings/UserSettings.tsx
 msgid "Feedback"
@@ -1600,6 +1641,10 @@ msgstr ""
 
 #: components/modal/modals/CreateChannel.tsx
 msgid "Forum Channel"
+msgstr ""
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Free text. Sounds sharing a category are grouped together."
 msgstr ""
 
 #: src/interface/Friends.tsx
@@ -1696,6 +1741,10 @@ msgstr ""
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "Grants {0} permissions and denies {1} permissions"
 msgstr "{0} 個の権限が与えられており、 {1} 個の権限が拒否されています"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Grid view"
+msgstr ""
 
 #: components/modal/modals/CreateGroup.tsx
 msgid "Group Name"
@@ -2001,6 +2050,10 @@ msgstr "ライト"
 msgid "Link"
 msgstr ""
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "List view"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "会話を聞く"
@@ -2020,6 +2073,11 @@ msgstr ""
 
 #: src/interface/channels/forum/ForumChannel.tsx
 msgid "Loading posts…"
+msgstr ""
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Loading sounds."
 msgstr ""
 
 #: src/interface/channels/forum/ForumPostView.tsx
@@ -2212,6 +2270,7 @@ msgid "Minimise to Tray"
 msgstr "トレイに格納"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 msgid "Missing permission"
 msgstr "権限がありません"
 
@@ -2231,6 +2290,10 @@ msgstr "等幅フォント"
 msgid "More Contrast"
 msgstr "更にコントラスト"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Most recent"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Move Members"
 msgstr "メンバーを移動"
@@ -2246,6 +2309,7 @@ msgstr "このアカウントでは二要素認証が既に有効化されてい
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/app/menus/UserContextMenu.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Mute"
 msgstr "ミュート"
 
@@ -2301,6 +2365,7 @@ msgstr "自分のボット"
 
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/RenameSession.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Name"
 msgstr "名前"
 
@@ -2383,6 +2448,11 @@ msgstr ""
 msgid "No role overrides have been configured."
 msgstr ""
 
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "No sounds on this server yet."
+msgstr ""
+
 #: components/app/interface/settings/channel/ForumSettings.tsx
 msgid "No tags yet."
 msgstr ""
@@ -2403,6 +2473,10 @@ msgstr "ノーマル"
 #: components/modal/modals/ReportContent.tsx
 msgid "Not of minimum age to use the platform"
 msgstr "このプラットフォームを使用できる最低年齢に達していない"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Nothing matches that."
+msgstr ""
 
 #: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Nothing to preview yet."
@@ -2457,6 +2531,7 @@ msgstr "オン"
 #: components/modal/modals/DeleteChannel.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 msgid "Once it's deleted, there's no going back."
 msgstr "一度削除してしまうと、元に戻すことはできません。"
 
@@ -2599,8 +2674,16 @@ msgstr ""
 msgid "Platform Moderator"
 msgstr "プラットフォームモデレーター"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Play"
+msgstr ""
+
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Play sound"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Play sounds in the channel"
 msgstr ""
 
 #: components/modal/modals/MFAFlow.tsx
@@ -2805,6 +2888,10 @@ msgstr "アバターの削除"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Remove friend"
 msgstr "フレンドを削除"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Remove from favourites"
+msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 #: components/modal/modals/RemoveMember.tsx
@@ -3014,6 +3101,10 @@ msgstr "グループを検索…"
 msgid "Search for users..."
 msgstr "ユーザーを検索…"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Search sounds"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceInputOptions.tsx
 msgid "Select audio input"
 msgstr "マイクを変更"
@@ -3132,6 +3223,10 @@ msgstr "サーバー名"
 msgid "Server Roles"
 msgstr ""
 
+#: src/interface/navigation/channels/ServerSidebar.tsx
+msgid "Server settings"
+msgstr ""
+
 #: components/app/interface/settings/UserSettings.tsx
 msgid "Sessions"
 msgstr "セッション"
@@ -3228,6 +3323,20 @@ msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "Something went wrong! {error}"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Sound actions"
+msgstr ""
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Sound name"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard"
 msgstr ""
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
@@ -3571,6 +3680,10 @@ msgstr ""
 msgid "Unblock user"
 msgstr "ユーザーのブロック解除"
 
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Uncategorised"
+msgstr ""
+
 #. placeholder {0}: err.type
 #: components/i18n/errors.tsx
 msgid "Uncaught Stoat error: {0}"
@@ -3578,6 +3691,7 @@ msgstr ""
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Undeafen"
 msgstr ""
 
@@ -3608,6 +3722,7 @@ msgstr ""
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Unmute"
 msgstr ""
 
@@ -3807,11 +3922,16 @@ msgstr ""
 msgid "Voice Channel"
 msgstr "ボイスチャンネル"
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Voice connected"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Voice Processing"
 msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Volume"
 msgstr ""
 
@@ -3960,6 +4080,10 @@ msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "You cannot join this call."
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "You cannot play sounds here."
 msgstr ""
 
 #: components/i18n/errors.tsx

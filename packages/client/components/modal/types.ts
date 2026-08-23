@@ -17,6 +17,7 @@ import {
   Server,
   ServerMember,
   ServerRole,
+  Sound,
   Session,
   User,
   VideoEmbed,
@@ -146,6 +147,10 @@ export type Modals =
       type: "delete_role";
       role: ServerRole;
       cb: () => void;
+    }
+  | {
+      type: "delete_sound";
+      sound: Sound;
     }
   | {
       type: "edit_email";

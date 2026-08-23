@@ -33,6 +33,7 @@ export function VoiceCallCardActiveRoom() {
       <VoiceCallControls>
         <VoiceCallControlHolder right>
           <VoiceCallArrangement />
+          <VoiceCallSoundboardToggle />
           <VoiceCallChatToggle />
           <VoiceCallFullscreen />
         </VoiceCallControlHolder>
@@ -101,6 +102,33 @@ function VoiceCallArrangement() {
         <Symbol>{ARRANGEMENT_ICON[state.voice.callArrangement]}</Symbol>
       </IconButton>
     </Show>
+  );
+}
+
+/**
+ * Open or close the soundboard panel
+ */
+function VoiceCallSoundboardToggle() {
+  const voice = useVoice();
+  const { t } = useLingui();
+
+  return (
+    <IconButton
+      size="sm"
+      variant={voice.soundboardOpen() ? "tonal" : "standard"}
+      onPress={() => voice.toggleSoundboard()}
+      isDisabled={!voice.soundboardPermission}
+      use:floating={{
+        tooltip: {
+          placement: "top",
+          content: voice.soundboardPermission
+            ? t`Soundboard`
+            : t`Missing permission`,
+        },
+      }}
+    >
+      <Symbol>graphic_eq</Symbol>
+    </IconButton>
   );
 }
 

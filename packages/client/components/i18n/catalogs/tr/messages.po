@@ -78,6 +78,11 @@ msgstr "{0, plural, one {# engellenen mesaj} other {# engellenen mesajlar}}"
 msgid "{0, plural, one {# participant} other {# participants}}"
 msgstr ""
 
+#. placeholder {0}: sons().length
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "{0, plural, one {# sound} other {# sounds}}"
+msgstr ""
+
 #. placeholder {0}: loaded().views
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "{0, plural, one {# view} other {# views}}"
@@ -149,6 +154,11 @@ msgstr "{0} bir mesajı sabitledi"
 #: components/client/NotificationsWorker.tsx
 msgid "{0} renamed the channel"
 msgstr "{0} kanalın adını değiştirdi"
+
+#. placeholder {0}: instance.globalLimits.server_sounds - props.server.sounds.length
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "{0} sound slots remaining"
+msgstr ""
 
 #. placeholder {0}: (message.systemMessage as MessagePinnedSystemMessage).by?.username
 #: components/client/NotificationsWorker.tsx
@@ -400,6 +410,10 @@ msgstr "Durum metni ekle"
 msgid "Add tag"
 msgstr ""
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Add to favourites"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Admin"
 msgstr "Yönetici"
@@ -419,6 +433,7 @@ msgstr "Gelişmiş"
 #~ msgstr "Tüm rol ve kullanıcıları etkiler"
 
 #: src/interface/channels/forum/ForumChannel.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/Friends.tsx
 msgid "All"
 msgstr "Tümü"
@@ -678,6 +693,7 @@ msgstr "Mükemmel bir GİF bulamıyor musunuz? GifBox'a gidin ve kendinizinkini 
 #: components/modal/modals/DeleteMessage.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 #: components/modal/modals/EditCategory.tsx
 #: components/modal/modals/Invite.tsx
 #: components/modal/modals/KickMember.tsx
@@ -714,6 +730,10 @@ msgstr "Sunucular silinene veya aktarılana kadar hesap silinemez"
 #: components/i18n/errors.tsx
 msgid "Cannot edit this message."
 msgstr "Bu mesaj düzenlenemez."
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Category"
+msgstr ""
 
 #: components/modal/modals/EditBotUsername.tsx
 #: components/modal/modals/EditPassword.tsx
@@ -885,6 +905,10 @@ msgstr "Sohbeti kapat"
 msgid "Close conversation with {0}?"
 msgstr "{0} ile olan konuşmayı kapat?"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Close soundboard"
+msgstr ""
+
 #: components/modal/modals/JoinServer.tsx
 #: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Code"
@@ -1053,6 +1077,7 @@ msgid "Couldn't fetch Stoat configuration from {hStr}."
 msgstr "{hStr} Adresinden Stoat yapılandırması alınamadı."
 
 #: components/app/interface/settings/server/emojis/EmojiList.tsx
+#: components/app/interface/settings/server/sounds/SoundList.tsx
 #: components/modal/modals/CreateBot.tsx
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/CreateChannel.tsx
@@ -1203,6 +1228,7 @@ msgstr "Tarih formatı"
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Deafen"
 msgstr "Sağırlaştır"
 
@@ -1240,9 +1266,11 @@ msgstr "Performans Düşüşü"
 #: components/modal/modals/DeleteMessage.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 #: components/modal/modals/EmojiPreview.tsx
 #: src/interface/channels/forum/ForumPostView.tsx
 #: src/interface/channels/forum/ForumThread.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Delete"
 msgstr "Sil"
 
@@ -1253,6 +1281,7 @@ msgstr "Sil"
 #: components/modal/modals/DeleteChannel.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 msgid "Delete {0}?"
 msgstr "{0}'yı sil?"
 
@@ -1329,6 +1358,10 @@ msgstr "Tek seferlik şifre ile kimlik onayını devre dışı bırak"
 msgid "Disabled"
 msgstr "Devre dışı"
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Disconnect"
+msgstr ""
+
 #: components/ui/components/features/voice/callCard/VoiceCallCardStatus.tsx
 msgid "Disconnected"
 msgstr "Bağlantı kesildi"
@@ -1399,6 +1432,10 @@ msgstr "Bitti"
 #: components/modal/modals/ReportContent.tsx
 msgid "Drugs or illegal goods"
 msgstr "Uyuşturucu veya yasadışı ürün"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Duration"
+msgstr ""
 
 #: src/interface/channels/forum/ForumPostView.tsx
 #: src/interface/channels/forum/ForumThread.tsx
@@ -1608,6 +1645,10 @@ msgstr "Gönderilemedi"
 msgid "Failed to verify!"
 msgstr "Doğrulanamadı!"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Favourites"
+msgstr ""
+
 #: components/app/interface/settings/user/Feedback.tsx
 #: components/app/interface/settings/UserSettings.tsx
 msgid "Feedback"
@@ -1672,6 +1713,10 @@ msgstr ""
 
 #: components/modal/modals/CreateChannel.tsx
 msgid "Forum Channel"
+msgstr ""
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Free text. Sounds sharing a category are grouped together."
 msgstr ""
 
 #: src/interface/Friends.tsx
@@ -1768,6 +1813,10 @@ msgstr "Anladım"
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsOverview.tsx
 msgid "Grants {0} permissions and denies {1} permissions"
 msgstr "{0} yetki verildi ve {1} izin engellendi"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Grid view"
+msgstr ""
 
 #: components/modal/modals/CreateGroup.tsx
 msgid "Group Name"
@@ -2079,6 +2128,10 @@ msgstr "Aydınlık"
 msgid "Link"
 msgstr ""
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "List view"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Listen"
 msgstr "Diğer kullanıcıları duyabilme"
@@ -2098,6 +2151,11 @@ msgstr ""
 
 #: src/interface/channels/forum/ForumChannel.tsx
 msgid "Loading posts…"
+msgstr ""
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Loading sounds."
 msgstr ""
 
 #: src/interface/channels/forum/ForumPostView.tsx
@@ -2290,6 +2348,7 @@ msgid "Minimise to Tray"
 msgstr "Simge Durumuna Küçült"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 msgid "Missing permission"
 msgstr "Kayıp İzinler"
 
@@ -2309,6 +2368,10 @@ msgstr "Sabit Boşluklu Font"
 msgid "More Contrast"
 msgstr "Yüksek Kontrast"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Most recent"
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Move Members"
 msgstr "Üyeleri Taşıyabilme"
@@ -2324,6 +2387,7 @@ msgstr "Çok aşamalı kimlik doğrulama bu hesapta çoktan aktifleştirildi."
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/app/menus/UserContextMenu.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Mute"
 msgstr "Sustur"
 
@@ -2379,6 +2443,7 @@ msgstr "Botlarım"
 
 #: components/modal/modals/CreateCategory.tsx
 #: components/modal/modals/RenameSession.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Name"
 msgstr "İsim"
 
@@ -2461,6 +2526,11 @@ msgstr ""
 msgid "No role overrides have been configured."
 msgstr "Hiçbir rol istisnası yapılandırılmadı."
 
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "No sounds on this server yet."
+msgstr ""
+
 #: components/app/interface/settings/channel/ForumSettings.tsx
 msgid "No tags yet."
 msgstr ""
@@ -2481,6 +2551,10 @@ msgstr "Normal"
 #: components/modal/modals/ReportContent.tsx
 msgid "Not of minimum age to use the platform"
 msgstr "Bu platformu kullanmak için gereken yaşta değil"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Nothing matches that."
+msgstr ""
 
 #: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Nothing to preview yet."
@@ -2535,6 +2609,7 @@ msgstr "Açık"
 #: components/modal/modals/DeleteChannel.tsx
 #: components/modal/modals/DeleteRole.tsx
 #: components/modal/modals/DeleteServer.tsx
+#: components/modal/modals/DeleteSound.tsx
 msgid "Once it's deleted, there's no going back."
 msgstr "Bir kez silindikten sonra geri dönüşü olmayacaktır."
 
@@ -2677,9 +2752,17 @@ msgstr ""
 msgid "Platform Moderator"
 msgstr "Platform Yetkilisi"
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Play"
+msgstr ""
+
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Play sound"
 msgstr "Ses oynat"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Play sounds in the channel"
+msgstr ""
 
 #: components/modal/modals/MFAFlow.tsx
 msgid "Please confirm this action using the selected method."
@@ -2886,6 +2969,10 @@ msgstr "Profil Resmini Kaldır"
 #: components/app/menus/UserContextMenu.tsx
 msgid "Remove friend"
 msgstr "Arkadaşlıktan çıkar"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Remove from favourites"
+msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 #: components/modal/modals/RemoveMember.tsx
@@ -3098,6 +3185,10 @@ msgstr "Grup ara..."
 msgid "Search for users..."
 msgstr "Kullanıcı ara..."
 
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Search sounds"
+msgstr ""
+
 #~ msgid "See what we're currently working on."
 #~ msgstr ""
 
@@ -3219,6 +3310,10 @@ msgstr "Sunucu Adı"
 msgid "Server Roles"
 msgstr "Sunucudaki Roller"
 
+#: src/interface/navigation/channels/ServerSidebar.tsx
+msgid "Server settings"
+msgstr ""
+
 #: components/app/interface/settings/UserSettings.tsx
 msgid "Sessions"
 msgstr "Oturumlar"
@@ -3320,6 +3415,20 @@ msgstr "Bir şeyler ters gitti! {error}"
 
 #~ msgid "Something went wrong! Try again later."
 #~ msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Sound actions"
+msgstr ""
+
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Sound name"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard"
+msgstr ""
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Sounds"
@@ -3665,6 +3774,10 @@ msgstr "Sorun giderme"
 msgid "Unblock user"
 msgstr "Kullanıcının engelini kaldır"
 
+#: components/app/interface/settings/server/sounds/SoundList.tsx
+msgid "Uncategorised"
+msgstr ""
+
 #. placeholder {0}: err.type
 #: components/i18n/errors.tsx
 msgid "Uncaught Stoat error: {0}"
@@ -3672,6 +3785,7 @@ msgstr "Stoat'ta gözden kaçan hata: {0}"
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Undeafen"
 msgstr "Sağırlaştırmayı Kaldır"
 
@@ -3702,6 +3816,7 @@ msgstr "Bu kanalın yetişkin ibaresini kaldır?"
 
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Unmute"
 msgstr "Susturmayı Aç"
 
@@ -3907,11 +4022,16 @@ msgstr "Ses & Video"
 msgid "Voice Channel"
 msgstr "Ses Kanalı"
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Voice connected"
+msgstr ""
+
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Voice Processing"
 msgstr "Ses İşleme Biçimi"
 
 #: components/app/menus/UserContextMenu.tsx
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Volume"
 msgstr "Ses düzeyi"
 
@@ -4061,6 +4181,10 @@ msgstr "Kendinizde olmayan izinleri kendinize veremezsiniz."
 #: components/i18n/errors.tsx
 msgid "You cannot join this call."
 msgstr "Bu aramaya katılamazsınız."
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "You cannot play sounds here."
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "You cannot remove yourself."

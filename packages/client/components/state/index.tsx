@@ -241,6 +241,13 @@ export function StateContext(props: { children: JSX.Element }) {
 
   onMount(() => stateLocal.hydrate().then(() => setReady(true)));
 
+  // Afordancia de dev, como __stoatRoom e __stoatClient: preferencias que
+  // persistem em IndexedDB nao sao verificaveis por teste sem uma porta de
+  // entrada. Some no build de producao.
+  if (import.meta.env.DEV) {
+    (window as unknown as { __stoatState?: State }).__stoatState = stateLocal;
+  }
+
   return (
     <stateContext.Provider value={stateLocal}>
       <Show when={ready()}>{props.children}</Show>

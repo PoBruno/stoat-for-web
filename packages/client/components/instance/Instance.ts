@@ -132,5 +132,12 @@ export function _newClient(apiUrl: string) {
     }
   });
 
+  // Afordancia de dev, igual ao __stoatRoom da camada de RTC: sem uma porta de
+  // entrada para o Client nao da para verificar hidratacao e eventos de
+  // WebSocket por teste automatizado. Some no build de producao.
+  if (import.meta.env.DEV) {
+    (window as unknown as { __stoatClient?: Client }).__stoatClient = cli;
+  }
+
   return cli;
 }

@@ -33,7 +33,13 @@ interface Props {
   /**
    * What type of files to accept
    */
-  accept?: "image/*";
+  /**
+   * Which files the picker offers.
+   *
+   * Era o literal "image/*". Soundboard precisa de audio, e o unico ponto que
+   * depende do valor e a pre-visualizacao, que so faz sentido para imagem.
+   */
+  accept?: "image/*" | "audio/*";
 
   imageAspect?: string;
   imageRounded?: boolean;

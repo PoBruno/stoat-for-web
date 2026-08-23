@@ -15,6 +15,7 @@ import {
 } from "solid-livekit-components";
 
 import {
+  LocalAudioTrack,
   LocalTrackPublication,
   Room,
   ScreenSharePresets,
@@ -61,6 +62,18 @@ class Voice {
 
   room: Accessor<Room | undefined>;
   #setRoom: Setter<Room | undefined>;
+
+  #setSoundboardOpen: Setter<boolean>;
+
+  /** Whether the soundboard panel is open */
+  soundboardOpen: Accessor<boolean>;
+
+  /** Clipe do soundboard tocando agora, se houver */
+  #soundboard?: {
+    ctx: AudioContext;
+    fonte: AudioBufferSourceNode;
+    faixa: LocalAudioTrack;
+  };
 
   vidTracks: Accessor<TrackReferenceOrPlaceholder[]>;
 
@@ -112,6 +125,10 @@ class Voice {
     const [room, setRoom] = createSignal<Room>();
     this.room = room;
     this.#setRoom = setRoom;
+
+    const [soundboardOpen, setSoundboardOpen] = createSignal(false);
+    this.soundboardOpen = soundboardOpen;
+    this.#setSoundboardOpen = setSoundboardOpen;
 
     this.vidTracks = () => [];
 
@@ -243,6 +260,18 @@ class Voice {
       this.#setVideo(false);
       this.#setScreenshare(false);
     });
+
+    // Afordancia de dev, no mesmo espirito dos data-* do Call: sem uma porta
+    // de entrada para o Room nao da para dirigir a camada de RTC por teste
+    // automatizado. Some no build de producao.
+    if (import.meta.env.DEV) {
+      const w = window as unknown as {
+        __stoatRoom?: Room;
+        __stoatVoice?: Voice;
+      };
+      w.__stoatRoom = room;
+      w.__stoatVoice = this;
+    }
 
     room.addListener("connected", () => {
       this.#setState("CONNECTED");
@@ -766,11 +795,100 @@ class Voice {
     return !!this.channel()?.havePermission("Speak");
   }
 
+  get soundboardPermission() {
+    return !!this.channel()?.havePermission("UseSoundboard");
+  }
+
+  /**
+   * Open or close the soundboard panel
+   */
+  toggleSoundboard() {
+    this.#setSoundboardOpen((aberto) => !aberto);
+  }
+
+  /**
+   * Play a soundboard clip into the call.
+   *
+   * The clip goes out as its own LiveKit track rather than being mixed into
+   * the microphone. Two reasons: mixing would silence it whenever the user is
+   * muted, and it would be mangled by the noise suppression chain, which is
+   * tuned for speech and destroys music.
+   *
+   * @param url Where to fetch the audio from
+   * @param onEnded Called once playback finishes
+   */
+  async playSound(url: string, onEnded?: () => void) {
+    const room = this.room();
+    if (!room || !this.soundboardPermission) return;
+
+    // Um clipe por vez: publicar dois com a mesma fonte seria recusado, e
+    // sobrepor audio no canal e ruim de ouvir de qualquer forma.
+    this.stopSound();
+
+    const ctx = new AudioContext();
+    const destino = ctx.createMediaStreamDestination();
+
+    const dados = await fetch(url).then((r) => r.arrayBuffer());
+    const buffer = await ctx.decodeAudioData(dados);
+
+    const fonte = ctx.createBufferSource();
+    fonte.buffer = buffer;
+    fonte.connect(destino);
+
+    const faixa = new LocalAudioTrack(destino.stream.getAudioTracks()[0]);
+    await room.localParticipant.publishTrack(faixa, {
+      source: Track.Source.Unknown,
+      name: SOUNDBOARD_TRACK,
+      // Musica e efeito nao sao voz: estes tres estragam o clipe.
+      dtx: false,
+      red: false,
+      stopMicTrackOnMute: false,
+    });
+
+    this.#soundboard = { ctx, fonte, faixa };
+
+    fonte.onended = () => {
+      this.stopSound();
+      onEnded?.();
+    };
+
+    fonte.start();
+  }
+
+  /**
+   * Stop whatever the soundboard is playing and unpublish its track.
+   */
+  stopSound() {
+    const atual = this.#soundboard;
+    if (!atual) return;
+    this.#soundboard = undefined;
+
+    try {
+      atual.fonte.onended = null;
+      atual.fonte.stop();
+    } catch {
+      // já havia terminado
+    }
+
+    this.room()?.localParticipant.unpublishTrack(atual.faixa);
+    atual.faixa.stop();
+    void atual.ctx.close();
+  }
+
   private onErr(e: unknown) {
     if ((e as Error).name !== "NotAllowedError")
       this.openModal({ type: "error2", error: e });
   }
 }
+
+/**
+ * Nome da track do soundboard.
+ *
+ * O LiveKit nao tem uma `Source` propria para isto, entao a publicacao usa
+ * `Unknown` e este nome e o que distingue o clipe de qualquer outra track
+ * solta do lado de quem escuta.
+ */
+export const SOUNDBOARD_TRACK = "soundboard";
 
 const voiceContext = createContext<Voice>(null as unknown as Voice);
 

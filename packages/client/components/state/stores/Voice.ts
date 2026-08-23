@@ -101,6 +101,12 @@ export interface TypeVoice {
 
   screenShareVolumes: Record<string, number>;
   screenShareMutes: Record<string, boolean>;
+
+  /** Sound ids the user starred, newest first */
+  soundboardFavourites: string[];
+
+  /** Playback volume for soundboard clips, 0 to 1 */
+  soundboardVolume: number;
 }
 
 /**
@@ -144,6 +150,8 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
       userMutes: {},
       screenShareVolumes: {},
       screenShareMutes: {},
+      soundboardFavourites: [],
+      soundboardVolume: 0.7,
     };
   }
 
@@ -152,6 +160,22 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
    */
   clean(input: Partial<TypeVoice>): TypeVoice {
     const data = this.default();
+
+    // Filtra elemento a elemento: o que vem do disco pode ter sido gravado por
+    // uma versao anterior ou editado a mao.
+    if (Array.isArray(input.soundboardFavourites)) {
+      data.soundboardFavourites = input.soundboardFavourites.filter(
+        (id) => typeof id === "string",
+      );
+    }
+
+    if (
+      typeof input.soundboardVolume === "number" &&
+      input.soundboardVolume >= 0 &&
+      input.soundboardVolume <= 1
+    ) {
+      data.soundboardVolume = input.soundboardVolume;
+    }
 
     if (typeof input.preferredAudioInputDevice === "string") {
       data.preferredAudioInputDevice = input.preferredAudioInputDevice;
@@ -563,5 +587,46 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
   set callFilmstrip(value: CallFilmstrip) {
     this.set("callFilmstrip", value);
+  }
+
+  /**
+   * Sound ids the user starred
+   */
+  get soundboardFavourites(): string[] {
+    return this.get().soundboardFavourites;
+  }
+
+  /**
+   * Whether a sound is starred
+   */
+  isFavouriteSound(id: string): boolean {
+    return this.get().soundboardFavourites.includes(id);
+  }
+
+  /**
+   * Star or unstar a sound
+   *
+   * Guarda o id, e nao o objeto: o som pode ser renomeado ou apagado no
+   * servidor, e a lista nao deve carregar uma copia velha.
+   */
+  toggleFavouriteSound(id: string) {
+    const atuais = this.get().soundboardFavourites;
+    this.set(
+      "soundboardFavourites",
+      atuais.includes(id)
+        ? atuais.filter((existente) => existente !== id)
+        : [id, ...atuais],
+    );
+  }
+
+  /**
+   * Playback volume for soundboard clips
+   */
+  get soundboardVolume(): number {
+    return this.get().soundboardVolume;
+  }
+
+  set soundboardVolume(value: number) {
+    this.set("soundboardVolume", Math.min(1, Math.max(0, value)));
   }
 }

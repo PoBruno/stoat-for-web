@@ -28,6 +28,7 @@ import { DeleteCategoryModal } from "./modals/DeleteCategory";
 import { DeleteChannelModal } from "./modals/DeleteChannel";
 import { DeleteMessageModal } from "./modals/DeleteMessage";
 import { DeleteRoleModal } from "./modals/DeleteRole";
+import { DeleteSoundModal } from "./modals/DeleteSound";
 import { DeleteServerModal } from "./modals/DeleteServer";
 import { EditBotUsernameModal } from "./modals/EditBotUsername";
 import { EditCategoryModal } from "./modals/EditCategory";
@@ -131,6 +132,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <DeleteMessageModal {...modalProps} />;
     case "delete_role":
       return <DeleteRoleModal {...modalProps} />;
+    case "delete_sound":
+      return <DeleteSoundModal {...modalProps} />;
     case "delete_server":
       return <DeleteServerModal {...modalProps} />;
     case "edit_email":
