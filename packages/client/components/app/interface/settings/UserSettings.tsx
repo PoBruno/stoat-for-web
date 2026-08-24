@@ -35,6 +35,7 @@ import { MyAccount } from "./user/Account";
 import AdvancedSettings from "./user/Advanced";
 import { AppearanceMenu } from "./user/appearance";
 import { MyBots, ViewBot } from "./user/bots";
+import { DownloadApp } from "./user/DownloadApp";
 import { Feedback } from "./user/Feedback";
 import { LanguageSettings } from "./user/Language";
 import Native from "./user/Native";
@@ -96,6 +97,8 @@ const Config: SettingsConfiguration<{ server: Server }> = {
         return <EditSubscription />;
       case "native":
         return <Native />;
+      case "download":
+        return <DownloadApp />;
       case "voice":
         return <VoiceSettings />;
       case "notifications":
@@ -308,6 +311,11 @@ const Config: SettingsConfiguration<{ server: Server }> = {
               hidden: !window.native,
               icon: <Symbol size={20}>desktop_windows</Symbol>,
               title: <Trans>Desktop</Trans>,
+            },
+            {
+              id: "download",
+              icon: <Symbol size={20}>install_desktop</Symbol>,
+              title: <Trans>Baixar aplicativo</Trans>,
             },
             // {
             //   id: "experiments",
