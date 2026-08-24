@@ -189,6 +189,8 @@ export const ServerSidebar = (props: Props) => {
     }
   }
 
+  let scroller!: HTMLDivElement;
+
   return (
     <SidebarBase
       class="channel_bar server"
@@ -227,6 +229,7 @@ export const ServerSidebar = (props: Props) => {
         use:invisibleScrollable
         style={{ "flex-grow": 1, "margin-bottom": "var(--gap-md)" }}
         use:floating={props.menuGenerator(props.server)}
+        ref={scroller}
       >
         <Draggable
           dragHandles
@@ -236,6 +239,7 @@ export const ServerSidebar = (props: Props) => {
           disabled={isMobile || noOrdering()}
           items={props.server.orderedChannels}
           onChange={(ids) => handleOrdering({ type: "categories", ids })}
+          scroller={scroller}
         >
           {(entry) => (
             <Category
