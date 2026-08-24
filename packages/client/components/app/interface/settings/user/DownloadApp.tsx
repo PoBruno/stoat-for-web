@@ -9,16 +9,16 @@ import { styled } from "styled-system/jsx";
 import MdInfo from "@material-design-icons/svg/outlined/info.svg?component-solid";
 import MdInventory2 from "@material-design-icons/svg/outlined/inventory_2.svg?component-solid";
 
+import {
+  DOWNLOAD_LINUX,
+  DOWNLOAD_RELEASES,
+  DOWNLOAD_WINDOWS,
+} from "@revolt/common";
 import { CategoryButton, Column, Text, iconSize } from "@revolt/ui";
 
-/**
- * Os arquivos da release nao levam a versao no nome, de proposito: assim
- * `releases/latest/download/<nome>` continua valendo em toda versao futura e
- * esta tela nunca precisa de rebuild so porque saiu uma versao nova.
- */
-const RELEASES = "https://github.com/PoBruno/stoat-for-desktop/releases";
-const WINDOWS = `${RELEASES}/latest/download/stoat-setup.exe`;
-const LINUX = `${RELEASES}/latest/download/stoat-amd64.deb`;
+const RELEASES = DOWNLOAD_RELEASES;
+const WINDOWS = DOWNLOAD_WINDOWS;
+const LINUX = DOWNLOAD_LINUX;
 
 /**
  * Sistema operacional de quem está acessando, para destacar o instalador certo.

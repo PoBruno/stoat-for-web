@@ -152,8 +152,16 @@ export function LoadingScreen(props: { isStoat?: boolean }) {
               symbol="wifi_off"
               label={t`This is taking longer than usual.`}
               title={t`You may be experiencing connection issues.`}
-              url={TROUBLESHOOTING_URL}
-              action={<Trans>Troubleshooting</Trans>}
+              url={
+                props.isStoat || instance?.isStoat
+                  ? TROUBLESHOOTING_URL
+                  : undefined
+              }
+              action={
+                props.isStoat || instance?.isStoat ? (
+                  <Trans>Troubleshooting</Trans>
+                ) : undefined
+              }
             />
           )
         }
@@ -170,8 +178,8 @@ function NoticeContent(props: {
   fill?: boolean;
   label: JSX.Element;
   title: JSX.Element;
-  url: string;
-  action: JSX.Element;
+  url?: string;
+  action?: JSX.Element;
 }) {
   return (
     <Notice>
@@ -188,12 +196,21 @@ function NoticeContent(props: {
           {props.title}
         </Text>
       </Header>
-      <Button
-        variant="text"
-        onPress={() => window.open(props.url, "_blank", "noopener,noreferrer")}
-      >
-        {props.action}
-      </Button>
+      {/*
+        O aviso continua útil sem link. Numa instância própria não há para
+        onde mandar o usuário: a base de conhecimento descreve a instância
+        oficial e não tem relação com quem hospeda esta.
+      */}
+      <Show when={props.url && props.action}>
+        <Button
+          variant="text"
+          onPress={() =>
+            window.open(props.url, "_blank", "noopener,noreferrer")
+          }
+        >
+          {props.action}
+        </Button>
+      </Show>
     </Notice>
   );
 }

@@ -5,12 +5,18 @@ import { AbstractStore } from ".";
 /**
  * Union type of available experiments.
  */
-export type Experiment = "gif_picker" | "plugins";
+export type Experiment = "plugins";
 
 /**
  * Currently active experiments.
+ *
+ * `gif_picker` saiu daqui em 2026-08-24. O seletor de GIF existe e está
+ * sempre ligado desde o commit 0b002031, que removeu o `isEnabled` de
+ * Composition.tsx e esqueceu a flag. O checkbox continuava na tela de
+ * Avançado escrito "Not available yet", gravava a escolha em disco e não
+ * mudava absolutamente nada.
  */
-export const AVAILABLE_EXPERIMENTS: Experiment[] = ["gif_picker", "plugins"];
+export const AVAILABLE_EXPERIMENTS: Experiment[] = ["plugins"];
 
 /**
  * Experiments enabled by default.
@@ -28,10 +34,6 @@ export const ALWAYS_ON_DEVELOPMENT_EXPERIMENTS: Experiment[] = [];
 export const EXPERIMENTS: {
   [key in Experiment]: { title: string; description: string };
 } = {
-  gif_picker: {
-    title: "GIF Picker Placeholder",
-    description: "Not available yet.",
-  },
   plugins: {
     title: "Plugins v2 Placeholder",
     description: "Not available yet.",

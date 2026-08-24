@@ -1,10 +1,12 @@
 import { BiLogosGithub } from "solid-icons/bi";
-import { JSX } from "solid-js";
+import { JSX, Show } from "solid-js";
 
 import { Trans } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { Titlebar } from "@revolt/app/interface/desktop/Titlebar";
+import { DOWNLOAD_RELEASES } from "@revolt/common";
+import { useInstance } from "@revolt/instance";
 import { useState } from "@revolt/state";
 import { IconButton, iconSize } from "@revolt/ui";
 
@@ -125,6 +127,7 @@ const Bullet = styled("div", {
  */
 export function AuthPage(props: { children: JSX.Element }) {
   const state = useState();
+  const instance = useInstance();
 
   return (
     <Root>
@@ -165,14 +168,34 @@ export function AuthPage(props: { children: JSX.Element }) {
             </NavItems>
             <Bullet />
             <NavItems>
-              <a href="https://stoat.chat/about" target="_blank">
-                <Trans>About</Trans>
-              </a>
-              <a href="https://stoat.chat/terms" target="_blank">
-                <Trans>Terms of Service</Trans>
-              </a>
-              <a href="https://stoat.chat/privacy" target="_blank">
-                <Trans>Privacy Policy</Trans>
+              {/*
+                Sobre, Termos e Privacidade descrevem o projeto oficial e as
+                regras de quem hospeda o stoat.chat. Numa instância própria
+                eles falam por alguém que não é o responsável por ela, então
+                só aparecem lá.
+              */}
+              <Show when={instance.isStoat}>
+                <a href="https://stoat.chat/about" target="_blank">
+                  <Trans>About</Trans>
+                </a>
+                <a href="https://stoat.chat/terms" target="_blank">
+                  <Trans>Terms of Service</Trans>
+                </a>
+                <a href="https://stoat.chat/privacy" target="_blank">
+                  <Trans>Privacy Policy</Trans>
+                </a>
+              </Show>
+              {/*
+                O rodapé é compartilhado por todas as telas de autenticação,
+                então o link de download aparece no login, no cadastro e na
+                verificação de uma vez só.
+              */}
+              <a
+                href={DOWNLOAD_RELEASES}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Trans>Baixar para computador</Trans>
               </a>
             </NavItems>
           </NavItems>

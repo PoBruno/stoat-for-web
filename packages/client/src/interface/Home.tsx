@@ -5,7 +5,7 @@ import { PublicChannelInvite } from "stoat.js";
 import { css, cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
-import { IS_DEV, useClient } from "@revolt/client";
+import { IS_DEV, podeCriarServidor, useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { useNavigate } from "@revolt/routing";
@@ -17,6 +17,7 @@ import {
   iconSize,
   main,
 } from "@revolt/ui";
+import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import MdAddCircle from "@material-design-icons/svg/filled/add_circle.svg?component-solid";
 import MdExplore from "@material-design-icons/svg/filled/explore.svg?component-solid";
@@ -103,6 +104,9 @@ export function HomePage() {
   const isInLounge =
     client()!.servers.get("01F7ZSBSFHQ8TA81725KQCSDDP") !== undefined;
 
+  // A instância pode restringir a criação de servidores a alguns usuários.
+  const criarServidor = () => podeCriarServidor(client());
+
   return (
     <Base>
       <Header placement="primary">
@@ -137,7 +141,12 @@ export function HomePage() {
               }
               icon={<MdAddCircle />}
             >
-              <Trans>Create a group or server</Trans>
+              <Show
+                when={criarServidor()}
+                fallback={<Trans>Create a group</Trans>}
+              >
+                <Trans>Create a group or server</Trans>
+              </Show>
             </CategoryButton>
             <Switch fallback={null}>
               <Match when={showLoungeButton && isInLounge}>
@@ -176,16 +185,24 @@ export function HomePage() {
                 </CategoryButton>
               </Match>
             </Switch>
-            <CategoryButton
-              variant="tertiary"
-              onClick={() => window.open("https://ko-fi.com/stoatchat")}
-              description={
-                <Trans>Support the project by donating - thank you!</Trans>
-              }
-              icon={<MdPayments />}
-            >
-              <Trans>Donate to Stoat</Trans>
-            </CategoryButton>
+            {/*
+              Doação e feedback vão para o ko-fi e as discussions do projeto
+              oficial. Numa instância própria isso manda o usuário para fora,
+              para um lugar que não tem relação com quem hospeda — mesmo
+              motivo pelo qual "Discover" já era condicionado a `isStoat`.
+            */}
+            <Show when={instance.isStoat}>
+              <CategoryButton
+                variant="tertiary"
+                onClick={() => window.open("https://ko-fi.com/stoatchat")}
+                description={
+                  <Trans>Support the project by donating - thank you!</Trans>
+                }
+                icon={<MdPayments />}
+              >
+                <Trans>Donate to Stoat</Trans>
+              </CategoryButton>
+            </Show>
           </SeparatedColumn>
           <SeparatedColumn>
             <Show when={instance.isStoat}>
@@ -201,22 +218,38 @@ export function HomePage() {
                 <Trans>Discover Stoat</Trans>
               </CategoryButton>
             </Show>
+            <Show when={instance.isStoat}>
+              <CategoryButton
+                onClick={() =>
+                  openModal({
+                    type: "settings",
+                    config: "user",
+                    context: { page: "feedback" },
+                  })
+                }
+                description={
+                  <Trans>
+                    Let us know how we can improve our app by giving us
+                    feedback.
+                  </Trans>
+                }
+                icon={<MdRateReview {...iconSize(22)} />}
+              >
+                <Trans>Give feedback on Stoat</Trans>
+              </CategoryButton>
+            </Show>
             <CategoryButton
               onClick={() =>
                 openModal({
                   type: "settings",
                   config: "user",
-                  context: { page: "feedback" },
+                  context: { page: "download" },
                 })
               }
-              description={
-                <Trans>
-                  Let us know how we can improve our app by giving us feedback.
-                </Trans>
-              }
-              icon={<MdRateReview {...iconSize(22)} />}
+              description={<Trans>Instale o Stoat no seu computador.</Trans>}
+              icon={<Symbol size={22}>install_desktop</Symbol>}
             >
-              <Trans>Give feedback on Stoat</Trans>
+              <Trans>Baixar aplicativo</Trans>
             </CategoryButton>
             <CategoryButton
               onClick={() => openModal({ type: "settings", config: "user" })}
