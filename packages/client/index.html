@@ -17,6 +17,22 @@
   <link rel="icon" type="image/x-icon" href="/assets/web/icon.ico">
   <link rel="apple-touch-icon" href="/assets/web/android-chrome-192x192.png">
   <title>Stoat</title>
+  <!--
+    Precisa estar aqui, e não num módulo: o navegador dispara
+    `beforeinstallprompt` antes de o aplicativo carregar, e sem alguém
+    escutando nesse instante o evento se perde e o botão de instalar nunca
+    aparece. O que estes dois guardam é lido depois pelo Device.tsx.
+  -->
+  <script>
+    onbeforeinstallprompt = (evento) => {
+      if (typeof window._PwaP === "function") window._PwaP(evento);
+      window._PwaP = evento;
+    };
+    onappinstalled = () => {
+      if (typeof window._PwaI === "function") window._PwaI(true);
+      window._PwaI = true;
+    };
+  </script>
 </head>
 
 <body>
