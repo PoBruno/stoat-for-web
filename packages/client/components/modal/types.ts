@@ -17,8 +17,8 @@ import {
   Server,
   ServerMember,
   ServerRole,
-  Sound,
   Session,
+  Sound,
   User,
   VideoEmbed,
 } from "stoat.js";
@@ -241,6 +241,11 @@ export type Modals =
   | {
       type: "server_info";
       server: Server;
+    }
+  | {
+      type: "transfer_ownership";
+      channel: Channel;
+      user: User;
     }
   | {
       type: "invite";
