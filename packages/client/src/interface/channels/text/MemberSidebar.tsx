@@ -388,7 +388,11 @@ function Member(props: {
       >
         <NameStatusStack>
           <OverflowingText>
-            <Username username={user().username} colour={user().colour!} />
+            <Username
+              userId={props.member?.id.user ?? props.user?.id}
+              username={user().username}
+              colour={user().colour!}
+            />
           </OverflowingText>
           <Show when={status()}>
             <Tooltip

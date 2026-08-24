@@ -113,6 +113,33 @@ export function MessageComposition(props: Props) {
   state.draft._setNodeReplacement = setNodeReplacement;
   onCleanup(() => (state.draft._setNodeReplacement = undefined));
 
+  // Safely insert a mention
+  //
+  // Lê `draft()` na hora da chamada, e não ao registrar: é o rascunho do
+  // momento do clique que importa. O lint de reatividade acusa isso, mas
+  // aqui é o comportamento desejado.
+  //
+  // A limpeza espelha a do `_setNodeReplacement` logo acima: sem ela, o
+  // callback continua apontando para uma composição já desmontada depois de
+  // trocar de canal.
+  // eslint-disable-next-line solid/reactivity
+  state.draft._appendMention = (mentionText: string) => {
+    const currentContent = draft()?.content ?? "";
+    const separator =
+      currentContent.endsWith(" ") || currentContent === "" ? "" : " ";
+    const newContent = currentContent + separator + mentionText;
+
+    setContent(newContent);
+    setInitialValue([newContent]);
+    setNodeReplacement(["_focus"]);
+  };
+  onCleanup(() => (state.draft._appendMention = undefined));
+
+  onCleanup(() => {
+    state.draft._setNodeReplacement = undefined;
+    state.draft._appendMention = undefined;
+  });
+
   createEffect(
     on(
       () => props.channel,

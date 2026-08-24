@@ -117,6 +117,11 @@ export class Draft extends AbstractStore<"draft", TypeDraft> {
   private instance;
 
   /**
+   * Method to safely append a mention
+   */
+  _appendMention?: (mentionText: string) => void;
+
+  /**
    * Construct store
    * @param state State
    */
