@@ -9,7 +9,13 @@
   <meta name="theme-color" content="#000">
   <meta name="theme-color" content="#000" media="(prefers-color-scheme: dark)">
   <meta http-equiv="cache-control" content="no-cache">
-  <link rel="shortcut icon" type="image/png" href="./public/assets/web/icon.ico">
+  <!--
+    O caminho NAO leva `public/`: o Vite serve essa pasta na raiz, entao
+    `./public/assets/...` dava 404 e a aba ficava sem icone. O `type` tambem
+    estava como image/png num arquivo .ico.
+  -->
+  <link rel="icon" type="image/x-icon" href="/assets/web/icon.ico">
+  <link rel="apple-touch-icon" href="/assets/web/android-chrome-192x192.png">
   <title>Stoat</title>
 </head>
 
