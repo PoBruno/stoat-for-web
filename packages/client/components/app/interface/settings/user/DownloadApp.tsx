@@ -17,8 +17,8 @@ import { CategoryButton, Column, Text, iconSize } from "@revolt/ui";
  * esta tela nunca precisa de rebuild so porque saiu uma versao nova.
  */
 const RELEASES = "https://github.com/PoBruno/stoat-for-desktop/releases";
-const WINDOWS = `${RELEASES}/latest/download/monga-setup.exe`;
-const LINUX = `${RELEASES}/latest/download/monga-amd64.deb`;
+const WINDOWS = `${RELEASES}/latest/download/stoat-setup.exe`;
+const LINUX = `${RELEASES}/latest/download/stoat-amd64.deb`;
 
 /**
  * Sistema operacional de quem está acessando, para destacar o instalador certo.
@@ -74,13 +74,13 @@ export function DownloadApp() {
             fallback={
               <Trans>
                 Pacote .deb para Debian e Ubuntu, 64 bits. Instale com: sudo apt
-                install ./monga-amd64.deb
+                install ./stoat-amd64.deb
               </Trans>
             }
           >
             <Trans>
               Recomendado para o seu computador. Instale com: sudo apt install
-              ./monga-amd64.deb
+              ./stoat-amd64.deb
             </Trans>
           </Show>
         }
