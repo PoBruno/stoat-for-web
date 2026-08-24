@@ -29,6 +29,7 @@ import {
 import { VoiceChannelCallCardMount } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
 import { SoundboardPanel } from "../voice/SoundboardPanel";
+import { MusicBoxPanel } from "../voice/musicbox/MusicBoxPanel";
 
 import { ChannelHeader } from "../ChannelHeader";
 import { ChannelPageProps } from "../ChannelPage";
@@ -255,6 +256,23 @@ export function TextChannel(props: ChannelPageProps) {
             )}
           </Show>
 
+          {/*
+            Painel do MusicBox. Mesma regra do soundboard: so na chamada em
+            que a pessoa esta de fato conectada.
+
+            Os dois nunca aparecem juntos - abrir um fecha o outro no estado
+            da chamada - porque este aqui ocupa a altura inteira.
+          */}
+          <Show
+            when={
+              voice.musicboxOpen() && voice.channel()?.id === props.channel.id
+            }
+          >
+            <MusicBoxHolder>
+              <MusicBoxPanel onClose={() => voice.toggleMusicbox()} />
+            </MusicBoxHolder>
+          </Show>
+
           <Show when={showChat()}>
             <Messages
               channel={props.channel}
@@ -345,8 +363,10 @@ export function TextChannel(props: ChannelPageProps) {
                 keybind={KeybindAction.CLOSE_SIDEBAR}
                 onPressed={() => setSidebarState({ state: "default" })}
               />
-            </Show>
+          </Show>
+
           </div>
+
         </Show>
       </Content>
     </>
@@ -412,5 +432,21 @@ const SoundboardHolder = styled("div", {
     height: "min(46vh, 420px)",
     padding: "0 var(--gap-md) var(--gap-md)",
     flexShrink: 0,
+  },
+});
+
+/**
+ * Espaco do MusicBox.
+ *
+ * Ao contrario do soundboard, toma a altura toda: e uma fila que a pessoa
+ * fica lendo e reordenando, e cortar em 46vh deixaria tres faixas visiveis.
+ * `flexGrow` com `minHeight: 0` para o painel rolar por dentro em vez de
+ * esticar o container e empurrar a barra de digitar para fora da tela.
+ */
+const MusicBoxHolder = styled("div", {
+  base: {
+    flexGrow: 1,
+    minHeight: 0,
+    padding: "0 var(--gap-md) var(--gap-md)",
   },
 });

@@ -99,6 +99,15 @@ export function VoiceDock() {
 
             <IconButton
               size="xs"
+              variant={voice.musicboxOpen() ? "tonal" : "standard"}
+              aria-label={t`MusicBox`}
+              onPress={() => voice.toggleMusicbox()}
+            >
+              <Symbol size={18}>music_note</Symbol>
+            </IconButton>
+
+            <IconButton
+              size="xs"
               variant="standard"
               aria-label={t`Disconnect`}
               onPress={() => voice.disconnect()}

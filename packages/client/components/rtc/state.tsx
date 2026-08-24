@@ -68,6 +68,11 @@ class Voice {
   /** Whether the soundboard panel is open */
   soundboardOpen: Accessor<boolean>;
 
+  #setMusicboxOpen: Setter<boolean>;
+
+  /** Whether the MusicBox panel is open */
+  musicboxOpen: Accessor<boolean>;
+
   /** Clipe do soundboard tocando agora, se houver */
   #soundboard?: {
     ctx: AudioContext;
@@ -129,6 +134,10 @@ class Voice {
     const [soundboardOpen, setSoundboardOpen] = createSignal(false);
     this.soundboardOpen = soundboardOpen;
     this.#setSoundboardOpen = setSoundboardOpen;
+
+    const [musicboxOpen, setMusicboxOpen] = createSignal(false);
+    this.musicboxOpen = musicboxOpen;
+    this.#setMusicboxOpen = setMusicboxOpen;
 
     this.vidTracks = () => [];
 
@@ -801,9 +810,26 @@ class Voice {
 
   /**
    * Open or close the soundboard panel
+   *
+   * Fecha o MusicBox ao abrir: os dois ocupam a mesma faixa acima das
+   * mensagens, e o MusicBox usa a altura inteira. Deixar os dois abertos
+   * espremeria a conversa ate sumir.
    */
   toggleSoundboard() {
-    this.#setSoundboardOpen((aberto) => !aberto);
+    this.#setSoundboardOpen((aberto) => {
+      if (!aberto) this.#setMusicboxOpen(false);
+      return !aberto;
+    });
+  }
+
+  /**
+   * Open or close the MusicBox panel
+   */
+  toggleMusicbox() {
+    this.#setMusicboxOpen((aberto) => {
+      if (!aberto) this.#setSoundboardOpen(false);
+      return !aberto;
+    });
   }
 
   /**

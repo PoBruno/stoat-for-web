@@ -34,6 +34,7 @@ export function VoiceCallCardActiveRoom() {
         <VoiceCallControlHolder right>
           <VoiceCallArrangement />
           <VoiceCallSoundboardToggle />
+          <VoiceCallMusicBoxToggle />
           <VoiceCallChatToggle />
           <VoiceCallFullscreen />
         </VoiceCallControlHolder>
@@ -128,6 +129,27 @@ function VoiceCallSoundboardToggle() {
       }}
     >
       <Symbol>graphic_eq</Symbol>
+    </IconButton>
+  );
+}
+
+/**
+ * Open or close the MusicBox panel
+ */
+function VoiceCallMusicBoxToggle() {
+  const voice = useVoice();
+  const { t } = useLingui();
+
+  return (
+    <IconButton
+      size="sm"
+      variant={voice.musicboxOpen() ? "tonal" : "standard"}
+      onPress={() => voice.toggleMusicbox()}
+      use:floating={{
+        tooltip: { placement: "top", content: t`MusicBox` },
+      }}
+    >
+      <Symbol>music_note</Symbol>
     </IconButton>
   );
 }
