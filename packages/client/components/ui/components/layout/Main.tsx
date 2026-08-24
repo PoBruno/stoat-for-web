@@ -16,8 +16,11 @@ export const main = cva({
     flexDirection: "column",
 
     paddingInline: "var(--gap-md)",
-    marginInline: "var(--gap-md)",
-    marginBlockEnd: "var(--gap-md)",
+    // A margem é a faixa visível entre a barra lateral e este painel, e é
+    // ajustável em Aparência. O `padding` acima continua no token comum:
+    // ele é respiro interno do texto, não a divisão entre os dois.
+    marginInline: "var(--layout-panel-spacing)",
+    marginBlockEnd: "var(--layout-panel-spacing)",
     borderRadius: "var(--borderRadius-xl)",
     background: "var(--md-sys-color-surface-container-lowest)",
     paddingBottom: "env(keyboard-inset-height)",

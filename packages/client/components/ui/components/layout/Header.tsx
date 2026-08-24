@@ -40,7 +40,9 @@ export const Header = styled("div", {
   variants: {
     placement: {
       primary: {
-        margin: "var(--gap-md) var(--gap-md) var(--gap-md) 0",
+        // A margem da direita é a mesma faixa do painel; a da esquerda é
+        // zero de propósito, para o cabeçalho encostar na barra lateral.
+        margin: "var(--gap-md) var(--layout-panel-spacing) var(--gap-md) 0",
       },
       secondary: {
         margin: "var(--gap-md)",

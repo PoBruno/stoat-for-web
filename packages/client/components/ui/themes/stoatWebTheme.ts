@@ -41,9 +41,60 @@ export function createStoatWebVariables(theme: SelectedTheme) {
     "--fonts-monospace": `"${theme.monospaceFont}", "Jetbrains Mono", sans-serif`,
 
     // load constants
-    ...reduceWithPrefix(themeConstants.borderRadius, "--borderRadius-"),
+    ...reduceWithPrefix(escalaDeCantos(theme.cornerRadius), "--borderRadius-"),
     ...reduceWithPrefix(themeConstants.gap, "--gap-"),
     ...reduceWithPrefix(themeConstants.layout, "--layout-"),
+
+    // Faixa entre a barra lateral e o painel de conteúdo.
+    //
+    // Tem variável própria em vez de reusar `--gap-md`: aquele token é usado
+    // em dezenas de lugares sem relação com este espaço, e mexer nele para
+    // ajustar a faixa mudaria respiro de coisas que ninguém pediu.
+    "--layout-panel-spacing": `${theme.panelSpacing}px`,
+  };
+}
+
+/**
+ * Escala de arredondamento derivada de um único valor
+ *
+ * O Material 3 define dez degraus proporcionais entre si. Mudar apenas um
+ * deles quebraria a relação; mudar todos à mão seria dez ajustes para uma
+ * decisão só. Aqui o valor escolhido é a régua — o degrau `xl`, que é o do
+ * painel principal — e os outros acompanham na mesma proporção.
+ *
+ * `none`, `full` e `circle` ficam de fora de propósito: um botão em forma de
+ * pílula e um avatar redondo não são decisões de estilo, são a forma da
+ * coisa.
+ */
+function escalaDeCantos(maximo: number) {
+  // Os degraus do Material 3 Expressive, que definem as proporções.
+  // https://m3.material.io/styles/shape/corner-radius-scale
+  const referencia = {
+    xs: 4,
+    sm: 8,
+    md: 12,
+    lg: 16,
+    li: 20,
+    xl: 28,
+    xli: 32,
+    xxl: 48,
+  };
+
+  const fator = maximo / referencia.xl;
+
+  const escalado = Object.fromEntries(
+    Object.entries(referencia).map(([degrau, valor]) => [
+      degrau,
+      // Arredonda para o pixel: meio pixel em borda rende serrilhado.
+      `${Math.round(valor * fator)}px`,
+    ]),
+  );
+
+  return {
+    none: "0px",
+    ...escalado,
+    full: "calc(infinity * 1px)",
+    circle: "100%",
   };
 }
 
@@ -61,21 +112,6 @@ function reduceWithPrefix(object: Record<string, string>, prefix: string) {
 }
 
 const themeConstants = {
-  borderRadius: {
-    // Material 3 Expressive ten-level shape scale
-    // https://m3.material.io/styles/shape/corner-radius-scale
-    none: "0px",
-    xs: "4px",
-    sm: "8px",
-    md: "12px",
-    lg: "16px",
-    li: "20px",
-    xl: "28px",
-    xli: "32px",
-    xxl: "48px",
-    full: "calc(infinity * 1px)",
-    circle: "100%",
-  },
   /**
    * @deprecated decide this at a component level
    */

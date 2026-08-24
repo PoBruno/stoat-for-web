@@ -360,6 +360,38 @@ export function AppearanceMenu() {
         }
       />
 
+      <Column>
+        <Text class="title" size="small">
+          <Trans>Layout</Trans>
+        </Text>
+
+        <Text class="label">
+          <Trans>Arredondamento dos cantos</Trans>
+        </Text>
+        <Slider
+          min={0}
+          max={32}
+          value={state.theme.cornerRadius}
+          onInput={(event) =>
+            (state.theme.cornerRadius = event.currentTarget.value)
+          }
+          labelFormatter={(valor) => `${valor}px`}
+        />
+
+        <Text class="label">
+          <Trans>Espaço em volta do painel</Trans>
+        </Text>
+        <Slider
+          min={0}
+          max={32}
+          value={state.theme.panelSpacing}
+          onInput={(event) =>
+            (state.theme.panelSpacing = event.currentTarget.value)
+          }
+          labelFormatter={(valor) => `${valor}px`}
+        />
+      </Column>
+
       <FloatingSelect
         label={t`Interface Font`}
         value={state.theme.interfaceFont}

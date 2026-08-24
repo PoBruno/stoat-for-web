@@ -264,7 +264,9 @@ export function GroupMemberSidebar(props: Props) {
  */
 const Container = styled("div", {
   base: {
-    paddingRight: "var(--gap-md)",
+    // Mesma faixa que separa o painel principal da barra lateral, para os
+    // dois lados da tela respirarem igual.
+    paddingRight: "var(--layout-panel-spacing)",
     width: "var(--layout-width-channel-sidebar)",
   },
 });

@@ -385,7 +385,7 @@ const sidebar = cva({
  */
 const WideSidebarContainer = styled("div", {
   base: {
-    paddingRight: "var(--gap-md)",
+    paddingRight: "var(--layout-panel-spacing)",
     width: "360px",
   },
 });

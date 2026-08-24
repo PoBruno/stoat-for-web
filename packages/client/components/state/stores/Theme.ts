@@ -73,6 +73,21 @@ export type TypeTheme = {
    * Spacing between message groups
    */
   messageGroupSpacing: number;
+
+  /**
+   * Maior raio de canto da interface, em pixels
+   *
+   * A escala do Material 3 é proporcional, então este valor é a régua: os
+   * outros degraus são derivados dele mantendo as proporções. Guardar o
+   * máximo, e não um fator, deixa o ajuste legível — é o arredondamento do
+   * painel principal que a pessoa está vendo enquanto arrasta.
+   */
+  cornerRadius: number;
+
+  /**
+   * Largura da faixa entre a barra lateral e o painel de conteúdo
+   */
+  panelSpacing: number;
 };
 
 export type SelectedTheme = Pick<
@@ -82,6 +97,8 @@ export type SelectedTheme = Pick<
   | "monospaceFont"
   | "messageSize"
   | "messageGroupSpacing"
+  | "cornerRadius"
+  | "panelSpacing"
 > & {
   preset: "you";
   darkMode: boolean;
@@ -144,6 +161,12 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
       blur: true,
       messageSize: 14,
       messageGroupSpacing: 12,
+
+      // O upstream usa 28px, o topo da escala do Material 3. Aqui a régua é
+      // 10px: os degraus menores acompanham na proporção, e quem quiser o
+      // visual mais arredondado muda em Aparência.
+      cornerRadius: 10,
+      panelSpacing: 8,
     };
   }
 
@@ -200,6 +223,17 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
       data.messageGroupSpacing = input.messageGroupSpacing;
     }
 
+    // Limites, e não só o tipo: um valor gravado fora de faixa (por edição
+    // manual do armazenamento, ou por uma versão futura com outra escala)
+    // deformaria a interface inteira sem deixar rastro.
+    if (typeof input.cornerRadius === "number") {
+      data.cornerRadius = Math.min(32, Math.max(0, input.cornerRadius));
+    }
+
+    if (typeof input.panelSpacing === "number") {
+      data.panelSpacing = Math.min(32, Math.max(0, input.panelSpacing));
+    }
+
     if (
       typeof input.monospaceFont === "string" &&
       MONOSPACE_FONT_KEYS.includes(input.monospaceFont)
@@ -231,6 +265,8 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
           monospaceFont: opts.monospaceFont,
           messageSize: opts.messageSize,
           messageGroupSpacing: opts.messageGroupSpacing,
+          cornerRadius: opts.cornerRadius,
+          panelSpacing: opts.panelSpacing,
           preset: "you",
           darkMode:
             opts.mode === "dark" ||
@@ -386,5 +422,33 @@ export class Theme extends AbstractStore<"theme", TypeTheme> {
    */
   set messageGroupSpacing(space: number) {
     this.set("messageGroupSpacing", space);
+  }
+
+  /**
+   * Get current corner radius
+   */
+  get cornerRadius() {
+    return this.get().cornerRadius;
+  }
+
+  /**
+   * Set corner radius
+   */
+  set cornerRadius(radius: number) {
+    this.set("cornerRadius", radius);
+  }
+
+  /**
+   * Get current panel spacing
+   */
+  get panelSpacing() {
+    return this.get().panelSpacing;
+  }
+
+  /**
+   * Set panel spacing
+   */
+  set panelSpacing(space: number) {
+    this.set("panelSpacing", space);
   }
 }
