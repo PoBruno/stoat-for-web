@@ -30,6 +30,8 @@ import MdSettings from "@material-design-icons/svg/filled/settings.svg?component
 import Wordmark from "../../public/assets/web/wordmark.svg?component-solid";
 
 import { HeaderIcon } from "./common/CommonHeader";
+import { AmigosOnline } from "./home/AmigosOnline";
+import { Timeline } from "./home/Timeline";
 
 /**
  * Base layout of the home page (i.e. the header/background)
@@ -60,33 +62,48 @@ const content = cva({
 });
 
 /**
- * Layout of the buttons
+ * Duas colunas: o feed ocupa a maior parte, os atalhos ficam ao lado.
+ *
+ * Em tela estreita vira uma coluna só, com os atalhos abaixo do feed — o
+ * que interessa é o conteúdo, não os botões.
  */
-const Buttons = styled("div", {
+const Painel = styled("div", {
   base: {
-    gap: "8px",
-    padding: "8px",
     display: "flex",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    borderRadius: "var(--borderRadius-lg)",
+    gap: "var(--gap-lg)",
+    width: "100%",
+    maxWidth: "860px",
+    margin: "0 auto",
+    padding: "0 var(--gap-md)",
+    alignItems: "flex-start",
 
-    color: "var(--md-sys-color-on-surface-variant)",
-    background: "var(--md-sys-color-surface-variant)",
+    "@media (max-width: 820px)": {
+      flexDirection: "column",
+    },
   },
 });
 
-/**
- * Make sure the columns are separated
- */
-const SeparatedColumn = styled(Column, {
+const Lateral = styled("div", {
   base: {
-    justifyContent: "stretch",
-    marginInline: "0.25em",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-md)",
     width: "260px",
-    "& > *": {
-      flexGrow: 1,
+    flexShrink: 0,
+
+    "@media (max-width: 820px)": {
+      width: "100%",
     },
+  },
+});
+
+const Atalhos = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-xs)",
+    borderRadius: "var(--borderRadius-xl)",
+    overflow: "hidden",
   },
 });
 
@@ -124,146 +141,157 @@ export function HomePage() {
             })}
           />
         </Column>
-        <Buttons>
-          <SeparatedColumn>
-            <CategoryButton
-              onClick={() =>
-                openModal({
-                  type: "create_group_or_server",
-                  client: client()!,
-                })
-              }
-              description={
-                <Trans>
-                  Invite all of your friends, some cool bots, and throw a big
-                  party.
-                </Trans>
-              }
-              icon={<MdAddCircle />}
-            >
-              <Show
-                when={criarServidor()}
-                fallback={<Trans>Create a group</Trans>}
+        {/*
+          Duas colunas: o feed ocupa a maior parte e os atalhos ficam ao
+          lado. Antes a Home era só um punhado de botões — nada aqui dizia
+          se algo tinha acontecido desde a última visita.
+        */}
+        <Painel>
+          <Timeline />
+          <Lateral>
+            <AmigosOnline />
+            <Atalhos>
+              <CategoryButton
+                onClick={() =>
+                  openModal({
+                    type: "create_group_or_server",
+                    client: client()!,
+                  })
+                }
+                description={
+                  <Trans>
+                    Invite all of your friends, some cool bots, and throw a big
+                    party.
+                  </Trans>
+                }
+                icon={<MdAddCircle />}
               >
-                <Trans>Create a group or server</Trans>
-              </Show>
-            </CategoryButton>
-            <Switch fallback={null}>
-              <Match when={showLoungeButton && isInLounge}>
-                <CategoryButton
-                  onClick={() => navigate("/server/01F7ZSBSFHQ8TA81725KQCSDDP")}
-                  description={
-                    <Trans>
-                      You can report issues and discuss improvements with us
-                      directly here.
-                    </Trans>
-                  }
-                  icon={<MdGroups3 />}
+                <Show
+                  when={criarServidor()}
+                  fallback={<Trans>Create a group</Trans>}
                 >
-                  <Trans>Go to the Stoat Lounge</Trans>
-                </CategoryButton>
-              </Match>
-              <Match when={showLoungeButton && !isInLounge}>
-                <CategoryButton
-                  onClick={() => {
-                    client()
-                      .api.get("/invites/Testers")
-                      .then((invite) =>
-                        PublicChannelInvite.from(client(), invite),
-                      )
-                      .then((invite) => openModal({ type: "invite", invite }));
-                  }}
-                  description={
-                    <Trans>
-                      You can report issues and discuss improvements with us
-                      directly here.
-                    </Trans>
-                  }
-                  icon={<MdGroups3 />}
-                >
-                  <Trans>Join the Stoat Lounge</Trans>
-                </CategoryButton>
-              </Match>
-            </Switch>
-            {/*
+                  <Trans>Create a group or server</Trans>
+                </Show>
+              </CategoryButton>
+              <Switch fallback={null}>
+                <Match when={showLoungeButton && isInLounge}>
+                  <CategoryButton
+                    onClick={() =>
+                      navigate("/server/01F7ZSBSFHQ8TA81725KQCSDDP")
+                    }
+                    description={
+                      <Trans>
+                        You can report issues and discuss improvements with us
+                        directly here.
+                      </Trans>
+                    }
+                    icon={<MdGroups3 />}
+                  >
+                    <Trans>Go to the Stoat Lounge</Trans>
+                  </CategoryButton>
+                </Match>
+                <Match when={showLoungeButton && !isInLounge}>
+                  <CategoryButton
+                    onClick={() => {
+                      client()
+                        .api.get("/invites/Testers")
+                        .then((invite) =>
+                          PublicChannelInvite.from(client(), invite),
+                        )
+                        .then((invite) =>
+                          openModal({ type: "invite", invite }),
+                        );
+                    }}
+                    description={
+                      <Trans>
+                        You can report issues and discuss improvements with us
+                        directly here.
+                      </Trans>
+                    }
+                    icon={<MdGroups3 />}
+                  >
+                    <Trans>Join the Stoat Lounge</Trans>
+                  </CategoryButton>
+                </Match>
+              </Switch>
+              {/*
               Doação e feedback vão para o ko-fi e as discussions do projeto
               oficial. Numa instância própria isso manda o usuário para fora,
               para um lugar que não tem relação com quem hospeda — mesmo
               motivo pelo qual "Discover" já era condicionado a `isStoat`.
             */}
-            <Show when={instance.isStoat}>
-              <CategoryButton
-                variant="tertiary"
-                onClick={() => window.open("https://ko-fi.com/stoatchat")}
-                description={
-                  <Trans>Support the project by donating - thank you!</Trans>
-                }
-                icon={<MdPayments />}
-              >
-                <Trans>Donate to Stoat</Trans>
-              </CategoryButton>
-            </Show>
-          </SeparatedColumn>
-          <SeparatedColumn>
-            <Show when={instance.isStoat}>
-              <CategoryButton
-                onClick={() => navigate("/discover")}
-                description={
-                  <Trans>
-                    Find a community based on your hobbies or interests.
-                  </Trans>
-                }
-                icon={<MdExplore />}
-              >
-                <Trans>Discover Stoat</Trans>
-              </CategoryButton>
-            </Show>
-            <Show when={instance.isStoat}>
+              <Show when={instance.isStoat}>
+                <CategoryButton
+                  variant="tertiary"
+                  onClick={() => window.open("https://ko-fi.com/stoatchat")}
+                  description={
+                    <Trans>Support the project by donating - thank you!</Trans>
+                  }
+                  icon={<MdPayments />}
+                >
+                  <Trans>Donate to Stoat</Trans>
+                </CategoryButton>
+              </Show>
+              <Show when={instance.isStoat}>
+                <CategoryButton
+                  onClick={() => navigate("/discover")}
+                  description={
+                    <Trans>
+                      Find a community based on your hobbies or interests.
+                    </Trans>
+                  }
+                  icon={<MdExplore />}
+                >
+                  <Trans>Discover Stoat</Trans>
+                </CategoryButton>
+              </Show>
+              <Show when={instance.isStoat}>
+                <CategoryButton
+                  onClick={() =>
+                    openModal({
+                      type: "settings",
+                      config: "user",
+                      context: { page: "feedback" },
+                    })
+                  }
+                  description={
+                    <Trans>
+                      Let us know how we can improve our app by giving us
+                      feedback.
+                    </Trans>
+                  }
+                  icon={<MdRateReview {...iconSize(22)} />}
+                >
+                  <Trans>Give feedback on Stoat</Trans>
+                </CategoryButton>
+              </Show>
               <CategoryButton
                 onClick={() =>
                   openModal({
                     type: "settings",
                     config: "user",
-                    context: { page: "feedback" },
+                    context: { page: "download" },
                   })
                 }
+                description={<Trans>Instale o Stoat no seu computador.</Trans>}
+                icon={<Symbol size={22}>install_desktop</Symbol>}
+              >
+                <Trans>Baixar aplicativo</Trans>
+              </CategoryButton>
+              <CategoryButton
+                onClick={() => openModal({ type: "settings", config: "user" })}
                 description={
                   <Trans>
-                    Let us know how we can improve our app by giving us
-                    feedback.
+                    You can also click the gear icon in the bottom left.
                   </Trans>
                 }
-                icon={<MdRateReview {...iconSize(22)} />}
+                icon={<MdSettings />}
               >
-                <Trans>Give feedback on Stoat</Trans>
+                <Trans>Open settings</Trans>
               </CategoryButton>
-            </Show>
-            <CategoryButton
-              onClick={() =>
-                openModal({
-                  type: "settings",
-                  config: "user",
-                  context: { page: "download" },
-                })
-              }
-              description={<Trans>Instale o Stoat no seu computador.</Trans>}
-              icon={<Symbol size={22}>install_desktop</Symbol>}
-            >
-              <Trans>Baixar aplicativo</Trans>
-            </CategoryButton>
-            <CategoryButton
-              onClick={() => openModal({ type: "settings", config: "user" })}
-              description={
-                <Trans>
-                  You can also click the gear icon in the bottom left.
-                </Trans>
-              }
-              icon={<MdSettings />}
-            >
-              <Trans>Open settings</Trans>
-            </CategoryButton>
-          </SeparatedColumn>
-        </Buttons>
+            </Atalhos>
+          </Lateral>
+        </Painel>
         <Show when={IS_DEV}>
           <Button onPress={() => navigate("/dev")}>
             Open Development Page
