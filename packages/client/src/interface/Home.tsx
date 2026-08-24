@@ -2,21 +2,14 @@ import { Match, Show, Switch } from "solid-js";
 
 import { Trans } from "@lingui/solid/macro";
 import { PublicChannelInvite } from "stoat.js";
-import { css, cva } from "styled-system/css";
+import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import { IS_DEV, podeCriarServidor, useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { useNavigate } from "@revolt/routing";
-import {
-  Button,
-  CategoryButton,
-  Column,
-  Header,
-  iconSize,
-  main,
-} from "@revolt/ui";
+import { Button, CategoryButton, Header, iconSize, main } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import MdAddCircle from "@material-design-icons/svg/filled/add_circle.svg?component-solid";
@@ -26,8 +19,6 @@ import MdHome from "@material-design-icons/svg/filled/home.svg?component-solid";
 import MdPayments from "@material-design-icons/svg/filled/payments.svg?component-solid";
 import MdRateReview from "@material-design-icons/svg/filled/rate_review.svg?component-solid";
 import MdSettings from "@material-design-icons/svg/filled/settings.svg?component-solid";
-
-import Wordmark from "../../public/assets/web/wordmark.svg?component-solid";
 
 import { HeaderIcon } from "./common/CommonHeader";
 import { AmigosOnline } from "./home/AmigosOnline";
@@ -48,16 +39,20 @@ const Base = styled("div", {
 
 /**
  * Layout of the content as a whole
+ *
+ * Encostado no topo e à esquerda. Quando a Home era um punhado de botões,
+ * centralizar fazia sentido; com um feed, centralizar empurra o conteúdo
+ * para baixo da dobra e deixa uma faixa vazia à esquerda.
  */
 const content = cva({
   base: {
     ...main.raw(),
 
-    padding: "48px 0",
+    padding: "var(--gap-lg) var(--gap-lg) var(--gap-xl)",
 
-    gap: "32px",
-    alignItems: "center",
-    justifyContent: "center",
+    gap: "var(--gap-lg)",
+    alignItems: "stretch",
+    justifyContent: "flex-start",
   },
 });
 
@@ -72,9 +67,8 @@ const Painel = styled("div", {
     display: "flex",
     gap: "var(--gap-lg)",
     width: "100%",
-    maxWidth: "860px",
-    margin: "0 auto",
-    padding: "0 var(--gap-md)",
+    // Sem `margin: auto` e sem largura fixa: o painel acompanha a janela em
+    // vez de virar uma coluna estreita no meio de espaço vazio.
     alignItems: "flex-start",
 
     "@media (max-width: 820px)": {
@@ -133,15 +127,11 @@ export function HomePage() {
         <Trans>Home</Trans>
       </Header>
       <div use:scrollable={{ class: content() }}>
-        <Column>
-          <Wordmark
-            class={css({
-              width: "160px",
-              fill: "var(--md-sys-color-on-surface)",
-            })}
-          />
-        </Column>
         {/*
+          O wordmark centralizado saiu daqui: ele ocupava a primeira dobra
+          inteira para repetir o que o cabeçalho logo acima já diz, e
+          empurrava o feed para fora da tela.
+
           Duas colunas: o feed ocupa a maior parte e os atalhos ficam ao
           lado. Antes a Home era só um punhado de botões — nada aqui dizia
           se algo tinha acontecido desde a última visita.
@@ -290,13 +280,19 @@ export function HomePage() {
                 <Trans>Open settings</Trans>
               </CategoryButton>
             </Atalhos>
+            {/*
+              Página interna do próprio projeto, para testar componentes.
+              Só existe em build de desenvolvimento (`IS_DEV`) — em produção
+              nem chega a ser compilada. Fica no rodapé da lateral em vez de
+              solta no meio da tela.
+            */}
+            <Show when={IS_DEV}>
+              <Button variant="text" onPress={() => navigate("/dev")}>
+                Open Development Page
+              </Button>
+            </Show>
           </Lateral>
         </Painel>
-        <Show when={IS_DEV}>
-          <Button onPress={() => navigate("/dev")}>
-            Open Development Page
-          </Button>
-        </Show>
       </div>
     </Base>
   );
