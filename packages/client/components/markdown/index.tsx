@@ -72,21 +72,62 @@ const Null = () => null;
  * loading one leaks the reader's IP to whoever wrote the message. Attachments
  * uploaded here are already served by us, so they carry no such risk.
  */
+/**
+ * Tags que o autumn serve. O caminho de um arquivo e sempre
+ * `/<tag>/<id>` ou `/<tag>/<id>/<nome>`, com ou sem prefixo antes.
+ */
+const TAGS_AUTUMN =
+  "attachments|avatars|backgrounds|icons|banners|emojis|sounds";
+
+const CAMINHO_AUTUMN = new RegExp(
+  `/(${TAGS_AUTUMN})/([A-Za-z0-9_-]+)(?:/[^?#]*)?$`,
+);
+
+/**
+ * Resolve a URL de uma imagem contra o servidor de midia ATUAL.
+ *
+ * O markdown guarda a URL absoluta de quando o conteudo foi escrito. Isso
+ * quebra toda imagem antiga assim que o host muda — trocar o autumn de
+ * container para nativo, ou subir para producao, deixava tudo como link.
+ *
+ * Aqui o host de origem e **descartado**: fica so o caminho, reconstruido
+ * sobre o `mediaUrl` de agora. Isso tambem e mais seguro que a checagem
+ * anterior de prefixo, porque nada externo chega a ser carregado — uma URL
+ * apontando para fora vira uma requisicao ao nosso proprio servidor, ou nao
+ * vira imagem nenhuma.
+ */
+function resolverMidia(src: string | undefined, mediaUrl: string) {
+  if (!src) return undefined;
+
+  const m = CAMINHO_AUTUMN.exec(src);
+  if (!m) return undefined;
+
+  const [, tag, id] = m;
+  return `${mediaUrl}/${tag}/${id}`;
+}
+
 function RenderTrustedImage(props: { src?: string; alt?: string }) {
   const instance = useInstance();
 
-  const trusted = () => !!props.src && props.src.startsWith(instance.mediaUrl);
+  const url = () => resolverMidia(props.src, instance.mediaUrl);
 
   return (
     <Show
-      when={trusted()}
+      when={url()}
       fallback={
-        <RenderAnchor href={props.src}>{props.alt ?? props.src}</RenderAnchor>
+        <RenderAnchor href={props.src}>
+          {/*
+            `||` e nao `??`: markdown de imagem quase sempre vem com alt
+            vazio (`![](url)`), e string vazia nao e nulo — o link ficava sem
+            texto nenhum e a imagem sumia da tela sem deixar rastro.
+          */}
+          {props.alt || props.src}
+        </RenderAnchor>
       }
     >
       <img
         loading="lazy"
-        src={props.src}
+        src={url()}
         alt={props.alt}
         class={css({
           maxWidth: "100%",
