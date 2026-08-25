@@ -320,6 +320,7 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
             max={2}
             step={0.05}
             value={volume()}
+            onInput={(e) => state.voice.setUserVolume(id(), e.currentTarget.value)}
             onChange={(e) => state.voice.setUserVolume(id(), e.currentTarget.value)}
             labelFormatter={(v) => `${(v * 100).toFixed(0)}%`}
           />

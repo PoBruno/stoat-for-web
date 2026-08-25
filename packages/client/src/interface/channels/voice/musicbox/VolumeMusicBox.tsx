@@ -91,10 +91,13 @@ export function VolumeMusicBox(props: { channelId: string }) {
                 max={2}
                 step={0.05}
                 value={state.voice.getUserVolume(id())}
-                // `change` e nao `input`: `input` dispara na inicializacao do
-                // deslizante, antes de ele receber o valor que passamos, e
-                // aquele primeiro disparo carrega o minimo — abrir o menu
-                // baixava o volume sozinho.
+                // `input` acompanha o arraste, para o volume mudar enquanto se
+                // move em vez de só ao soltar. O disparo espúrio da montagem,
+                // que antes obrigava a usar `change`, é filtrado dentro do
+                // próprio Slider — ele só encaminha com interação de verdade.
+                onInput={(evento) =>
+                  state.voice.setUserVolume(id(), evento.currentTarget.value)
+                }
                 onChange={(evento) =>
                   state.voice.setUserVolume(id(), evento.currentTarget.value)
                 }
