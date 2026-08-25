@@ -31,6 +31,13 @@ export type EstadoMusicBox = {
   queue: Faixa[];
   repeat: Repeticao;
   shuffle: boolean;
+  /**
+   * Identidade do agente na sala de voz.
+   *
+   * E por ela que o volume da musica e ajustado: o audio chega como faixa de
+   * um participante, e o volume por participante e indexado pela identidade.
+   */
+  bot_identity?: string;
 };
 
 export const ESTADO_VAZIO: EstadoMusicBox = {

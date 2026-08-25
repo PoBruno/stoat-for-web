@@ -34,13 +34,6 @@ export function VolumeMusicBox(props: { channelId: string }) {
   const { t } = useLingui();
 
   const [identidade, setIdentidade] = createSignal<string>();
-  /**
-   * O deslizante do mdui dispara `onInput` ao se inicializar, ANTES de receber
-   * o valor que passamos — e aquele primeiro disparo carrega o minimo. Sem
-   * este guarda, abrir o menu gravava volume 0,1 sozinho: a musica ficava
-   * baixa sem ninguem ter tocado em nada, o que parece defeito do audio.
-   */
-  const [tocou, setTocou] = createSignal(false);
 
   onMount(() => {
     let vivo = true;
@@ -95,15 +88,16 @@ export function VolumeMusicBox(props: { channelId: string }) {
             <Row gap="sm" align>
               <Slider
                 min={0}
-                max={3}
+                max={2}
                 step={0.05}
                 value={state.voice.getUserVolume(id())}
-                onPointerDown={() => setTocou(true)}
-                onKeyDown={() => setTocou(true)}
-                onInput={(evento) => {
-                  if (!tocou()) return;
-                  state.voice.setUserVolume(id(), evento.currentTarget.value);
-                }}
+                // `change` e nao `input`: `input` dispara na inicializacao do
+                // deslizante, antes de ele receber o valor que passamos, e
+                // aquele primeiro disparo carrega o minimo — abrir o menu
+                // baixava o volume sozinho.
+                onChange={(evento) =>
+                  state.voice.setUserVolume(id(), evento.currentTarget.value)
+                }
                 labelFormatter={(v) => `${(v * 100).toFixed(0)}%`}
               />
               <Text class="label" size="small">

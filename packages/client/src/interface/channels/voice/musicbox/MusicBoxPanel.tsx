@@ -1,15 +1,12 @@
 import {
   For,
   type JSX,
-  Match,
   Show,
-  Switch,
   createSignal,
   onCleanup,
   onMount,
 } from "solid-js";
 
-import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
@@ -23,10 +20,18 @@ import MdSearch from "@material-design-icons/svg/outlined/search.svg?component-s
 import MdShuffle from "@material-design-icons/svg/outlined/shuffle.svg?component-solid";
 import MdNext from "@material-design-icons/svg/outlined/skip_next.svg?component-solid";
 import MdStop from "@material-design-icons/svg/outlined/stop.svg?component-solid";
+import MdVolumeUp from "@material-design-icons/svg/outlined/volume_up.svg?component-solid";
+import MdVolumeOff from "@material-design-icons/svg/outlined/volume_off.svg?component-solid";
 
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
-import { Button, IconButton, Slider, Text } from "@revolt/ui/components/design";
+import { useState } from "@revolt/state";
+import {
+  Button,
+  IconButton,
+  Slider,
+  Text,
+} from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
 
 import {
@@ -38,22 +43,15 @@ import {
   duracaoOuAoVivo,
 } from "./estado";
 
-type Aba = "fila" | "buscar";
-
 /**
  * Painel do MusicBox, mostrado durante a chamada.
  *
- * Ocupa a maior parte da altura, ao contrario do soundboard: uma fila de
- * musica e uma lista que a pessoa fica olhando e reordenando, nao um punhado
- * de botoes para apertar de relance.
- *
- * Todo o estado vem do servidor. A fila e da CHAMADA, nao desta aba: duas
- * pessoas veem a mesma coisa, e fechar o navegador nao apaga o que os outros
- * estao ouvindo.
+ * Sem abas. A busca fica sempre no topo, pronta para receber o que se digita;
+ * os resultados tomam o lugar da fila enquanto existirem e saem quando se
+ * limpa a busca. Abas obrigavam a trocar de contexto para uma acao que e a
+ * mais frequente do painel — botar musica.
  */
 export function MusicBoxPanel(props: { channelId: string; onClose: () => void }) {
-  const [aba, setAba] = createSignal<Aba>("fila");
-
   const client = useClient();
   const instance = useInstance();
 
@@ -63,82 +61,119 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
     () => props.channelId,
   );
 
+  const [termo, setTermo] = createSignal("");
+  const [resultados, setResultados] = createSignal<Faixa[]>([]);
+  const [buscando, setBuscando] = createSignal(false);
+  const [aviso, setAviso] = createSignal<string>();
+  const [adicionadas, setAdicionadas] = createSignal<Set<string>>(
+    new Set<string>(),
+  );
+
+  /** Ha uma busca em andamento ou com resultado na tela. */
+  const emBusca = () => buscando() || resultados().length > 0 || !!aviso();
+
+  const ehPlaylist = () => /[?&]list=/.test(termo());
+
   onMount(() => {
     void mb.recarregar();
 
-    // Sondagem enquanto o painel esta aberto.
-    //
-    // Um evento pelo WebSocket seria melhor e e o destino disto, mas custa
-    // uma variante nova de evento atravessando backend, SDK e cliente. Dois
-    // segundos de intervalo, so com o painel aberto, carrega um JSON pequeno
-    // -- e a barra de posicao anda porque o SERVIDOR projeta o tempo entre os
-    // avisos do agente, nao porque a tela esta chutando.
+    // Sondagem enquanto o painel esta aberto. Um evento pelo WebSocket seria
+    // melhor e e o destino disto, mas custa uma variante nova atravessando
+    // backend, SDK e cliente.
     const relogio = setInterval(() => void mb.recarregar(), 2000);
     onCleanup(() => clearInterval(relogio));
   });
 
+  async function buscar(e?: Event) {
+    e?.preventDefault();
+    if (!termo().trim()) return;
+
+    setBuscando(true);
+    setAviso(undefined);
+    setAdicionadas(new Set<string>());
+    try {
+      // Playlist pede a lista inteira; busca por nome nao. Cem resultados
+      // para "radiohead" e uma parede de texto onde bastavam alguns.
+      const achadas = await mb.buscar(termo(), ehPlaylist() ? 200 : 15);
+      setResultados(achadas);
+      if (!achadas.length) setAviso("Nada encontrado para isso.");
+    } catch (falha) {
+      setResultados([]);
+      setAviso(falha instanceof Error ? falha.message : String(falha));
+    } finally {
+      setBuscando(false);
+    }
+  }
+
+  function limparBusca() {
+    setTermo("");
+    setResultados([]);
+    setAviso(undefined);
+  }
+
+  /**
+   * Adiciona sem apagar a busca.
+   *
+   * Limpar a lista a cada faixa obrigava a repetir a mesma pesquisa para pegar
+   * a segunda musica do mesmo album. O que ja entrou fica marcado — sem isso
+   * nao da para saber o que ja foi.
+   */
+  async function adicionar(faixas: Faixa[]) {
+    await mb.adicionar(faixas);
+    setAdicionadas((antes) => {
+      const agora = new Set(antes);
+      for (const f of faixas) agora.add(f.id);
+      return agora;
+    });
+  }
+
   return (
     <Painel>
-      <Cabecalho>
-        <Row align gap="sm">
-          <MdMusic />
-          <Text class="title">MusicBox</Text>
-        </Row>
-        <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
-          <MdClose />
-        </IconButton>
-      </Cabecalho>
+      <AgoraTocando mb={mb} onClose={props.onClose} />
 
-      <Show when={mb.erro()}>
-        {(mensagem) => (
-          <Aviso>
-            <Text class="label">{mensagem()}</Text>
-          </Aviso>
-        )}
-      </Show>
-
-      <AgoraTocando mb={mb} />
-
-      <Abas>
-        <BotaoAba
-          aria-selected={aba() === "fila"}
-          data-ativa={aba() === "fila"}
-          onClick={() => setAba("fila")}
-        >
-          Fila
-          <Show when={mb.estado().queue.length}>
-            <Contagem>{mb.estado().queue.length}</Contagem>
-          </Show>
-        </BotaoAba>
-        <BotaoAba
-          aria-selected={aba() === "buscar"}
-          data-ativa={aba() === "buscar"}
-          onClick={() => setAba("buscar")}
-        >
-          Buscar
-        </BotaoAba>
-      </Abas>
+      <BarraDeBusca onSubmit={buscar}>
+        <Lupa>
+          <MdSearch />
+        </Lupa>
+        <Campo
+          value={termo()}
+          placeholder="Buscar musica, colar link de video ou playlist…"
+          onInput={(e: InputEvent) =>
+            setTermo((e.currentTarget as HTMLInputElement).value)
+          }
+          onKeyDown={(e: KeyboardEvent) => {
+            // Escape limpa e devolve a fila, sem tirar o foco do campo.
+            if (e.key === "Escape") limparBusca();
+          }}
+        />
+        <Show when={termo()}>
+          <IconButton onPress={limparBusca} aria-label="Limpar busca">
+            <MdClose />
+          </IconButton>
+        </Show>
+      </BarraDeBusca>
 
       <Corpo>
-        <Switch>
-          <Match when={aba() === "fila"}>
-            <Fila mb={mb} />
-          </Match>
-          <Match when={aba() === "buscar"}>
-            <Busca mb={mb} />
-          </Match>
-        </Switch>
+        <Show when={emBusca()} fallback={<Fila mb={mb} />}>
+          <Resultados
+            resultados={resultados()}
+            buscando={buscando()}
+            playlist={ehPlaylist()}
+            aviso={aviso()}
+            adicionadas={adicionadas()}
+            onAdicionar={adicionar}
+          />
+        </Show>
       </Corpo>
     </Painel>
   );
 }
 
-/** Capa, titulo, progresso e controles da faixa atual. */
-function AgoraTocando(props: { mb: ClienteMusicBox }) {
+/** Capa, titulo, progresso, controles e volume. */
+function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
   const atual = () => props.mb.estado().current;
   const duracao = () => atual()?.duration_s ?? 0;
 
-  /** Repeticao gira entre os tres modos no mesmo botao. */
   function girarRepeticao() {
     const agora = props.mb.estado().repeat;
     void props.mb.ajustar({
@@ -148,7 +183,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox }) {
 
   return (
     <Topo>
-      <Row gap="md" align>
+      <LinhaDoTopo>
         <Capa>
           <Show
             when={atual()?.cover_url}
@@ -163,10 +198,16 @@ function AgoraTocando(props: { mb: ClienteMusicBox }) {
             <Text class="body">{atual()?.title ?? "Nada tocando"}</Text>
           </TituloAtual>
           <Text class="label">
-            {atual()?.author ?? "Adicione algo pela aba Buscar"}
+            {atual()?.author ?? "Busque algo acima para comecar"}
           </Text>
         </Identificacao>
-      </Row>
+
+        <VolumeDaMusica mb={props.mb} />
+
+        <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
+          <MdClose />
+        </IconButton>
+      </LinhaDoTopo>
 
       <Progresso>
         <Slider
@@ -187,7 +228,9 @@ function AgoraTocando(props: { mb: ClienteMusicBox }) {
 
       <Controles>
         <IconButton
-          onPress={() => void props.mb.ajustar({ shuffle: !props.mb.estado().shuffle })}
+          onPress={() =>
+            void props.mb.ajustar({ shuffle: !props.mb.estado().shuffle })
+          }
           variant={props.mb.estado().shuffle ? "tonal" : "standard"}
           aria-label="Ordem aleatoria"
         >
@@ -237,18 +280,130 @@ function AgoraTocando(props: { mb: ClienteMusicBox }) {
   );
 }
 
-/** Lista da fila. */
+/**
+ * Volume da musica, por ouvinte.
+ *
+ * Fica aqui e nao so no menu de contexto porque e um controle que se procura
+ * enquanto a musica toca: escondido atras de clique direito, ninguem acha.
+ *
+ * Usa `change` e nao `input`. `input` dispara tambem quando o deslizante se
+ * inicializa, antes de receber o valor que passamos, e aquele primeiro
+ * disparo carrega o minimo — so abrir o painel baixava o volume sozinho, o
+ * que parece defeito do audio e nao uma escrita perdida. `change` acontece
+ * quando alguem solta o cursor, que e exatamente a intencao que interessa.
+ */
+function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
+  const state = useState();
+
+  const identidade = () => props.mb.estado().bot_identity;
+  const volume = () => {
+    const id = identidade();
+    return id ? state.voice.getUserVolume(id) : 1;
+  };
+
+  return (
+    <Show when={identidade()}>
+      {(id) => (
+        <Volume>
+          <IconButton
+            onPress={() =>
+              state.voice.setUserVolume(id(), volume() > 0 ? 0 : 1)
+            }
+            aria-label={volume() > 0 ? "Silenciar a musica" : "Tirar do mudo"}
+          >
+            <Show when={volume() > 0} fallback={<MdVolumeOff />}>
+              <MdVolumeUp />
+            </Show>
+          </IconButton>
+          <Slider
+            min={0}
+            max={2}
+            step={0.05}
+            value={volume()}
+            onChange={(e) => state.voice.setUserVolume(id(), e.currentTarget.value)}
+            labelFormatter={(v) => `${(v * 100).toFixed(0)}%`}
+          />
+        </Volume>
+      )}
+    </Show>
+  );
+}
+
+/** Resultados da busca. */
+function Resultados(props: {
+  resultados: Faixa[];
+  buscando: boolean;
+  playlist: boolean;
+  aviso?: string;
+  adicionadas: Set<string>;
+  onAdicionar: (faixas: Faixa[]) => Promise<void>;
+}) {
+  return (
+    <>
+      <Show when={props.buscando}>
+        <Vazio>
+          <Text class="label">
+            {props.playlist ? "Abrindo a playlist — pode demorar…" : "Buscando…"}
+          </Text>
+        </Vazio>
+      </Show>
+
+      <Show when={props.aviso}>
+        {(mensagem) => (
+          <Vazio>
+            <Text class="label">{mensagem()}</Text>
+          </Vazio>
+        )}
+      </Show>
+
+      <Show when={props.resultados.length > 1}>
+        <Resumo>
+          <Text class="label">{props.resultados.length} resultados</Text>
+          <Button
+            variant="tonal"
+            onPress={() => void props.onAdicionar(props.resultados)}
+          >
+            Adicionar todas
+          </Button>
+        </Resumo>
+      </Show>
+
+      <For each={props.resultados}>
+        {(faixa) => (
+          <Item>
+            <Miniatura capa={faixa.cover_url} />
+            <Identificacao>
+              <Text class="body">{faixa.title}</Text>
+              <Text class="label">{faixa.author ?? "desconhecido"}</Text>
+            </Identificacao>
+            <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
+            <Button
+              variant={props.adicionadas.has(faixa.id) ? "text" : "tonal"}
+              onPress={() => void props.onAdicionar([faixa])}
+            >
+              {props.adicionadas.has(faixa.id) ? "Na fila" : "Adicionar"}
+            </Button>
+          </Item>
+        )}
+      </For>
+    </>
+  );
+}
+
+/** A fila da chamada. */
 function Fila(props: { mb: ClienteMusicBox }) {
   return (
     <Show
       when={props.mb.estado().queue.length}
       fallback={
         <Vazio>
-          <Text class="label">A fila esta vazia.</Text>
+          <Text class="label">
+            A fila esta vazia. Busque algo no campo acima.
+          </Text>
         </Vazio>
       }
     >
-      <ResumoDaFila>
+      <Resumo>
         <Text class="label">
           {props.mb.estado().queue.length}{" "}
           {props.mb.estado().queue.length === 1 ? "faixa" : "faixas"} —{" "}
@@ -257,11 +412,11 @@ function Fila(props: { mb: ClienteMusicBox }) {
         <Button variant="text" onPress={() => void props.mb.limpar()}>
           Limpar
         </Button>
-      </ResumoDaFila>
+      </Resumo>
 
       <For each={props.mb.estado().queue}>
         {(faixa, indice) => (
-          <ItemDaFila>
+          <Item>
             <Posicao>
               <Text class="label">{indice() + 1}</Text>
             </Posicao>
@@ -281,193 +436,39 @@ function Fila(props: { mb: ClienteMusicBox }) {
             >
               <MdDelete />
             </IconButton>
-          </ItemDaFila>
+          </Item>
         )}
       </For>
     </Show>
   );
 }
 
-/** Campo de busca e resultados. */
-function Busca(props: { mb: ClienteMusicBox }) {
-  const [termo, setTermo] = createSignal("");
-  const [resultados, setResultados] = createSignal<Faixa[]>([]);
-  const [aviso, setAviso] = createSignal<string>();
-  const [buscando, setBuscando] = createSignal(false);
-  /** O que ja foi para a fila nesta busca, para a lista poder marcar. */
-  const [adicionadas, setAdicionadas] = createSignal<Set<string>>(new Set());
-
-  const ehPlaylist = () => /[?&]list=/.test(termo());
-
-  async function enviar(e: Event) {
-    e.preventDefault();
-    if (!termo().trim()) return;
-
-    setBuscando(true);
-    setAviso(undefined);
-    setAdicionadas(new Set<string>());
-    try {
-      // Playlist pede a lista inteira; busca por nome nao. Cem resultados
-      // para "radiohead" e uma parede de texto onde bastavam alguns.
-      const achadas = await props.mb.buscar(termo(), ehPlaylist() ? 200 : 15);
-      setResultados(achadas);
-      if (!achadas.length) setAviso("Nada encontrado para isso.");
-    } catch (falha) {
-      setResultados([]);
-      setAviso(falha instanceof Error ? falha.message : String(falha));
-    } finally {
-      setBuscando(false);
-    }
-  }
-
-  /**
-   * Adiciona sem apagar a busca.
-   *
-   * Limpar a lista a cada faixa obrigava a repetir a mesma pesquisa para pegar
-   * a segunda musica do mesmo album. Os resultados ficam, e o que ja entrou
-   * aparece marcado — sem isso nao da para saber o que ja foi.
-   */
-  async function adicionar(faixas: Faixa[]) {
-    await props.mb.adicionar(faixas);
-    setAdicionadas((antes) => {
-      const agora = new Set(antes);
-      for (const f of faixas) agora.add(f.id);
-      return agora;
-    });
-  }
-
+/**
+ * Botao de tocar, em destaque.
+ *
+ * Nao usa `styled(IconButton)`: aquilo resolve o componente na hora em que o
+ * modulo carrega, e este modulo e alcancado a partir da propria biblioteca de
+ * UI — o resultado era tela em branco com um erro que nomeia o botao, nao o
+ * ciclo. Um recipiente que estiliza por dentro adia isso para a renderizacao.
+ */
+function BotaoTocar(props: {
+  onPress: () => void;
+  isDisabled?: boolean;
+  "aria-label"?: string;
+  children: JSX.Element;
+}) {
   return (
-    <>
-      <FormaDeBusca onSubmit={enviar}>
-        <CampoDeBusca
-          value={termo()}
-          placeholder="Nome da musica, link do video ou da playlist"
-          onInput={(e: InputEvent) =>
-            setTermo((e.currentTarget as HTMLInputElement).value)
-          }
-        />
-        <IconButton type="submit" aria-label="Buscar">
-          <MdSearch />
-        </IconButton>
-      </FormaDeBusca>
-
-      <Show when={aviso()}>
-        {(mensagem) => (
-          <Vazio>
-            <Text class="label">{mensagem()}</Text>
-          </Vazio>
-        )}
-      </Show>
-
-      <Show when={buscando()}>
-        <Vazio>
-          <Text class="label">
-            {ehPlaylist() ? "Abrindo a playlist — pode demorar…" : "Buscando…"}
-          </Text>
-        </Vazio>
-      </Show>
-
-      <Show when={resultados().length > 1}>
-        <ResumoDaFila>
-          <Text class="label">{resultados().length} resultados</Text>
-          <Button variant="tonal" onPress={() => void adicionar(resultados())}>
-            Adicionar todas
-          </Button>
-        </ResumoDaFila>
-      </Show>
-
-      <For each={resultados()}>
-        {(faixa) => (
-          <ItemDaFila>
-            <Miniatura capa={faixa.cover_url} />
-            <Identificacao>
-              <Text class="body">{faixa.title}</Text>
-              <Text class="label">{faixa.author ?? "desconhecido"}</Text>
-            </Identificacao>
-            <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
-            <Show
-              when={!adicionadas().has(faixa.id)}
-              fallback={
-                <Button variant="text" onPress={() => void adicionar([faixa])}>
-                  Na fila
-                </Button>
-              }
-            >
-              <Button variant="tonal" onPress={() => void adicionar([faixa])}>
-                Adicionar
-              </Button>
-            </Show>
-          </ItemDaFila>
-        )}
-      </For>
-    </>
+    <Destaque>
+      <IconButton
+        onPress={props.onPress}
+        isDisabled={props.isDisabled}
+        aria-label={props["aria-label"]}
+      >
+        {props.children}
+      </IconButton>
+    </Destaque>
   );
 }
-
-const Painel = styled("div", {
-  base: {
-    height: "100%",
-    display: "flex",
-    flexDirection: "column",
-    minHeight: 0,
-    background: "var(--md-sys-color-surface-container-low)",
-    // Quem pinta o fundo precisa definir o texto. Sem isto o painel herdava a
-    // cor de muito acima -- e dentro do cartao flutuante essa cor e escura,
-    // entao o titulo saia quase preto sobre fundo escuro: presente, visivel
-    // para o navegador, e ilegivel para quem olha.
-    color: "var(--md-sys-color-on-surface)",
-    borderRadius: "var(--borderRadius-lg)",
-    overflow: "hidden",
-  },
-});
-
-const Cabecalho = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "var(--gap-md)",
-    flexShrink: 0,
-  },
-});
-
-const Aviso = styled("div", {
-  base: {
-    margin: "0 var(--gap-md) var(--gap-sm)",
-    padding: "var(--gap-sm) var(--gap-md)",
-    borderRadius: "var(--borderRadius-md)",
-    background: "var(--md-sys-color-surface-container-highest)",
-    flexShrink: 0,
-  },
-});
-
-const Topo = styled("div", {
-  base: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "var(--gap-sm)",
-    padding: "0 var(--gap-md) var(--gap-md)",
-    flexShrink: 0,
-  },
-});
-
-const Capa = styled("div", {
-  base: {
-    width: "64px",
-    height: "64px",
-    flexShrink: 0,
-    display: "grid",
-    placeItems: "center",
-    borderRadius: "var(--borderRadius-md)",
-    background: "var(--md-sys-color-surface-container-highest)",
-    overflow: "hidden",
-    "& img": { width: "100%", height: "100%", objectFit: "cover" },
-  },
-});
-
-const MiniCapa = styled(Capa, {
-  base: { width: "36px", height: "36px" },
-});
 
 /**
  * Miniatura de item de lista.
@@ -486,6 +487,59 @@ function Miniatura(props: { capa: string | null }) {
 }
 
 /**
+ * O painel nao pinta fundo proprio.
+ *
+ * Ele e a unica coisa na area da chamada, e uma superficie sobre a outra
+ * criava uma moldura visivel que competia com o tema. Herdar o fundo do
+ * cartao e o que faz os dois virarem uma peca so.
+ */
+const Painel = styled("div", {
+  base: {
+    height: "100%",
+    display: "flex",
+    flexDirection: "column",
+    minHeight: 0,
+    color: "var(--md-sys-color-on-surface)",
+  },
+});
+
+const Topo = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-sm)",
+    padding: "var(--gap-md) var(--gap-md) var(--gap-sm)",
+    flexShrink: 0,
+  },
+});
+
+const LinhaDoTopo = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-md)",
+  },
+});
+
+const Capa = styled("div", {
+  base: {
+    width: "56px",
+    height: "56px",
+    flexShrink: 0,
+    display: "grid",
+    placeItems: "center",
+    borderRadius: "var(--borderRadius-md)",
+    background: "var(--md-sys-color-surface-container-highest)",
+    overflow: "hidden",
+    "& img": { width: "100%", height: "100%", objectFit: "cover" },
+  },
+});
+
+const MiniCapa = styled(Capa, {
+  base: { width: "36px", height: "36px" },
+});
+
+/**
  * `minWidth: 0` e o que permite o corte com reticencias: sem isso um item de
  * flex nunca encolhe abaixo do proprio conteudo, e titulos longos empurram a
  * duracao e o botao para fora do painel.
@@ -501,6 +555,19 @@ const Identificacao = styled("div", {
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
     },
+  },
+});
+
+/** Volume fica a direita do que toca, onde se procura por ele. */
+const Volume = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-xs)",
+    flexShrink: 0,
+    width: "170px",
+
+    "& mdui-slider": { flexGrow: 1, minWidth: 0 },
   },
 });
 
@@ -525,84 +592,53 @@ const Controles = styled("div", {
   },
 });
 
-/**
- * Botao de tocar, em destaque.
- *
- * Nao usa `styled(IconButton)` de proposito. Aquilo resolve o componente na
- * hora em que o modulo carrega, e este modulo passou a ser alcancado a partir
- * da propria biblioteca de UI — o resultado era `Cannot access 'IconButton'
- * before initialization` e a tela em branco, sem pista do ciclo.
- *
- * Um recipiente que estiliza o botao por dentro adia isso para a
- * renderizacao, e ainda permite `:hover`, que estilo em linha nao permite.
- */
-function BotaoTocar(props: {
-  onPress: () => void;
-  isDisabled?: boolean;
-  "aria-label"?: string;
-  children: JSX.Element;
-}) {
-  return (
-    <Destaque>
-      <IconButton
-        onPress={props.onPress}
-        isDisabled={props.isDisabled}
-        aria-label={props["aria-label"]}
-      >
-        {props.children}
-      </IconButton>
-    </Destaque>
-  );
-}
-
 const Destaque = styled("div", {
   base: {
     display: "contents",
-
     "& button": {
       background: "var(--md-sys-color-primary)",
       color: "var(--md-sys-color-on-primary)",
     },
-    "& button:hover": {
-      background: "var(--md-sys-color-primary)",
-    },
+    "& button:hover": { background: "var(--md-sys-color-primary)" },
   },
 });
 
-const Abas = styled("div", {
-  base: {
-    display: "flex",
-    gap: "var(--gap-sm)",
-    padding: "0 var(--gap-md)",
-    borderBottom: "1px solid var(--md-sys-color-outline-variant)",
-    flexShrink: 0,
-  },
-});
-
-const BotaoAba = styled("button", {
+/** A busca vive no topo do corpo, sempre pronta. */
+const BarraDeBusca = styled("form", {
   base: {
     display: "flex",
     alignItems: "center",
     gap: "var(--gap-sm)",
-    padding: "var(--gap-sm) var(--gap-md)",
-    border: "none",
-    background: "transparent",
-    color: "var(--md-sys-color-on-surface-variant)",
-    cursor: "pointer",
-    borderBottom: "2px solid transparent",
-    "&[data-ativa='true']": {
-      color: "var(--md-sys-color-primary)",
-      borderBottomColor: "var(--md-sys-color-primary)",
+    margin: "0 var(--gap-md) var(--gap-sm)",
+    padding: "0 var(--gap-md)",
+    borderRadius: "var(--borderRadius-full)",
+    background: "var(--md-sys-color-surface-container-highest)",
+
+    "&:focus-within": {
+      outline: "2px solid var(--md-sys-color-primary)",
     },
   },
 });
 
-const Contagem = styled("span", {
+const Lupa = styled("div", {
   base: {
-    fontSize: "0.75rem",
-    padding: "0 6px",
-    borderRadius: "999px",
-    background: "var(--md-sys-color-surface-container-highest)",
+    display: "grid",
+    placeItems: "center",
+    flexShrink: 0,
+    color: "var(--md-sys-color-on-surface-variant)",
+  },
+});
+
+const Campo = styled("input", {
+  base: {
+    flexGrow: 1,
+    minWidth: 0,
+    padding: "var(--gap-md) 0",
+    border: "none",
+    background: "transparent",
+    color: "var(--md-sys-color-on-surface)",
+    fontSize: "0.95rem",
+    "&:focus": { outline: "none" },
   },
 });
 
@@ -616,11 +652,11 @@ const Corpo = styled("div", {
     flexGrow: 1,
     minHeight: 0,
     overflowY: "auto",
-    padding: "var(--gap-sm) var(--gap-md) var(--gap-md)",
+    padding: "0 var(--gap-md) var(--gap-md)",
   },
 });
 
-const ResumoDaFila = styled("div", {
+const Resumo = styled("div", {
   base: {
     display: "flex",
     alignItems: "center",
@@ -629,7 +665,7 @@ const ResumoDaFila = styled("div", {
   },
 });
 
-const ItemDaFila = styled("div", {
+const Item = styled("div", {
   base: {
     display: "flex",
     alignItems: "center",
@@ -650,26 +686,5 @@ const Vazio = styled("div", {
     placeItems: "center",
     padding: "var(--gap-lg)",
     textAlign: "center",
-  },
-});
-
-const FormaDeBusca = styled("form", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "var(--gap-sm)",
-    paddingBottom: "var(--gap-sm)",
-  },
-});
-
-const CampoDeBusca = styled("input", {
-  base: {
-    flexGrow: 1,
-    padding: "var(--gap-sm) var(--gap-md)",
-    borderRadius: "var(--borderRadius-md)",
-    border: "1px solid var(--md-sys-color-outline-variant)",
-    background: "var(--md-sys-color-surface-container-highest)",
-    color: "var(--md-sys-color-on-surface)",
-    "&:focus": { outline: "2px solid var(--md-sys-color-primary)" },
   },
 });

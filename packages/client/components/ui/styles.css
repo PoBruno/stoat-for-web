@@ -10,9 +10,26 @@
   box-sizing: border-box;
 }
 
+/*
+  O `html` precisa da mesma cor do `body`.
+
+  Sem isto ele fica com o padrao do tema claro (#fef7ff) e aparece como uma
+  moldura clara em volta do aplicativo -- em qualquer lugar onde o `body` nao
+  cobre: barra de rolagem, area segura, janela maior que o conteudo.
+
+  A cor do texto tambem vem daqui. O padrao era o do tema claro, quase preto,
+  entao qualquer texto que nao definisse cor propria saia ilegivel sobre fundo
+  escuro: presente na tela, legivel para o navegador, invisivel para quem olha.
+*/
+html {
+  background: #191919;
+  color: var(--md-sys-color-on-surface);
+}
+
 body {
   margin: 0;
   background: #191919;
+  color: var(--md-sys-color-on-surface);
   font-family: var(--fonts-primary);
 }
 
