@@ -8,17 +8,16 @@ import { styled } from "styled-system/jsx";
 
 import MdInfo from "@material-design-icons/svg/outlined/info.svg?component-solid";
 import MdInventory2 from "@material-design-icons/svg/outlined/inventory_2.svg?component-solid";
+import MdArchive from "@material-design-icons/svg/outlined/archive.svg?component-solid";
 
 import {
-  DOWNLOAD_LINUX,
+  DOWNLOAD_APPIMAGE,
+  DOWNLOAD_ARCH,
+  DOWNLOAD_DEBIAN,
   DOWNLOAD_RELEASES,
   DOWNLOAD_WINDOWS,
 } from "@revolt/common";
 import { CategoryButton, Column, Text, iconSize } from "@revolt/ui";
-
-const RELEASES = DOWNLOAD_RELEASES;
-const WINDOWS = DOWNLOAD_WINDOWS;
-const LINUX = DOWNLOAD_LINUX;
 
 /**
  * Sistema operacional de quem está acessando, para destacar o instalador certo.
@@ -30,7 +29,7 @@ function sistema(): "windows" | "linux" | "outro" {
   const os = detect()?.os ?? "";
   if (/windows/i.test(os)) return "windows";
   // "Linux" cobre as distribuições; Android também casa em /linux/i, e para
-  // ele nenhum dos dois instaladores serve.
+  // ele nenhum dos instaladores serve.
   if (/android/i.test(os)) return "outro";
   if (/linux/i.test(os)) return "linux";
   return "outro";
@@ -38,12 +37,17 @@ function sistema(): "windows" | "linux" | "outro" {
 
 /**
  * Baixar o aplicativo para computador
+ *
+ * Linux aparece em três formatos porque não existe um que sirva a todos. O
+ * `.deb` e o `.pkg.tar.zst` entram no gerenciador de pacotes da distribuição;
+ * o AppImage não instala nada e existe para quem não usa nenhuma das duas
+ * famílias.
  */
 export function DownloadApp() {
   const atual = sistema();
 
   const windows = (
-    <Link href={WINDOWS} target="_blank" rel="noopener noreferrer">
+    <Link href={DOWNLOAD_WINDOWS} target="_blank" rel="noopener noreferrer">
       <CategoryButton
         action="external"
         ignoreClick
@@ -63,31 +67,55 @@ export function DownloadApp() {
   );
 
   const linux = (
-    <Link href={LINUX} target="_blank" rel="noopener noreferrer">
-      <CategoryButton
-        action="external"
-        ignoreClick
-        icon={<FaBrandsLinux size={22} />}
-        description={
-          <Show
-            when={atual === "linux"}
-            fallback={
-              <Trans>
-                Pacote .deb para Debian e Ubuntu, 64 bits. Instale com: sudo apt
-                install ./stoat-amd64.deb
-              </Trans>
-            }
-          >
+    <>
+      <Link href={DOWNLOAD_DEBIAN} target="_blank" rel="noopener noreferrer">
+        <CategoryButton
+          action="external"
+          ignoreClick
+          icon={<FaBrandsLinux size={22} />}
+          description={
             <Trans>
-              Recomendado para o seu computador. Instale com: sudo apt install
+              Debian, Ubuntu e derivados. Instale com: sudo apt install
               ./stoat-amd64.deb
             </Trans>
-          </Show>
-        }
-      >
-        <Trans>Baixar para Linux</Trans>
-      </CategoryButton>
-    </Link>
+          }
+        >
+          <Trans>Baixar .deb</Trans>
+        </CategoryButton>
+      </Link>
+
+      <Link href={DOWNLOAD_ARCH} target="_blank" rel="noopener noreferrer">
+        <CategoryButton
+          action="external"
+          ignoreClick
+          icon={<FaBrandsLinux size={22} />}
+          description={
+            <Trans>
+              Arch, CachyOS, Manjaro e EndeavourOS. Instale com: sudo pacman -U
+              ./stoat-x86_64.pkg.tar.zst
+            </Trans>
+          }
+        >
+          <Trans>Baixar para Arch</Trans>
+        </CategoryButton>
+      </Link>
+
+      <Link href={DOWNLOAD_APPIMAGE} target="_blank" rel="noopener noreferrer">
+        <CategoryButton
+          action="external"
+          ignoreClick
+          icon={<MdArchive {...iconSize(22)} />}
+          description={
+            <Trans>
+              Para as demais distribuições. Não instala nada: dê permissão com
+              chmod +x e execute o arquivo.
+            </Trans>
+          }
+        >
+          <Trans>Baixar AppImage</Trans>
+        </CategoryButton>
+      </Link>
+    </>
   );
 
   return (
@@ -104,18 +132,22 @@ export function DownloadApp() {
         </Aviso>
       </Show>
 
-      <CategoryButton.Group>
-        {/* O instalador do sistema detectado vem primeiro. */}
-        <Show when={atual === "linux"} fallback={windows}>
-          {linux}
-        </Show>
-        <Show when={atual === "linux"} fallback={linux}>
-          {windows}
-        </Show>
-      </CategoryButton.Group>
+      {/* O sistema detectado vem primeiro. */}
+      <Show
+        when={atual === "linux"}
+        fallback={
+          <>
+            <CategoryButton.Group>{windows}</CategoryButton.Group>
+            <CategoryButton.Group>{linux}</CategoryButton.Group>
+          </>
+        }
+      >
+        <CategoryButton.Group>{linux}</CategoryButton.Group>
+        <CategoryButton.Group>{windows}</CategoryButton.Group>
+      </Show>
 
       <CategoryButton.Group>
-        <Link href={RELEASES} target="_blank" rel="noopener noreferrer">
+        <Link href={DOWNLOAD_RELEASES} target="_blank" rel="noopener noreferrer">
           <CategoryButton
             action="external"
             ignoreClick

@@ -9,20 +9,22 @@ export { stoatSinkName } from "./virtualMic";
 const originalMediaCall = navigator.mediaDevices.getDisplayMedia;
 
 navigator.mediaDevices.getDisplayMedia = async function (opts) {
-  // Hard overwrite the track constraints so that we -never ever- get a track
-  // that is over 720p when requesting a new video track
-  if (opts && opts.video && typeof opts.video === "object") {
-    opts.video = {
-      ...opts.video,
-      frameRate: { ideal: 5, max: 5 },
-      width: { ideal: 640, max: 640 },
-      height: { ideal: 480, max: 480 },
-    };
-  }
-
   const stream: MediaStream = await originalMediaCall.call(this, opts);
 
-  if (opts && opts.audio && window.native?.isWayland?.()) {
+  // A resolucao NAO e mais forcada aqui.
+  //
+  // Este trecho travava toda captura em 640x480 a 5 quadros por segundo,
+  // apesar do comentario antigo dizer 720p. Quem escolhesse 1080p60 nas
+  // configuracoes recebia uma apresentacao de slides, e nao havia como
+  // descobrir por que: a escolha era aceita e silenciosamente descartada.
+  //
+  // Quem manda na qualidade e `applyConstraints` logo depois de a faixa
+  // existir (components/rtc/state.tsx), que le a preferencia de verdade.
+
+  // Em Wayland o audio do compartilhamento nao vem junto com o video: o
+  // portal entrega so a tela. O que traz o som e um microfone virtual criado
+  // pelo processo principal, ligado as saidas de audio do sistema.
+  if (opts?.audio && (await window.native?.isWayland?.())) {
     const id = await getVirtmic();
 
     console.debug("Virt mic acquired:", id);

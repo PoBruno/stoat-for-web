@@ -683,10 +683,14 @@ class Voice {
                         max: quality.resolution.width,
                       },
                 height:
-                  quality.resolution.width === 0
+                  quality.resolution.height === 0
                     ? undefined
                     : {
-                        ideal: quality.resolution.width,
+                        // Altura pede ALTURA. Antes pedia a largura como
+                        // ideal com a altura como teto — em 1080p isso e
+                        // "queria 1920, no maximo 1080", e o resultado ficava
+                        // ao gosto do navegador.
+                        ideal: quality.resolution.height,
                         max: quality.resolution.height,
                       },
               });
