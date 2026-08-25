@@ -844,6 +844,16 @@ class Voice {
   }
 
   /**
+   * Se este usuario pode mexer na musica da chamada.
+   *
+   * Bit proprio e nao `Connect`: entrar na chamada e mandar na musica que
+   * todo mundo ouve sao coisas diferentes.
+   */
+  get musicboxPermission() {
+    return !!this.channel()?.havePermission("UseMusicBox");
+  }
+
+  /**
    * Open or close the soundboard panel
    *
    * Fecha o MusicBox ao abrir: os dois ocupam a mesma faixa acima das

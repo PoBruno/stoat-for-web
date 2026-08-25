@@ -449,6 +449,40 @@ export function ChannelPermissionsEditor(props: Props) {
       },
     },
     {
+      key: "UseSoundboard",
+      value: 2n ** 41n,
+      title: t`Use Soundboard`,
+      description: {
+        // Fora de forum e grupo: nao ha chamada nesses contextos.
+        ForumChannel: null,
+        Group: null,
+        TextChannel: t`Play soundboard sounds in a call`,
+        Server: t`Play soundboard sounds in a call`,
+      },
+    },
+    {
+      key: "ManageSoundboard",
+      value: 2n ** 42n,
+      title: t`Manage Soundboard`,
+      description: {
+        ForumChannel: null,
+        Group: null,
+        TextChannel: t`Upload, rename and remove sounds`,
+        Server: t`Upload, rename and remove sounds`,
+      },
+    },
+    {
+      key: "UseMusicBox",
+      value: 2n ** 43n,
+      title: t`Use MusicBox`,
+      description: {
+        ForumChannel: null,
+        Group: null,
+        TextChannel: t`Search, queue and control music in a call`,
+        Server: t`Search, queue and control music in a call`,
+      },
+    },
+    {
       heading: t`Mentions`,
       key: "MentionEveryone",
       value: 2n ** 37n,

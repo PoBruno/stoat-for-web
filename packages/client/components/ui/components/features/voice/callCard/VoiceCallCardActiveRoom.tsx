@@ -22,6 +22,8 @@ import { scrollableStyles } from "@revolt/ui/directives";
 import { ParticipantTile, tile } from "./ParticipantTile";
 import { VoiceCallCardActions } from "./VoiceCallCardActions";
 import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
+import { ContextMenu } from "../../../../../app/menus/ContextMenu";
+import { VolumeMusicBox } from "../../../../../../src/interface/channels/voice/musicbox/VolumeMusicBox";
 
 /**
  * Call card (active)
@@ -145,8 +147,20 @@ function VoiceCallMusicBoxToggle() {
       size="sm"
       variant={voice.musicboxOpen() ? "tonal" : "standard"}
       onPress={() => voice.toggleMusicbox()}
+      isDisabled={!voice.musicboxPermission}
       use:floating={{
-        tooltip: { placement: "top", content: t`MusicBox` },
+        tooltip: {
+          placement: "top",
+          content: voice.musicboxPermission
+            ? t`MusicBox`
+            : t`Missing permission`,
+        },
+        // Botao direito abre o volume, igual ao soundboard na barra lateral.
+        contextMenu: () => (
+          <ContextMenu>
+            <VolumeMusicBox channelId={voice.channel()?.id ?? ""} />
+          </ContextMenu>
+        ),
       }}
     >
       <Symbol>music_note</Symbol>

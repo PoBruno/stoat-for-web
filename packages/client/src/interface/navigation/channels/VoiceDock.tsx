@@ -8,6 +8,7 @@ import { useState } from "@revolt/state";
 import { IconButton, Row, Symbol, Text } from "@revolt/ui";
 
 import { ContextMenu } from "../../../../components/app/menus/ContextMenu";
+import { VolumeMusicBox } from "../../channels/voice/musicbox/VolumeMusicBox";
 
 /**
  * Voice status pinned to the bottom of the channel sidebar.
@@ -101,7 +102,17 @@ export function VoiceDock() {
               size="xs"
               variant={voice.musicboxOpen() ? "tonal" : "standard"}
               aria-label={t`MusicBox`}
+              isDisabled={!voice.musicboxPermission}
               onPress={() => voice.toggleMusicbox()}
+              // Botao direito abre o volume, igual ao soundboard. E por
+              // usuario: cada um regula a musica no proprio ouvido.
+              use:floating={{
+                contextMenu: () => (
+                  <ContextMenu>
+                    <VolumeMusicBox channelId={voice.channel()?.id ?? ""} />
+                  </ContextMenu>
+                ),
+              }}
             >
               <Symbol size={18}>music_note</Symbol>
             </IconButton>

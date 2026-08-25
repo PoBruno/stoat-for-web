@@ -283,6 +283,8 @@ function Busca(props: { mb: ClienteMusicBox }) {
   const [resultados, setResultados] = createSignal<Faixa[]>([]);
   const [aviso, setAviso] = createSignal<string>();
   const [buscando, setBuscando] = createSignal(false);
+  /** O que ja foi para a fila nesta busca, para a lista poder marcar. */
+  const [adicionadas, setAdicionadas] = createSignal<Set<string>>(new Set());
 
   const ehPlaylist = () => /[?&]list=/.test(termo());
 
@@ -292,6 +294,7 @@ function Busca(props: { mb: ClienteMusicBox }) {
 
     setBuscando(true);
     setAviso(undefined);
+    setAdicionadas(new Set<string>());
     try {
       // Playlist pede a lista inteira; busca por nome nao. Cem resultados
       // para "radiohead" e uma parede de texto onde bastavam alguns.
@@ -306,10 +309,20 @@ function Busca(props: { mb: ClienteMusicBox }) {
     }
   }
 
+  /**
+   * Adiciona sem apagar a busca.
+   *
+   * Limpar a lista a cada faixa obrigava a repetir a mesma pesquisa para pegar
+   * a segunda musica do mesmo album. Os resultados ficam, e o que ja entrou
+   * aparece marcado — sem isso nao da para saber o que ja foi.
+   */
   async function adicionar(faixas: Faixa[]) {
     await props.mb.adicionar(faixas);
-    setResultados([]);
-    setTermo("");
+    setAdicionadas((antes) => {
+      const agora = new Set(antes);
+      for (const f of faixas) agora.add(f.id);
+      return agora;
+    });
   }
 
   return (
@@ -361,9 +374,18 @@ function Busca(props: { mb: ClienteMusicBox }) {
               <Text class="label">{faixa.author ?? "desconhecido"}</Text>
             </Identificacao>
             <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
-            <Button variant="tonal" onPress={() => void adicionar([faixa])}>
-              Adicionar
-            </Button>
+            <Show
+              when={!adicionadas().has(faixa.id)}
+              fallback={
+                <Button variant="text" onPress={() => void adicionar([faixa])}>
+                  Na fila
+                </Button>
+              }
+            >
+              <Button variant="tonal" onPress={() => void adicionar([faixa])}>
+                Adicionar
+              </Button>
+            </Show>
           </ItemDaFila>
         )}
       </For>
