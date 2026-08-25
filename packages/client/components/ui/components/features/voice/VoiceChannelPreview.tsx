@@ -1,4 +1,4 @@
-import { For, Show, splitProps } from "solid-js";
+import { For, Show, createMemo, splitProps } from "solid-js";
 import {
   TrackLoop,
   useEnsureParticipant,
@@ -14,7 +14,7 @@ import { styled } from "styled-system/jsx";
 
 import { UserContextMenu } from "@revolt/app";
 import { useUser } from "@revolt/markdown/users";
-import { InRoom } from "@revolt/rtc";
+import { InRoom, ehParticipanteOculto } from "@revolt/rtc";
 
 import { Avatar, Ripple, typography } from "../../design";
 import { Row } from "../../layout";
@@ -41,9 +41,16 @@ export function VoiceChannelPreview(props: { channel: Channel }) {
  * Use API as the source of truth
  */
 function VariantLive() {
-  const tracks = useTracks(
+  const todas = useTracks(
     [{ source: Track.Source.Camera, withPlaceholder: true }],
     { onlySubscribed: false },
+  );
+
+  // Este `useTracks` e proprio, nao passa pelo `vidTracks` do estado da voz,
+  // entao precisa do mesmo filtro: sem ele o agente de musica aparece na
+  // sidebar como "Unknown User".
+  const tracks = createMemo(() =>
+    todas().filter((t) => !ehParticipanteOculto(t.participant.identity)),
   );
 
   return (

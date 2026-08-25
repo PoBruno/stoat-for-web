@@ -1,6 +1,6 @@
 import { getVirtmic } from "./virtualMic";
 
-export { useVoice, VoiceContext } from "./state";
+export { useVoice, VoiceContext, ehParticipanteOculto } from "./state";
 
 export { InRoom } from "./components/InRoom";
 export { RoomAudioManager } from "./components/RoomAudioManager";

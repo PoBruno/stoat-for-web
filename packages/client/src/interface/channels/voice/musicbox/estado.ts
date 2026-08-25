@@ -20,6 +20,8 @@ export type Faixa = {
   /** Em segundos. Zero quando a fonte nao informa (transmissoes ao vivo). */
   duracao: number;
   capa?: string;
+  /** Endereco original; e o que o agente usa para achar o audio de novo */
+  pagina: string;
   /** Quem pediu, para a fila poder dizer de quem e cada faixa */
   pedidoPor?: string;
 };
@@ -49,9 +51,15 @@ const [estado, setEstado] = createStore<EstadoMusicBox>({
 
 export { estado };
 
-/** Segundos para `m:ss`, ou `h:mm:ss` quando passa da hora. */
+/**
+ * Segundos para `m:ss`, ou `h:mm:ss` quando passa da hora.
+ *
+ * Zero vira `0:00`. Para DURACAO zero significa outra coisa — a fonte nao
+ * sabe quanto dura, que e o caso de transmissao ao vivo — e quem trata disso
+ * e `duracaoOuAoVivo`.
+ */
 export function duracaoLegivel(segundos: number): string {
-  if (!Number.isFinite(segundos) || segundos <= 0) return "ao vivo";
+  if (!Number.isFinite(segundos) || segundos < 0) return "0:00";
 
   const s = Math.floor(segundos % 60);
   const m = Math.floor((segundos / 60) % 60);
@@ -59,6 +67,11 @@ export function duracaoLegivel(segundos: number): string {
 
   const ss = String(s).padStart(2, "0");
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+}
+
+/** Duracao de uma faixa; zero quer dizer que a fonte nao informou. */
+export function duracaoOuAoVivo(segundos: number): string {
+  return segundos > 0 ? duracaoLegivel(segundos) : "ao vivo";
 }
 
 /** Quanto falta para a fila acabar, contando a faixa atual. */
@@ -74,6 +87,7 @@ export const acoes = {
   tocarOuPausar() {
     setEstado("tocando", (t) => !t);
   },
+
 
   /**
    * Pula para a proxima.
@@ -184,51 +198,3 @@ export const acoes = {
     setEstado("aleatorio", (a) => !a);
   },
 };
-
-/**
- * Enche a fila com exemplos para a tela poder ser julgada antes de haver
- * agente.
- *
- * So age quando nada foi buscado ainda: assim que uma busca real acontece, os
- * exemplos nao voltam a aparecer.
- */
-export function povoarParaDesenvolvimento() {
-  if (!import.meta.env.DEV) return;
-  if (estado.atual || estado.fila.length) return;
-
-  setEstado(
-    produce((e) => {
-      e.atual = {
-        id: "demo-0",
-        fonte: "youtube",
-        titulo: "Exemplo — nada toca sem o agente",
-        autor: "MusicBox",
-        duracao: 213,
-      };
-      e.posicao = 47;
-      e.fila = [
-        {
-          id: "demo-1",
-          fonte: "youtube",
-          titulo: "Segunda faixa de exemplo",
-          autor: "MusicBox",
-          duracao: 187,
-        },
-        {
-          id: "demo-2",
-          fonte: "youtube",
-          titulo: "Uma com nome consideravelmente mais longo, para conferir onde o texto corta",
-          autor: "Artista com nome longo tambem",
-          duracao: 402,
-        },
-        {
-          id: "demo-3",
-          fonte: "youtube",
-          titulo: "Transmissao ao vivo",
-          autor: "MusicBox",
-          duracao: 0,
-        },
-      ];
-    }),
-  );
-}

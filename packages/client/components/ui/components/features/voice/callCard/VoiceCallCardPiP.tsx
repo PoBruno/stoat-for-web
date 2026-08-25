@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { Show, createMemo } from "solid-js";
 import {
   TrackLoop,
   TrackReference,
@@ -15,7 +15,7 @@ import { Track } from "livekit-client";
 import { styled } from "styled-system/jsx";
 
 import { useUser } from "@revolt/markdown/users";
-import { useVoice } from "@revolt/rtc";
+import { ehParticipanteOculto, useVoice } from "@revolt/rtc";
 import { Avatar } from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
@@ -25,9 +25,15 @@ import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
 
 export function VoiceCallCardPiP() {
   const voice = useVoice();
-  const audTracks = useTracks(
+  const todasAudio = useTracks(
     [{ source: Track.Source.Microphone, withPlaceholder: true }],
     { onlySubscribed: false },
+  );
+
+  // Terceiro `useTracks` independente no app; sem o filtro o agente de musica
+  // vira mais um avatar na fileira do PiP.
+  const audTracks = createMemo(() =>
+    todasAudio().filter((t) => !ehParticipanteOculto(t.participant.identity)),
   );
 
   /** First pinned track, falling back to any screen share in the call */

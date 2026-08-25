@@ -26,8 +26,8 @@ import {
   acoes,
   duracaoDaFila,
   duracaoLegivel,
+  duracaoOuAoVivo,
   estado,
-  povoarParaDesenvolvimento,
 } from "./estado";
 
 type Aba = "fila" | "buscar";
@@ -41,8 +41,45 @@ type Aba = "fila" | "buscar";
  */
 export function MusicBoxPanel(props: { channelId: string; onClose: () => void }) {
   const [aba, setAba] = createSignal<Aba>("fila");
+  const [falha, setFalha] = createSignal<string>();
 
-  onMount(povoarParaDesenvolvimento);
+  const client = useClient();
+  const instance = useInstance();
+
+  /**
+   * Manda tocar e so entao muda o estado da tela.
+   *
+   * A ordem importa: pintar como "tocando" antes de o servidor confirmar
+   * deixaria o painel mentindo sempre que o agente estivesse fora do ar.
+   */
+  async function tocarFaixa(faixa: Faixa) {
+    setFalha(undefined);
+    try {
+      await mandarTocar(
+        instance.apiUrl,
+        client().authenticationHeader,
+        props.channelId,
+        faixa,
+      );
+      return true;
+    } catch (erro) {
+      setFalha(erro instanceof Error ? erro.message : String(erro));
+      return false;
+    }
+  }
+
+  async function pararTudo() {
+    setFalha(undefined);
+    try {
+      await mandarParar(
+        instance.apiUrl,
+        client().authenticationHeader,
+        props.channelId,
+      );
+    } catch {
+      // Parar que falha nao merece alarde: o proximo tocar substitui.
+    }
+  }
 
   return (
     <Painel>
@@ -56,14 +93,15 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
         </IconButton>
       </Cabecalho>
 
-      <Aviso>
-        <Text class="label">
-          A busca ja funciona. Tocar ainda nao: falta o agente publicar o audio
-          na chamada.
-        </Text>
-      </Aviso>
+      <Show when={falha()}>
+        {(mensagem) => (
+          <Aviso>
+            <Text class="label">{mensagem()}</Text>
+          </Aviso>
+        )}
+      </Show>
 
-      <AgoraTocando />
+      <AgoraTocando aoTocar={tocarFaixa} aoParar={pararTudo} />
 
       <Abas>
         <BotaoAba
@@ -88,10 +126,10 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
       <Corpo>
         <Switch>
           <Match when={aba() === "fila"}>
-            <Fila />
+            <Fila aoTocar={tocarFaixa} />
           </Match>
           <Match when={aba() === "buscar"}>
-            <Busca channelId={props.channelId} />
+            <Busca channelId={props.channelId} aoTocar={tocarFaixa} />
           </Match>
         </Switch>
       </Corpo>
@@ -100,8 +138,36 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
 }
 
 /** Capa, titulo, progresso e controles da faixa atual. */
-function AgoraTocando() {
+function AgoraTocando(props: {
+  aoTocar: (faixa: Faixa) => Promise<boolean>;
+  aoParar: () => Promise<void>;
+}) {
   const semFaixa = () => !estado.atual;
+
+  /** Tocar/pausar de verdade: quem toca o som e o agente, nao o navegador. */
+  async function alternar() {
+    const faixa = estado.atual;
+    if (!faixa) return;
+
+    if (estado.tocando) {
+      await props.aoParar();
+      acoes.tocarOuPausar();
+      return;
+    }
+
+    if (await props.aoTocar(faixa)) acoes.tocarOuPausar();
+  }
+
+  /** Pula e ja manda tocar a que assumiu o lugar. */
+  async function proxima() {
+    acoes.proxima();
+    const faixa = estado.atual;
+    if (faixa) {
+      await props.aoTocar(faixa);
+    } else {
+      await props.aoParar();
+    }
+  }
 
   return (
     <Topo>
@@ -141,7 +207,7 @@ function AgoraTocando() {
         <LinhaDeTempo>
           <Text class="label">{duracaoLegivel(estado.posicao)}</Text>
           <Text class="label">
-            {estado.atual ? duracaoLegivel(estado.atual.duracao) : "--:--"}
+            {estado.atual ? duracaoOuAoVivo(estado.atual.duracao) : "--:--"}
           </Text>
         </LinhaDeTempo>
       </Progresso>
@@ -164,7 +230,7 @@ function AgoraTocando() {
         </IconButton>
 
         <BotaoTocar
-          onPress={acoes.tocarOuPausar}
+          onPress={alternar}
           isDisabled={semFaixa()}
           aria-label={estado.tocando ? "Pausar" : "Tocar"}
         >
@@ -174,7 +240,7 @@ function AgoraTocando() {
         </BotaoTocar>
 
         <IconButton
-          onPress={acoes.proxima}
+          onPress={proxima}
           isDisabled={!estado.fila.length}
           aria-label="Proxima"
         >
@@ -214,8 +280,14 @@ function AgoraTocando() {
 }
 
 /** Lista da fila, reordenavel arrastando. */
-function Fila() {
+function Fila(props: { aoTocar: (faixa: Faixa) => Promise<boolean> }) {
   const [arrastando, setArrastando] = createSignal<number>();
+
+  /** Puxa uma faixa da fila para a frente e ja manda tocar. */
+  async function tocarAgora(indice: number) {
+    acoes.tocarAgora(indice);
+    if (estado.atual) await props.aoTocar(estado.atual);
+  }
 
   return (
     <Show
@@ -261,12 +333,12 @@ function Fila() {
 
             <Miniatura capa={faixa.capa} />
 
-            <Identificacao onClick={() => acoes.tocarAgora(indice())}>
+            <Identificacao onClick={() => void tocarAgora(indice())}>
               <Text class="body">{faixa.titulo}</Text>
               <Text class="label">{faixa.autor}</Text>
             </Identificacao>
 
-            <Text class="label">{duracaoLegivel(faixa.duracao)}</Text>
+            <Text class="label">{duracaoOuAoVivo(faixa.duracao)}</Text>
 
             <IconButton
               onPress={() => acoes.remover(indice())}
@@ -282,7 +354,10 @@ function Fila() {
 }
 
 /** Campo de busca e resultados. */
-function Busca(props: { channelId: string }) {
+function Busca(props: {
+  channelId: string;
+  aoTocar: (faixa: Faixa) => Promise<boolean>;
+}) {
   const client = useClient();
   const instance = useInstance();
 
@@ -292,6 +367,18 @@ function Busca(props: { channelId: string }) {
   const [buscando, setBuscando] = createSignal(false);
 
   const ehPlaylist = () => /[?&]list=/.test(termo());
+
+  /**
+   * Adiciona e, se nada estava tocando, ja comeca.
+   *
+   * Sem isso a primeira faixa entraria como "atual" no painel mas em silencio,
+   * e a pessoa teria de apertar tocar para algo que parece ja estar tocando.
+   */
+  async function adicionar(faixa: Faixa) {
+    const estavaVazio = !estado.atual;
+    acoes.adicionar(faixa);
+    if (estavaVazio && estado.atual) await props.aoTocar(estado.atual);
+  }
 
   async function enviar(e: Event) {
     e.preventDefault();
@@ -360,9 +447,11 @@ function Busca(props: { channelId: string }) {
           <Button
             variant="tonal"
             onPress={() => {
-              for (const faixa of resultados()) acoes.adicionar(faixa);
-              setResultados([]);
-              setTermo("");
+              void (async () => {
+                for (const faixa of resultados()) await adicionar(faixa);
+                setResultados([]);
+                setTermo("");
+              })();
             }}
           >
             Adicionar todas
@@ -378,8 +467,8 @@ function Busca(props: { channelId: string }) {
               <Text class="body">{faixa.titulo}</Text>
               <Text class="label">{faixa.autor}</Text>
             </Identificacao>
-            <Text class="label">{duracaoLegivel(faixa.duracao)}</Text>
-            <Button variant="tonal" onPress={() => acoes.adicionar(faixa)}>
+            <Text class="label">{duracaoOuAoVivo(faixa.duracao)}</Text>
+            <Button variant="tonal" onPress={() => void adicionar(faixa)}>
               Adicionar
             </Button>
           </ItemDaFila>
@@ -387,6 +476,47 @@ function Busca(props: { channelId: string }) {
       </For>
     </>
   );
+}
+
+/** Manda o servidor tocar uma faixa na chamada deste canal. */
+async function mandarTocar(
+  apiUrl: string,
+  cabecalho: [string, string],
+  channelId: string,
+  faixa: Faixa,
+): Promise<void> {
+  const [chave, valor] = cabecalho;
+  const resposta = await fetch(`${apiUrl}/musicbox/${channelId}/play`, {
+    method: "POST",
+    headers: { "content-type": "application/json", [chave]: valor },
+    // O servidor espera a faixa no formato dele, nao no do painel.
+    body: JSON.stringify({
+      track: {
+        id: faixa.id,
+        provider: faixa.fonte,
+        title: faixa.titulo,
+        author: faixa.autor,
+        duration_s: faixa.duracao || null,
+        cover_url: faixa.capa ?? null,
+        page_url: faixa.pagina,
+      },
+    }),
+  });
+
+  if (!resposta.ok) throw new Error(`Nao consegui tocar (${resposta.status}).`);
+}
+
+/** Manda parar o que estiver tocando. */
+async function mandarParar(
+  apiUrl: string,
+  cabecalho: [string, string],
+  channelId: string,
+): Promise<void> {
+  const [chave, valor] = cabecalho;
+  await fetch(`${apiUrl}/musicbox/${channelId}/stop`, {
+    method: "POST",
+    headers: { [chave]: valor },
+  });
 }
 
 /**
@@ -449,6 +579,7 @@ async function buscarFaixas(
     // Transmissao ao vivo vem sem duracao; zero e como o painel representa isso.
     duracao: t.duration_s ?? 0,
     capa: t.cover_url ?? undefined,
+    pagina: t.page_url,
   }));
 }
 

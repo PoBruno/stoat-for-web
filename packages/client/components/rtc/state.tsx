@@ -3,6 +3,7 @@ import {
   batch,
   createContext,
   createEffect,
+  createMemo,
   createSignal,
   JSX,
   Setter,
@@ -39,6 +40,25 @@ import { Device, useDevice } from "@revolt/common";
 import { InRoom } from "./components/InRoom";
 import { RoomAudioManager } from "./components/RoomAudioManager";
 import { VoiceProcessor } from "./VoiceProcessor";
+
+/**
+ * Prefixo das identidades que existem na sala mas nao sao pessoas.
+ *
+ * Hoje so o agente do MusicBox, que entra para publicar audio e nao tem conta
+ * no Stoat. Precisa bater com `MUSICBOX_IDENTITY_PREFIX` no backend
+ * (crates/core/database/src/voice/mod.rs).
+ */
+const PREFIXO_OCULTO = "mb!";
+
+/**
+ * Se este participante deve ficar fora da interface.
+ *
+ * Vale so para o que se MOSTRA. O audio dele continua sendo assinado e
+ * tocado — filtrar na reproducao seria silenciar a musica.
+ */
+export function ehParticipanteOculto(identity: string): boolean {
+  return identity.startsWith(PREFIXO_OCULTO);
+}
 
 type State =
   | "READY"
@@ -254,12 +274,24 @@ class Voice {
       },
     });
 
-    this.vidTracks = useTracks(
+    const todasAsFaixas = useTracks(
       [
         { source: Track.Source.Camera, withPlaceholder: true },
         { source: Track.Source.ScreenShare, withPlaceholder: false },
       ],
       { room, onlySubscribed: false },
+    );
+
+    // O agente de musica entra na sala como participante para publicar audio,
+    // mas nao e gente: nao tem conta, e a interface o desenharia como
+    // "Unknown User" ocupando metade da chamada.
+    //
+    // Filtrar aqui cobre o palco, a fileira, os fixados e o contador de
+    // arranjo, porque todos leem `vidTracks`.
+    this.vidTracks = createMemo(() =>
+      todasAsFaixas().filter(
+        (faixa) => !ehParticipanteOculto(faixa.participant.identity),
+      ),
     );
 
     batch(() => {
