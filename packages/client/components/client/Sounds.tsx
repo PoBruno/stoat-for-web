@@ -40,7 +40,10 @@ export class SoundController {
    * @returns Whether a sound is currently playing
    */
   isPlaying(): boolean {
-    return this.node?.paused ?? false;
+    // `paused` é falso enquanto o som corre, então a resposta é o seu inverso.
+    // Estava trocado, e ninguém notou porque os dois ramos de `canPlay`
+    // devolvem `true` — o resultado nunca chegou a decidir nada.
+    return !(this.node?.paused ?? true);
   }
 
   /**
@@ -135,7 +138,14 @@ export class SoundController {
       }
     }
     this.lastPlayedSound = sound;
-    this.node.play();
+
+    // `play()` devolve uma promessa que o navegador rejeita quando a página
+    // ainda não recebeu interação — a política de reprodução automática. Sem
+    // tratador isso vira "unhandled rejection" no console e o som some sem
+    // explicação. Registrar o motivo torna o próximo diagnóstico possível.
+    this.node.play().catch((motivo) => {
+      console.warn(`[sons] "${sound}" não tocou:`, motivo?.name ?? motivo);
+    });
     return true;
   }
 }

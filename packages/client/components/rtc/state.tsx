@@ -348,11 +348,16 @@ class Voice {
       }
     });
 
-    room.addListener("participantConnected", () => {
+    room.addListener("participantConnected", (participante) => {
+      // O MusicBox entra e sai da sala conforme a fila anda. Anunciá-lo com
+      // som de chegada faria a chamada apitar a cada troca de faixa, e ele
+      // nem aparece na lista de pessoas — seria um som sem dono visível.
+      if (ehParticipanteOculto(participante.identity)) return;
       this.sound.playSound("userJoinVoice");
     });
 
-    room.addListener("participantDisconnected", () => {
+    room.addListener("participantDisconnected", (participante) => {
+      if (ehParticipanteOculto(participante.identity)) return;
       this.sound.playSound("userLeaveVoice");
     });
 
