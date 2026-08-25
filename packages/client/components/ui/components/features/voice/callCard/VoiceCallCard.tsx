@@ -370,17 +370,25 @@ const Card = styled("div", {
     transitionTimingFunction: "ease-in-out",
 
     borderRadius: "var(--borderRadius-lg)",
-    background: "var(--md-sys-color-secondary-container)",
   },
   variants: {
     active: {
       true: {
         width: "100%",
+        // Cor de SUPERFICIE, nao de enfase.
+        //
+        // Antes era `secondary-container` nos dois estados. Aquela cor existe
+        // para destacar algo pequeno, e funciona bem no cartao de 360x120 que
+        // convida a entrar. Esticada para o corpo inteiro do canal, ela vira
+        // uma laje clara que briga com o tema escuro em volta.
+        background: "var(--md-sys-color-surface-container)",
       },
       false: {
         width: "360px",
         height: "120px",
         cursor: "pointer",
+        // Aqui a enfase e o ponto: e um convite, e precisa saltar.
+        background: "var(--md-sys-color-secondary-container)",
       },
     },
     fullscreen: {
