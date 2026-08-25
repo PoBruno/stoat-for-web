@@ -44,8 +44,11 @@ import { VoiceProcessor } from "./VoiceProcessor";
 /**
  * Prefixo das identidades que existem na sala mas nao sao pessoas.
  *
- * Hoje so o agente do MusicBox, que entra para publicar audio e nao tem conta
- * no Stoat. Precisa bater com `MUSICBOX_IDENTITY_PREFIX` no backend
+ * So aparece quando NAO ha conta de bot configurada para o MusicBox. Com uma
+ * conta de verdade, o agente entra com a identidade dela e a interface o
+ * desenha com nome e avatar como qualquer outro — nao ha o que esconder.
+ *
+ * Precisa bater com `MUSICBOX_IDENTITY_PREFIX` no backend
  * (crates/core/database/src/voice/mod.rs).
  */
 const PREFIXO_OCULTO = "mb!";

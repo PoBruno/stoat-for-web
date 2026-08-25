@@ -1,55 +1,46 @@
 /**
- * Estado do MusicBox no cliente.
+ * Estado do MusicBox, vindo do servidor.
  *
- * O formato aqui e de proposito o mesmo que o servidor vai publicar mais
- * tarde. Enquanto a rota nao existe, a fila e manipulada localmente; quando
- * existir, as acoes viram comandos e os eventos do WebSocket passam a
- * escrever neste mesmo store. A tela nao muda.
+ * Antes a fila vivia neste navegador. Isso quebrava o que a chamada tem de
+ * mais básico: quem entrasse depois via uma fila vazia, duas pessoas viam
+ * listas diferentes, e fechar a aba apagava o que os outros estavam ouvindo.
+ * Agora o dono do estado é o canal, e esta tela só mostra e pede.
  */
-import { createStore, produce } from "solid-js/store";
+import { createSignal } from "solid-js";
 
 /** De onde o audio sai. Hoje so ha uma; o campo existe para nao doer depois. */
 export type Fonte = "youtube";
 
+/** Faixa no formato do servidor. */
 export type Faixa = {
-  /** Identificador na fonte, nao no Stoat */
   id: string;
-  fonte: Fonte;
-  titulo: string;
-  autor: string;
-  /** Em segundos. Zero quando a fonte nao informa (transmissoes ao vivo). */
-  duracao: number;
-  capa?: string;
-  /** Endereco original; e o que o agente usa para achar o audio de novo */
-  pagina: string;
-  /** Quem pediu, para a fila poder dizer de quem e cada faixa */
-  pedidoPor?: string;
+  provider: string;
+  title: string;
+  author: string | null;
+  duration_s: number | null;
+  cover_url: string | null;
+  page_url: string;
 };
 
-export type Repeticao = "nao" | "uma" | "todas";
+export type Repeticao = "off" | "one" | "all";
 
 export type EstadoMusicBox = {
-  tocando: boolean;
-  atual?: Faixa;
-  /** Posicao dentro da faixa atual, em segundos */
-  posicao: number;
-  fila: Faixa[];
-  /** 0 a 1 */
-  volume: number;
-  repetir: Repeticao;
-  aleatorio: boolean;
+  playing: boolean;
+  current: Faixa | null;
+  position_s: number;
+  queue: Faixa[];
+  repeat: Repeticao;
+  shuffle: boolean;
 };
 
-const [estado, setEstado] = createStore<EstadoMusicBox>({
-  tocando: false,
-  posicao: 0,
-  fila: [],
-  volume: 0.8,
-  repetir: "nao",
-  aleatorio: false,
-});
-
-export { estado };
+export const ESTADO_VAZIO: EstadoMusicBox = {
+  playing: false,
+  current: null,
+  position_s: 0,
+  queue: [],
+  repeat: "off",
+  shuffle: false,
+};
 
 /**
  * Segundos para `m:ss`, ou `h:mm:ss` quando passa da hora.
@@ -69,132 +60,113 @@ export function duracaoLegivel(segundos: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
 }
 
-/** Duracao de uma faixa; zero quer dizer que a fonte nao informou. */
-export function duracaoOuAoVivo(segundos: number): string {
-  return segundos > 0 ? duracaoLegivel(segundos) : "ao vivo";
+/** Duracao de uma faixa; nulo ou zero quer dizer que a fonte nao informou. */
+export function duracaoOuAoVivo(segundos: number | null): string {
+  return segundos && segundos > 0 ? duracaoLegivel(segundos) : "ao vivo";
 }
 
 /** Quanto falta para a fila acabar, contando a faixa atual. */
-export function duracaoDaFila(): number {
-  const restante = estado.atual
-    ? Math.max(0, estado.atual.duracao - estado.posicao)
+export function duracaoDaFila(estado: EstadoMusicBox): number {
+  const restante = estado.current?.duration_s
+    ? Math.max(0, estado.current.duration_s - estado.position_s)
     : 0;
 
-  return estado.fila.reduce((total, faixa) => total + faixa.duracao, restante);
+  return estado.queue.reduce(
+    (total, faixa) => total + (faixa.duration_s ?? 0),
+    restante,
+  );
 }
 
-export const acoes = {
-  tocarOuPausar() {
-    setEstado("tocando", (t) => !t);
-  },
+/**
+ * Conversa com as rotas do MusicBox.
+ *
+ * Toda acao devolve o estado novo, entao a tela nunca precisa adivinhar como
+ * ficou: ela mostra o que o servidor respondeu.
+ */
+export function criarCliente(
+  apiUrl: string,
+  cabecalho: () => [string, string],
+  channelId: () => string,
+) {
+  const [estado, setEstado] = createSignal<EstadoMusicBox>(ESTADO_VAZIO);
+  const [erro, setErro] = createSignal<string>();
 
+  async function chamar(
+    caminho: string,
+    opcoes: RequestInit = {},
+  ): Promise<Response> {
+    const [chave, valor] = cabecalho();
+    return fetch(`${apiUrl}/musicbox/${channelId()}${caminho}`, {
+      ...opcoes,
+      headers: {
+        ...(opcoes.body ? { "content-type": "application/json" } : {}),
+        [chave]: valor,
+        ...(opcoes.headers ?? {}),
+      },
+    });
+  }
 
-  /**
-   * Pula para a proxima.
-   *
-   * Com repeticao "uma", pular e um pedido explicito da pessoa e ganha da
-   * repeticao: repetir a mesma faixa quando alguem apertou "proxima" seria
-   * ignorar o comando.
-   */
-  proxima() {
-    setEstado(
-      produce((e) => {
-        if (!e.fila.length) {
-          e.atual = undefined;
-          e.tocando = false;
-          e.posicao = 0;
-          return;
-        }
+  /** Traduz a recusa do servidor em algo que a pessoa consiga agir. */
+  async function explicar(resposta: Response): Promise<string> {
+    const corpo = await resposta.json().catch(() => null);
+    if (corpo?.type === "FeatureDisabled") {
+      return corpo.feature === "musicbox:agent"
+        ? "Nenhum agente de musica esta conectado agora."
+        : "O MusicBox nao esta configurado neste servidor.";
+    }
+    if (resposta.status === 403) return "Voce nao tem permissao para isso.";
+    return `A operacao falhou (${resposta.status}).`;
+  }
 
-        const indice = e.aleatorio
-          ? Math.floor(Math.random() * e.fila.length)
-          : 0;
+  /** Aplica uma acao que devolve o estado novo. */
+  async function agir(caminho: string, opcoes: RequestInit = {}) {
+    setErro(undefined);
+    const resposta = await chamar(caminho, opcoes);
+    if (!resposta.ok) {
+      setErro(await explicar(resposta));
+      return;
+    }
+    setEstado((await resposta.json()) as EstadoMusicBox);
+  }
 
-        const [proxima] = e.fila.splice(indice, 1);
+  return {
+    estado,
+    erro,
+    setErro,
 
-        if (e.repetir === "todas" && e.atual) e.fila.push(e.atual);
+    async recarregar() {
+      const resposta = await chamar("/queue");
+      if (resposta.ok) setEstado((await resposta.json()) as EstadoMusicBox);
+    },
 
-        e.atual = proxima;
-        e.posicao = 0;
-      }),
-    );
-  },
+    async buscar(termo: string, limite: number): Promise<Faixa[]> {
+      const resposta = await chamar("/resolve", {
+        method: "POST",
+        body: JSON.stringify({ query: termo, limit: limite }),
+      });
+      if (!resposta.ok) throw new Error(await explicar(resposta));
+      return ((await resposta.json()) as { tracks: Faixa[] }).tracks;
+    },
 
-  /**
-   * Volta ao inicio da faixa; so pula para a anterior se ja passou pouco
-   * tempo. E o que todo player faz, e evita perder a faixa por engano.
-   */
-  anterior() {
-    setEstado("posicao", 0);
-  },
+    adicionar: (faixas: Faixa[]) =>
+      agir("/queue", { method: "POST", body: JSON.stringify({ tracks: faixas }) }),
 
-  adicionar(faixa: Faixa) {
-    setEstado(
-      produce((e) => {
-        // Sem faixa tocando, o que entra vira a atual em vez de esperar numa
-        // fila que ninguem vai puxar.
-        if (!e.atual) {
-          e.atual = faixa;
-          e.posicao = 0;
-          e.tocando = true;
-        } else {
-          e.fila.push(faixa);
-        }
-      }),
-    );
-  },
+    remover: (indice: number) => agir(`/queue/${indice}`, { method: "DELETE" }),
+    limpar: () => agir("/queue", { method: "DELETE" }),
+    tocarDaFila: (indice: number) =>
+      agir(`/queue/${indice}/play`, { method: "POST" }),
+    proxima: () => agir("/next", { method: "POST" }),
+    alternar: () => agir("/toggle", { method: "POST" }),
 
-  remover(indice: number) {
-    setEstado(
-      produce((e) => {
-        e.fila.splice(indice, 1);
-      }),
-    );
-  },
+    async parar() {
+      setErro(undefined);
+      await chamar("/stop", { method: "POST" });
+      setEstado(ESTADO_VAZIO);
+    },
 
-  /** Move uma faixa na fila, para reordenar arrastando. */
-  mover(de: number, para: number) {
-    setEstado(
-      produce((e) => {
-        if (de === para) return;
-        const [faixa] = e.fila.splice(de, 1);
-        e.fila.splice(para, 0, faixa);
-      }),
-    );
-  },
+    ajustar: (mudanca: { repeat?: Repeticao; shuffle?: boolean }) =>
+      agir("/settings", { method: "PATCH", body: JSON.stringify(mudanca) }),
+  };
+}
 
-  /** Puxa uma faixa da fila para tocar agora, sem esperar a vez. */
-  tocarAgora(indice: number) {
-    setEstado(
-      produce((e) => {
-        const [faixa] = e.fila.splice(indice, 1);
-        if (e.atual) e.fila.unshift(e.atual);
-        e.atual = faixa;
-        e.posicao = 0;
-        e.tocando = true;
-      }),
-    );
-  },
-
-  limparFila() {
-    setEstado("fila", []);
-  },
-
-  definirPosicao(segundos: number) {
-    setEstado("posicao", Math.max(0, segundos));
-  },
-
-  definirVolume(v: number) {
-    setEstado("volume", Math.min(1, Math.max(0, v)));
-  },
-
-  alternarRepeticao() {
-    setEstado("repetir", (r) =>
-      r === "nao" ? "todas" : r === "todas" ? "uma" : "nao",
-    );
-  },
-
-  alternarAleatorio() {
-    setEstado("aleatorio", (a) => !a);
-  },
-};
+export type ClienteMusicBox = ReturnType<typeof criarCliente>;

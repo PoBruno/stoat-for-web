@@ -1,10 +1,9 @@
-import { For, Match, Show, Switch, createSignal, onMount } from "solid-js";
+import { For, Match, Show, Switch, createSignal, onCleanup, onMount } from "solid-js";
 
 import { styled } from "styled-system/jsx";
 
 import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
 import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
-import MdDrag from "@material-design-icons/svg/outlined/drag_indicator.svg?component-solid";
 import MdMusic from "@material-design-icons/svg/outlined/music_note.svg?component-solid";
 import MdPause from "@material-design-icons/svg/outlined/pause.svg?component-solid";
 import MdPlay from "@material-design-icons/svg/outlined/play_arrow.svg?component-solid";
@@ -13,21 +12,19 @@ import MdRepeatOne from "@material-design-icons/svg/outlined/repeat_one.svg?comp
 import MdSearch from "@material-design-icons/svg/outlined/search.svg?component-solid";
 import MdShuffle from "@material-design-icons/svg/outlined/shuffle.svg?component-solid";
 import MdNext from "@material-design-icons/svg/outlined/skip_next.svg?component-solid";
-import MdPrevious from "@material-design-icons/svg/outlined/skip_previous.svg?component-solid";
-import MdVolumeOff from "@material-design-icons/svg/outlined/volume_off.svg?component-solid";
-import MdVolumeUp from "@material-design-icons/svg/outlined/volume_up.svg?component-solid";
+import MdStop from "@material-design-icons/svg/outlined/stop.svg?component-solid";
 
-import { Button, IconButton, Row, Slider, Text } from "@revolt/ui";
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
+import { Button, IconButton, Row, Slider, Text } from "@revolt/ui";
 
 import {
+  type ClienteMusicBox,
   type Faixa,
-  acoes,
+  criarCliente,
   duracaoDaFila,
   duracaoLegivel,
   duracaoOuAoVivo,
-  estado,
 } from "./estado";
 
 type Aba = "fila" | "buscar";
@@ -35,51 +32,39 @@ type Aba = "fila" | "buscar";
 /**
  * Painel do MusicBox, mostrado durante a chamada.
  *
- * Ocupa a altura inteira da area da chamada, ao contrario do soundboard: uma
- * fila de musica e uma lista que a pessoa fica olhando e reordenando, nao um
- * punhado de botoes para apertar de relance.
+ * Ocupa a maior parte da altura, ao contrario do soundboard: uma fila de
+ * musica e uma lista que a pessoa fica olhando e reordenando, nao um punhado
+ * de botoes para apertar de relance.
+ *
+ * Todo o estado vem do servidor. A fila e da CHAMADA, nao desta aba: duas
+ * pessoas veem a mesma coisa, e fechar o navegador nao apaga o que os outros
+ * estao ouvindo.
  */
 export function MusicBoxPanel(props: { channelId: string; onClose: () => void }) {
   const [aba, setAba] = createSignal<Aba>("fila");
-  const [falha, setFalha] = createSignal<string>();
 
   const client = useClient();
   const instance = useInstance();
 
-  /**
-   * Manda tocar e so entao muda o estado da tela.
-   *
-   * A ordem importa: pintar como "tocando" antes de o servidor confirmar
-   * deixaria o painel mentindo sempre que o agente estivesse fora do ar.
-   */
-  async function tocarFaixa(faixa: Faixa) {
-    setFalha(undefined);
-    try {
-      await mandarTocar(
-        instance.apiUrl,
-        client().authenticationHeader,
-        props.channelId,
-        faixa,
-      );
-      return true;
-    } catch (erro) {
-      setFalha(erro instanceof Error ? erro.message : String(erro));
-      return false;
-    }
-  }
+  const mb = criarCliente(
+    instance.apiUrl,
+    () => client().authenticationHeader,
+    () => props.channelId,
+  );
 
-  async function pararTudo() {
-    setFalha(undefined);
-    try {
-      await mandarParar(
-        instance.apiUrl,
-        client().authenticationHeader,
-        props.channelId,
-      );
-    } catch {
-      // Parar que falha nao merece alarde: o proximo tocar substitui.
-    }
-  }
+  onMount(() => {
+    void mb.recarregar();
+
+    // Sondagem enquanto o painel esta aberto.
+    //
+    // Um evento pelo WebSocket seria melhor e e o destino disto, mas custa
+    // uma variante nova de evento atravessando backend, SDK e cliente. Dois
+    // segundos de intervalo, so com o painel aberto, carrega um JSON pequeno
+    // -- e a barra de posicao anda porque o SERVIDOR projeta o tempo entre os
+    // avisos do agente, nao porque a tela esta chutando.
+    const relogio = setInterval(() => void mb.recarregar(), 2000);
+    onCleanup(() => clearInterval(relogio));
+  });
 
   return (
     <Painel>
@@ -93,7 +78,7 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
         </IconButton>
       </Cabecalho>
 
-      <Show when={falha()}>
+      <Show when={mb.erro()}>
         {(mensagem) => (
           <Aviso>
             <Text class="label">{mensagem()}</Text>
@@ -101,7 +86,7 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
         )}
       </Show>
 
-      <AgoraTocando aoTocar={tocarFaixa} aoParar={pararTudo} />
+      <AgoraTocando mb={mb} />
 
       <Abas>
         <BotaoAba
@@ -110,8 +95,8 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
           onClick={() => setAba("fila")}
         >
           Fila
-          <Show when={estado.fila.length}>
-            <Contagem>{estado.fila.length}</Contagem>
+          <Show when={mb.estado().queue.length}>
+            <Contagem>{mb.estado().queue.length}</Contagem>
           </Show>
         </BotaoAba>
         <BotaoAba
@@ -126,10 +111,10 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
       <Corpo>
         <Switch>
           <Match when={aba() === "fila"}>
-            <Fila aoTocar={tocarFaixa} />
+            <Fila mb={mb} />
           </Match>
           <Match when={aba() === "buscar"}>
-            <Busca channelId={props.channelId} aoTocar={tocarFaixa} />
+            <Busca mb={mb} />
           </Match>
         </Switch>
       </Corpo>
@@ -138,35 +123,16 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
 }
 
 /** Capa, titulo, progresso e controles da faixa atual. */
-function AgoraTocando(props: {
-  aoTocar: (faixa: Faixa) => Promise<boolean>;
-  aoParar: () => Promise<void>;
-}) {
-  const semFaixa = () => !estado.atual;
+function AgoraTocando(props: { mb: ClienteMusicBox }) {
+  const atual = () => props.mb.estado().current;
+  const duracao = () => atual()?.duration_s ?? 0;
 
-  /** Tocar/pausar de verdade: quem toca o som e o agente, nao o navegador. */
-  async function alternar() {
-    const faixa = estado.atual;
-    if (!faixa) return;
-
-    if (estado.tocando) {
-      await props.aoParar();
-      acoes.tocarOuPausar();
-      return;
-    }
-
-    if (await props.aoTocar(faixa)) acoes.tocarOuPausar();
-  }
-
-  /** Pula e ja manda tocar a que assumiu o lugar. */
-  async function proxima() {
-    acoes.proxima();
-    const faixa = estado.atual;
-    if (faixa) {
-      await props.aoTocar(faixa);
-    } else {
-      await props.aoParar();
-    }
+  /** Repeticao gira entre os tres modos no mesmo botao. */
+  function girarRepeticao() {
+    const agora = props.mb.estado().repeat;
+    void props.mb.ajustar({
+      repeat: agora === "off" ? "all" : agora === "all" ? "one" : "off",
+    });
   }
 
   return (
@@ -174,7 +140,7 @@ function AgoraTocando(props: {
       <Row gap="md" align>
         <Capa>
           <Show
-            when={estado.atual?.capa}
+            when={atual()?.cover_url}
             fallback={<MdMusic style={{ opacity: 0.4 }} />}
           >
             {(capa) => <img src={capa()} alt="" />}
@@ -183,10 +149,10 @@ function AgoraTocando(props: {
 
         <Identificacao>
           <TituloAtual>
-            <Text class="body">{estado.atual?.titulo ?? "Nada tocando"}</Text>
+            <Text class="body">{atual()?.title ?? "Nada tocando"}</Text>
           </TituloAtual>
           <Text class="label">
-            {estado.atual?.autor ?? "Adicione algo pela aba Buscar"}
+            {atual()?.author ?? "Adicione algo pela aba Buscar"}
           </Text>
         </Identificacao>
       </Row>
@@ -194,104 +160,77 @@ function AgoraTocando(props: {
       <Progresso>
         <Slider
           min={0}
-          max={Math.max(1, estado.atual?.duracao ?? 1)}
-          value={estado.posicao}
+          max={Math.max(1, duracao())}
+          value={Math.min(props.mb.estado().position_s, Math.max(1, duracao()))}
           labelFormatter={duracaoLegivel}
-          onChange={(e) => {
-            // Sem faixa, ou numa transmissao ao vivo, nao ha para onde
-            // pular: o deslizante existe so como indicador.
-            if (!estado.atual?.duracao) return;
-            acoes.definirPosicao(e.currentTarget.value);
-          }}
         />
         <LinhaDeTempo>
-          <Text class="label">{duracaoLegivel(estado.posicao)}</Text>
           <Text class="label">
-            {estado.atual ? duracaoOuAoVivo(estado.atual.duracao) : "--:--"}
+            {duracaoLegivel(props.mb.estado().position_s)}
+          </Text>
+          <Text class="label">
+            {atual() ? duracaoOuAoVivo(duracao()) : "--:--"}
           </Text>
         </LinhaDeTempo>
       </Progresso>
 
       <Controles>
         <IconButton
-          onPress={acoes.alternarAleatorio}
-          variant={estado.aleatorio ? "tonal" : "standard"}
+          onPress={() => void props.mb.ajustar({ shuffle: !props.mb.estado().shuffle })}
+          variant={props.mb.estado().shuffle ? "tonal" : "standard"}
           aria-label="Ordem aleatoria"
         >
           <MdShuffle />
         </IconButton>
 
         <IconButton
-          onPress={acoes.anterior}
-          isDisabled={semFaixa()}
-          aria-label="Voltar ao inicio"
+          onPress={() => void props.mb.parar()}
+          isDisabled={!atual()}
+          aria-label="Parar e limpar"
         >
-          <MdPrevious />
+          <MdStop />
         </IconButton>
 
         <BotaoTocar
-          onPress={alternar}
-          isDisabled={semFaixa()}
-          aria-label={estado.tocando ? "Pausar" : "Tocar"}
+          onPress={() => void props.mb.alternar()}
+          isDisabled={!atual()}
+          aria-label={props.mb.estado().playing ? "Pausar" : "Tocar"}
         >
-          <Show when={estado.tocando} fallback={<MdPlay />}>
+          <Show when={props.mb.estado().playing} fallback={<MdPlay />}>
             <MdPause />
           </Show>
         </BotaoTocar>
 
         <IconButton
-          onPress={proxima}
-          isDisabled={!estado.fila.length}
+          onPress={() => void props.mb.proxima()}
+          isDisabled={!props.mb.estado().queue.length}
           aria-label="Proxima"
         >
           <MdNext />
         </IconButton>
 
         <IconButton
-          onPress={acoes.alternarRepeticao}
-          variant={estado.repetir === "nao" ? "standard" : "tonal"}
-          aria-label={`Repeticao: ${estado.repetir}`}
+          onPress={girarRepeticao}
+          variant={props.mb.estado().repeat === "off" ? "standard" : "tonal"}
+          aria-label={`Repeticao: ${props.mb.estado().repeat}`}
         >
-          <Show when={estado.repetir === "uma"} fallback={<MdRepeat />}>
+          <Show
+            when={props.mb.estado().repeat === "one"}
+            fallback={<MdRepeat />}
+          >
             <MdRepeatOne />
           </Show>
         </IconButton>
       </Controles>
-
-      <Volume>
-        <IconButton
-          onPress={() => acoes.definirVolume(estado.volume > 0 ? 0 : 0.8)}
-          aria-label={estado.volume > 0 ? "Silenciar" : "Tirar do mudo"}
-        >
-          <Show when={estado.volume > 0} fallback={<MdVolumeOff />}>
-            <MdVolumeUp />
-          </Show>
-        </IconButton>
-        <Slider
-          min={0}
-          max={100}
-          value={Math.round(estado.volume * 100)}
-          labelFormatter={(v) => `${v}%`}
-          onChange={(e) => acoes.definirVolume(e.currentTarget.value / 100)}
-        />
-      </Volume>
     </Topo>
   );
 }
 
-/** Lista da fila, reordenavel arrastando. */
-function Fila(props: { aoTocar: (faixa: Faixa) => Promise<boolean> }) {
-  const [arrastando, setArrastando] = createSignal<number>();
-
-  /** Puxa uma faixa da fila para a frente e ja manda tocar. */
-  async function tocarAgora(indice: number) {
-    acoes.tocarAgora(indice);
-    if (estado.atual) await props.aoTocar(estado.atual);
-  }
-
+/** Lista da fila. */
+function Fila(props: { mb: ClienteMusicBox }) {
   return (
     <Show
-      when={estado.fila.length}
+      when={props.mb.estado().queue.length}
       fallback={
         <Vazio>
           <Text class="label">A fila esta vazia.</Text>
@@ -300,48 +239,33 @@ function Fila(props: { aoTocar: (faixa: Faixa) => Promise<boolean> }) {
     >
       <ResumoDaFila>
         <Text class="label">
-          {estado.fila.length}{" "}
-          {estado.fila.length === 1 ? "faixa" : "faixas"} —{" "}
-          {duracaoLegivel(duracaoDaFila())} restantes
+          {props.mb.estado().queue.length}{" "}
+          {props.mb.estado().queue.length === 1 ? "faixa" : "faixas"} —{" "}
+          {duracaoLegivel(duracaoDaFila(props.mb.estado()))} restantes
         </Text>
-        <Button variant="text" onPress={acoes.limparFila}>
+        <Button variant="text" onPress={() => void props.mb.limpar()}>
           Limpar
         </Button>
       </ResumoDaFila>
 
-      <For each={estado.fila}>
+      <For each={props.mb.estado().queue}>
         {(faixa, indice) => (
-          <ItemDaFila
-            draggable={true}
-            data-arrastando={arrastando() === indice()}
-            onDragStart={() => setArrastando(indice())}
-            onDragEnd={() => setArrastando(undefined)}
-            onDragOver={(e: DragEvent) => e.preventDefault()}
-            onDrop={() => {
-              const de = arrastando();
-              if (de !== undefined) acoes.mover(de, indice());
-              setArrastando(undefined);
-            }}
-          >
-            <Alca>
-              <MdDrag />
-            </Alca>
-
+          <ItemDaFila>
             <Posicao>
               <Text class="label">{indice() + 1}</Text>
             </Posicao>
 
-            <Miniatura capa={faixa.capa} />
+            <Miniatura capa={faixa.cover_url} />
 
-            <Identificacao onClick={() => void tocarAgora(indice())}>
-              <Text class="body">{faixa.titulo}</Text>
-              <Text class="label">{faixa.autor}</Text>
+            <Identificacao onClick={() => void props.mb.tocarDaFila(indice())}>
+              <Text class="body">{faixa.title}</Text>
+              <Text class="label">{faixa.author ?? "desconhecido"}</Text>
             </Identificacao>
 
-            <Text class="label">{duracaoOuAoVivo(faixa.duracao)}</Text>
+            <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
 
             <IconButton
-              onPress={() => acoes.remover(indice())}
+              onPress={() => void props.mb.remover(indice())}
               aria-label="Tirar da fila"
             >
               <MdDelete />
@@ -354,56 +278,38 @@ function Fila(props: { aoTocar: (faixa: Faixa) => Promise<boolean> }) {
 }
 
 /** Campo de busca e resultados. */
-function Busca(props: {
-  channelId: string;
-  aoTocar: (faixa: Faixa) => Promise<boolean>;
-}) {
-  const client = useClient();
-  const instance = useInstance();
-
+function Busca(props: { mb: ClienteMusicBox }) {
   const [termo, setTermo] = createSignal("");
   const [resultados, setResultados] = createSignal<Faixa[]>([]);
-  const [erro, setErro] = createSignal<string>();
+  const [aviso, setAviso] = createSignal<string>();
   const [buscando, setBuscando] = createSignal(false);
 
   const ehPlaylist = () => /[?&]list=/.test(termo());
-
-  /**
-   * Adiciona e, se nada estava tocando, ja comeca.
-   *
-   * Sem isso a primeira faixa entraria como "atual" no painel mas em silencio,
-   * e a pessoa teria de apertar tocar para algo que parece ja estar tocando.
-   */
-  async function adicionar(faixa: Faixa) {
-    const estavaVazio = !estado.atual;
-    acoes.adicionar(faixa);
-    if (estavaVazio && estado.atual) await props.aoTocar(estado.atual);
-  }
 
   async function enviar(e: Event) {
     e.preventDefault();
     if (!termo().trim()) return;
 
     setBuscando(true);
-    setErro(undefined);
+    setAviso(undefined);
     try {
-      const achadas = await buscarFaixas(
-        instance.apiUrl,
-        client().authenticationHeader,
-        props.channelId,
-        termo(),
-        // Playlist pede a lista inteira; busca por nome nao. Cem resultados
-        // para "radiohead" e uma parede de texto onde bastavam alguns.
-        ehPlaylist() ? 200 : 15,
-      );
+      // Playlist pede a lista inteira; busca por nome nao. Cem resultados
+      // para "radiohead" e uma parede de texto onde bastavam alguns.
+      const achadas = await props.mb.buscar(termo(), ehPlaylist() ? 200 : 15);
       setResultados(achadas);
-      if (!achadas.length) setErro("Nada encontrado para isso.");
+      if (!achadas.length) setAviso("Nada encontrado para isso.");
     } catch (falha) {
       setResultados([]);
-      setErro(falha instanceof Error ? falha.message : String(falha));
+      setAviso(falha instanceof Error ? falha.message : String(falha));
     } finally {
       setBuscando(false);
     }
+  }
+
+  async function adicionar(faixas: Faixa[]) {
+    await props.mb.adicionar(faixas);
+    setResultados([]);
+    setTermo("");
   }
 
   return (
@@ -421,7 +327,7 @@ function Busca(props: {
         </IconButton>
       </FormaDeBusca>
 
-      <Show when={erro()}>
+      <Show when={aviso()}>
         {(mensagem) => (
           <Vazio>
             <Text class="label">{mensagem()}</Text>
@@ -432,28 +338,15 @@ function Busca(props: {
       <Show when={buscando()}>
         <Vazio>
           <Text class="label">
-            {ehPlaylist()
-              ? "Abrindo a playlist — pode demorar…"
-              : "Buscando…"}
+            {ehPlaylist() ? "Abrindo a playlist — pode demorar…" : "Buscando…"}
           </Text>
         </Vazio>
       </Show>
 
       <Show when={resultados().length > 1}>
         <ResumoDaFila>
-          <Text class="label">
-            {resultados().length} resultados
-          </Text>
-          <Button
-            variant="tonal"
-            onPress={() => {
-              void (async () => {
-                for (const faixa of resultados()) await adicionar(faixa);
-                setResultados([]);
-                setTermo("");
-              })();
-            }}
-          >
+          <Text class="label">{resultados().length} resultados</Text>
+          <Button variant="tonal" onPress={() => void adicionar(resultados())}>
             Adicionar todas
           </Button>
         </ResumoDaFila>
@@ -462,13 +355,13 @@ function Busca(props: {
       <For each={resultados()}>
         {(faixa) => (
           <ItemDaFila>
-            <Miniatura capa={faixa.capa} />
+            <Miniatura capa={faixa.cover_url} />
             <Identificacao>
-              <Text class="body">{faixa.titulo}</Text>
-              <Text class="label">{faixa.autor}</Text>
+              <Text class="body">{faixa.title}</Text>
+              <Text class="label">{faixa.author ?? "desconhecido"}</Text>
             </Identificacao>
-            <Text class="label">{duracaoOuAoVivo(faixa.duracao)}</Text>
-            <Button variant="tonal" onPress={() => void adicionar(faixa)}>
+            <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
+            <Button variant="tonal" onPress={() => void adicionar([faixa])}>
               Adicionar
             </Button>
           </ItemDaFila>
@@ -476,111 +369,6 @@ function Busca(props: {
       </For>
     </>
   );
-}
-
-/** Manda o servidor tocar uma faixa na chamada deste canal. */
-async function mandarTocar(
-  apiUrl: string,
-  cabecalho: [string, string],
-  channelId: string,
-  faixa: Faixa,
-): Promise<void> {
-  const [chave, valor] = cabecalho;
-  const resposta = await fetch(`${apiUrl}/musicbox/${channelId}/play`, {
-    method: "POST",
-    headers: { "content-type": "application/json", [chave]: valor },
-    // O servidor espera a faixa no formato dele, nao no do painel.
-    body: JSON.stringify({
-      track: {
-        id: faixa.id,
-        provider: faixa.fonte,
-        title: faixa.titulo,
-        author: faixa.autor,
-        duration_s: faixa.duracao || null,
-        cover_url: faixa.capa ?? null,
-        page_url: faixa.pagina,
-      },
-    }),
-  });
-
-  if (!resposta.ok) throw new Error(`Nao consegui tocar (${resposta.status}).`);
-}
-
-/** Manda parar o que estiver tocando. */
-async function mandarParar(
-  apiUrl: string,
-  cabecalho: [string, string],
-  channelId: string,
-): Promise<void> {
-  const [chave, valor] = cabecalho;
-  await fetch(`${apiUrl}/musicbox/${channelId}/stop`, {
-    method: "POST",
-    headers: { [chave]: valor },
-  });
-}
-
-/**
- * Costura da busca com o servidor.
- *
- * Usa `fetch` em vez de `client().api.post` de proposito: aquele caminho so
- * serializa o corpo de rotas que existem no SDK gerado a partir do OpenAPI, e
- * `/musicbox` nao existe la. Com rota desconhecida ele manda o corpo VAZIO sem
- * reclamar, e o servidor recusaria um pedido sem consulta nenhuma.
- */
-async function buscarFaixas(
-  apiUrl: string,
-  cabecalho: [string, string],
-  channelId: string,
-  termo: string,
-  limite: number,
-): Promise<Faixa[]> {
-  const [chave, valor] = cabecalho;
-
-  const resposta = await fetch(`${apiUrl}/musicbox/${channelId}/resolve`, {
-    method: "POST",
-    headers: { "content-type": "application/json", [chave]: valor },
-    body: JSON.stringify({ query: termo, limit: limite }),
-  });
-
-  if (!resposta.ok) {
-    // O backend responde FeatureDisabled quando nao ha agente batendo ponto.
-    // Distinguir isso de uma falha qualquer importa: um pede "ligue o agente",
-    // o outro pede "tente de novo".
-    const corpo = await resposta.json().catch(() => null);
-    const tipo = corpo?.type as string | undefined;
-
-    if (tipo === "FeatureDisabled") {
-      throw new Error(
-        corpo?.feature === "musicbox:agent"
-          ? "Nenhum agente de musica esta conectado agora."
-          : "O MusicBox nao esta configurado neste servidor.",
-      );
-    }
-    throw new Error(`A busca falhou (${resposta.status}).`);
-  }
-
-  const dados = (await resposta.json()) as {
-    tracks: {
-      id: string;
-      provider: string;
-      title: string;
-      author: string | null;
-      duration_s: number | null;
-      cover_url: string | null;
-      page_url: string;
-    }[];
-  };
-
-  return dados.tracks.map((t) => ({
-    id: t.id,
-    fonte: t.provider as Faixa["fonte"],
-    titulo: t.title,
-    autor: t.author ?? "desconhecido",
-    // Transmissao ao vivo vem sem duracao; zero e como o painel representa isso.
-    duracao: t.duration_s ?? 0,
-    capa: t.cover_url ?? undefined,
-    pagina: t.page_url,
-  }));
 }
 
 const Painel = styled("div", {
@@ -649,7 +437,7 @@ const MiniCapa = styled(Capa, {
  * `loading="lazy"` nao e detalhe: uma playlist de 100 faixas dispararia 100
  * requisicoes de imagem de uma vez, sendo que so um punhado esta na tela.
  */
-function Miniatura(props: { capa?: string }) {
+function Miniatura(props: { capa: string | null }) {
   return (
     <MiniCapa>
       <Show when={props.capa} fallback={<MdMusic style={{ opacity: 0.4 }} />}>
@@ -704,15 +492,6 @@ const BotaoTocar = styled(IconButton, {
     background: "var(--md-sys-color-primary)",
     color: "var(--md-sys-color-on-primary)",
     "&:hover": { background: "var(--md-sys-color-primary)" },
-  },
-});
-
-const Volume = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "var(--gap-sm)",
-    "& mdui-slider": { flexGrow: 1 },
   },
 });
 
@@ -784,17 +563,6 @@ const ItemDaFila = styled("div", {
     padding: "var(--gap-sm)",
     borderRadius: "var(--borderRadius-md)",
     "&:hover": { background: "var(--md-sys-color-surface-container)" },
-    "&[data-arrastando='true']": { opacity: 0.4 },
-  },
-});
-
-const Alca = styled("div", {
-  base: {
-    display: "grid",
-    placeItems: "center",
-    cursor: "grab",
-    color: "var(--md-sys-color-on-surface-variant)",
-    flexShrink: 0,
   },
 });
 
