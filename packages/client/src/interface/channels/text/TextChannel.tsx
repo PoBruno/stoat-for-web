@@ -269,7 +269,10 @@ export function TextChannel(props: ChannelPageProps) {
             }
           >
             <MusicBoxHolder>
-              <MusicBoxPanel onClose={() => voice.toggleMusicbox()} />
+              <MusicBoxPanel
+                channelId={props.channel.id}
+                onClose={() => voice.toggleMusicbox()}
+              />
             </MusicBoxHolder>
           </Show>
 
@@ -438,14 +441,23 @@ const SoundboardHolder = styled("div", {
 /**
  * Espaco do MusicBox.
  *
- * Ao contrario do soundboard, toma a altura toda: e uma fila que a pessoa
- * fica lendo e reordenando, e cortar em 46vh deixaria tres faixas visiveis.
- * `flexGrow` com `minHeight: 0` para o painel rolar por dentro em vez de
- * esticar o container e empurrar a barra de digitar para fora da tela.
+ * Ao contrario do soundboard, toma a maior parte da altura: e uma fila que a
+ * pessoa fica lendo e reordenando, e cortar em 46vh deixaria tres faixas
+ * visiveis.
+ *
+ * `flexBasis: 0` nao e detalhe. Com a base em `auto`, a base de calculo vira a
+ * altura do conteudo — e uma playlist de 100 faixas espreme o espaco reservado
+ * para a chamada ate zero. O cartao da chamada e desenhado por fora deste
+ * container, entao ele nao some junto: passa a cobrir o topo do painel, e o
+ * player some atras dele.
+ *
+ * Com base zero, os dois repartem a altura na proporcao do `flexGrow`: tres
+ * quartos para a musica, um quarto para quem esta na chamada.
  */
 const MusicBoxHolder = styled("div", {
   base: {
-    flexGrow: 1,
+    flexGrow: 3,
+    flexBasis: 0,
     minHeight: 0,
     padding: "0 var(--gap-md) var(--gap-md)",
   },

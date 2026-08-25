@@ -27,8 +27,6 @@ export type Faixa = {
 export type Repeticao = "nao" | "uma" | "todas";
 
 export type EstadoMusicBox = {
-  /** Ha um agente batendo ponto? Sem ele nada toca. */
-  disponivel: boolean;
   tocando: boolean;
   atual?: Faixa;
   /** Posicao dentro da faixa atual, em segundos */
@@ -41,7 +39,6 @@ export type EstadoMusicBox = {
 };
 
 const [estado, setEstado] = createStore<EstadoMusicBox>({
-  disponivel: false,
   tocando: false,
   posicao: 0,
   fila: [],
@@ -186,19 +183,14 @@ export const acoes = {
   alternarAleatorio() {
     setEstado("aleatorio", (a) => !a);
   },
-
-  definirDisponivel(v: boolean) {
-    setEstado("disponivel", v);
-  },
 };
 
 /**
- * Enche a fila com exemplos para a tela poder ser julgada antes de o agente
- * existir.
+ * Enche a fila com exemplos para a tela poder ser julgada antes de haver
+ * agente.
  *
- * Nao e um atalho para "ja funciona": nada aqui toca som. O painel mostra um
- * aviso de que o agente nao esta conectado justamente para o preenchimento
- * nao ser confundido com funcionamento.
+ * So age quando nada foi buscado ainda: assim que uma busca real acontece, os
+ * exemplos nao voltam a aparecer.
  */
 export function povoarParaDesenvolvimento() {
   if (!import.meta.env.DEV) return;

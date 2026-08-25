@@ -18,6 +18,8 @@ import MdVolumeOff from "@material-design-icons/svg/outlined/volume_off.svg?comp
 import MdVolumeUp from "@material-design-icons/svg/outlined/volume_up.svg?component-solid";
 
 import { Button, IconButton, Row, Slider, Text } from "@revolt/ui";
+import { useClient } from "@revolt/client";
+import { useInstance } from "@revolt/instance";
 
 import {
   type Faixa,
@@ -37,7 +39,7 @@ type Aba = "fila" | "buscar";
  * fila de musica e uma lista que a pessoa fica olhando e reordenando, nao um
  * punhado de botoes para apertar de relance.
  */
-export function MusicBoxPanel(props: { onClose: () => void }) {
+export function MusicBoxPanel(props: { channelId: string; onClose: () => void }) {
   const [aba, setAba] = createSignal<Aba>("fila");
 
   onMount(povoarParaDesenvolvimento);
@@ -54,14 +56,12 @@ export function MusicBoxPanel(props: { onClose: () => void }) {
         </IconButton>
       </Cabecalho>
 
-      <Show when={!estado.disponivel}>
-        <Aviso>
-          <Text class="label">
-            Nenhum agente conectado — a fila pode ser montada, mas nada toca
-            ainda.
-          </Text>
-        </Aviso>
-      </Show>
+      <Aviso>
+        <Text class="label">
+          A busca ja funciona. Tocar ainda nao: falta o agente publicar o audio
+          na chamada.
+        </Text>
+      </Aviso>
 
       <AgoraTocando />
 
@@ -91,7 +91,7 @@ export function MusicBoxPanel(props: { onClose: () => void }) {
             <Fila />
           </Match>
           <Match when={aba() === "buscar"}>
-            <Busca />
+            <Busca channelId={props.channelId} />
           </Match>
         </Switch>
       </Corpo>
@@ -259,14 +259,7 @@ function Fila() {
               <Text class="label">{indice() + 1}</Text>
             </Posicao>
 
-            <MiniCapa>
-              <Show
-                when={faixa.capa}
-                fallback={<MdMusic style={{ opacity: 0.4 }} />}
-              >
-                {(capa) => <img src={capa()} alt="" />}
-              </Show>
-            </MiniCapa>
+            <Miniatura capa={faixa.capa} />
 
             <Identificacao onClick={() => acoes.tocarAgora(indice())}>
               <Text class="body">{faixa.titulo}</Text>
@@ -289,11 +282,16 @@ function Fila() {
 }
 
 /** Campo de busca e resultados. */
-function Busca() {
+function Busca(props: { channelId: string }) {
+  const client = useClient();
+  const instance = useInstance();
+
   const [termo, setTermo] = createSignal("");
   const [resultados, setResultados] = createSignal<Faixa[]>([]);
   const [erro, setErro] = createSignal<string>();
   const [buscando, setBuscando] = createSignal(false);
+
+  const ehPlaylist = () => /[?&]list=/.test(termo());
 
   async function enviar(e: Event) {
     e.preventDefault();
@@ -302,12 +300,20 @@ function Busca() {
     setBuscando(true);
     setErro(undefined);
     try {
-      setResultados(await buscarFaixas(termo()));
-    } catch {
-      setResultados([]);
-      setErro(
-        "A busca depende de um agente conectado, e ainda nao ha rota no servidor para falar com ele.",
+      const achadas = await buscarFaixas(
+        instance.apiUrl,
+        client().authenticationHeader,
+        props.channelId,
+        termo(),
+        // Playlist pede a lista inteira; busca por nome nao. Cem resultados
+        // para "radiohead" e uma parede de texto onde bastavam alguns.
+        ehPlaylist() ? 200 : 15,
       );
+      setResultados(achadas);
+      if (!achadas.length) setErro("Nada encontrado para isso.");
+    } catch (falha) {
+      setResultados([]);
+      setErro(falha instanceof Error ? falha.message : String(falha));
     } finally {
       setBuscando(false);
     }
@@ -318,7 +324,7 @@ function Busca() {
       <FormaDeBusca onSubmit={enviar}>
         <CampoDeBusca
           value={termo()}
-          placeholder="Nome da musica, artista ou link"
+          placeholder="Nome da musica, link do video ou da playlist"
           onInput={(e: InputEvent) =>
             setTermo((e.currentTarget as HTMLInputElement).value)
           }
@@ -338,21 +344,36 @@ function Busca() {
 
       <Show when={buscando()}>
         <Vazio>
-          <Text class="label">Buscando…</Text>
+          <Text class="label">
+            {ehPlaylist()
+              ? "Abrindo a playlist — pode demorar…"
+              : "Buscando…"}
+          </Text>
         </Vazio>
+      </Show>
+
+      <Show when={resultados().length > 1}>
+        <ResumoDaFila>
+          <Text class="label">
+            {resultados().length} resultados
+          </Text>
+          <Button
+            variant="tonal"
+            onPress={() => {
+              for (const faixa of resultados()) acoes.adicionar(faixa);
+              setResultados([]);
+              setTermo("");
+            }}
+          >
+            Adicionar todas
+          </Button>
+        </ResumoDaFila>
       </Show>
 
       <For each={resultados()}>
         {(faixa) => (
           <ItemDaFila>
-            <MiniCapa>
-              <Show
-                when={faixa.capa}
-                fallback={<MdMusic style={{ opacity: 0.4 }} />}
-              >
-                {(capa) => <img src={capa()} alt="" />}
-              </Show>
-            </MiniCapa>
+            <Miniatura capa={faixa.capa} />
             <Identificacao>
               <Text class="body">{faixa.titulo}</Text>
               <Text class="label">{faixa.autor}</Text>
@@ -371,12 +392,64 @@ function Busca() {
 /**
  * Costura da busca com o servidor.
  *
- * Falha de proposito enquanto a rota nao existe: devolver resultados
- * inventados aqui faria a tela parecer pronta e esconderia exatamente a peca
- * que falta.
+ * Usa `fetch` em vez de `client().api.post` de proposito: aquele caminho so
+ * serializa o corpo de rotas que existem no SDK gerado a partir do OpenAPI, e
+ * `/musicbox` nao existe la. Com rota desconhecida ele manda o corpo VAZIO sem
+ * reclamar, e o servidor recusaria um pedido sem consulta nenhuma.
  */
-async function buscarFaixas(_termo: string): Promise<Faixa[]> {
-  throw new Error("sem agente");
+async function buscarFaixas(
+  apiUrl: string,
+  cabecalho: [string, string],
+  channelId: string,
+  termo: string,
+  limite: number,
+): Promise<Faixa[]> {
+  const [chave, valor] = cabecalho;
+
+  const resposta = await fetch(`${apiUrl}/musicbox/${channelId}/resolve`, {
+    method: "POST",
+    headers: { "content-type": "application/json", [chave]: valor },
+    body: JSON.stringify({ query: termo, limit: limite }),
+  });
+
+  if (!resposta.ok) {
+    // O backend responde FeatureDisabled quando nao ha agente batendo ponto.
+    // Distinguir isso de uma falha qualquer importa: um pede "ligue o agente",
+    // o outro pede "tente de novo".
+    const corpo = await resposta.json().catch(() => null);
+    const tipo = corpo?.type as string | undefined;
+
+    if (tipo === "FeatureDisabled") {
+      throw new Error(
+        corpo?.feature === "musicbox:agent"
+          ? "Nenhum agente de musica esta conectado agora."
+          : "O MusicBox nao esta configurado neste servidor.",
+      );
+    }
+    throw new Error(`A busca falhou (${resposta.status}).`);
+  }
+
+  const dados = (await resposta.json()) as {
+    tracks: {
+      id: string;
+      provider: string;
+      title: string;
+      author: string | null;
+      duration_s: number | null;
+      cover_url: string | null;
+      page_url: string;
+    }[];
+  };
+
+  return dados.tracks.map((t) => ({
+    id: t.id,
+    fonte: t.provider as Faixa["fonte"],
+    titulo: t.title,
+    autor: t.author ?? "desconhecido",
+    // Transmissao ao vivo vem sem duracao; zero e como o painel representa isso.
+    duracao: t.duration_s ?? 0,
+    capa: t.cover_url ?? undefined,
+  }));
 }
 
 const Painel = styled("div", {
@@ -438,6 +511,22 @@ const Capa = styled("div", {
 const MiniCapa = styled(Capa, {
   base: { width: "36px", height: "36px" },
 });
+
+/**
+ * Miniatura de item de lista.
+ *
+ * `loading="lazy"` nao e detalhe: uma playlist de 100 faixas dispararia 100
+ * requisicoes de imagem de uma vez, sendo que so um punhado esta na tela.
+ */
+function Miniatura(props: { capa?: string }) {
+  return (
+    <MiniCapa>
+      <Show when={props.capa} fallback={<MdMusic style={{ opacity: 0.4 }} />}>
+        {(capa) => <img src={capa()} alt="" loading="lazy" />}
+      </Show>
+    </MiniCapa>
+  );
+}
 
 /**
  * `minWidth: 0` e o que permite o corte com reticencias: sem isso um item de
