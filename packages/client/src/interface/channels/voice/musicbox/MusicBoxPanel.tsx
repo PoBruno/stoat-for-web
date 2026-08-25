@@ -601,6 +601,17 @@ const Destaque = styled("div", {
       color: "var(--md-sys-color-on-primary)",
     },
     "& button:hover": { background: "var(--md-sys-color-primary)" },
+
+    // O ícone precisa ser dito explicitamente, senão não acompanha.
+    //
+    // Uma regra geral pinta todo `svg` com a cor de frente da superfície, e
+    // ela vence a herança do `color` acima. Num botão preenchido com a cor de
+    // destaque isso deixava um ícone claro sobre fundo claro — o botão de
+    // tocar sumia, e era justamente o único que precisava ser achado de
+    // primeira.
+    "& button svg": {
+      fill: "currentColor",
+    },
   },
 });
 
