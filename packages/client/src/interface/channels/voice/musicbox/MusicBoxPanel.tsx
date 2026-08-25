@@ -1,5 +1,15 @@
-import { For, Match, Show, Switch, createSignal, onCleanup, onMount } from "solid-js";
+import {
+  For,
+  type JSX,
+  Match,
+  Show,
+  Switch,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
 
+import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
 import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
@@ -16,7 +26,8 @@ import MdStop from "@material-design-icons/svg/outlined/stop.svg?component-solid
 
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
-import { Button, IconButton, Row, Slider, Text } from "@revolt/ui";
+import { Button, IconButton, Slider, Text } from "@revolt/ui/components/design";
+import { Row } from "@revolt/ui/components/layout";
 
 import {
   type ClienteMusicBox,
@@ -400,6 +411,11 @@ const Painel = styled("div", {
     flexDirection: "column",
     minHeight: 0,
     background: "var(--md-sys-color-surface-container-low)",
+    // Quem pinta o fundo precisa definir o texto. Sem isto o painel herdava a
+    // cor de muito acima -- e dentro do cartao flutuante essa cor e escura,
+    // entao o titulo saia quase preto sobre fundo escuro: presente, visivel
+    // para o navegador, e ilegivel para quem olha.
+    color: "var(--md-sys-color-on-surface)",
     borderRadius: "var(--borderRadius-lg)",
     overflow: "hidden",
   },
@@ -509,11 +525,47 @@ const Controles = styled("div", {
   },
 });
 
-const BotaoTocar = styled(IconButton, {
+/**
+ * Botao de tocar, em destaque.
+ *
+ * Nao usa `styled(IconButton)` de proposito. Aquilo resolve o componente na
+ * hora em que o modulo carrega, e este modulo passou a ser alcancado a partir
+ * da propria biblioteca de UI — o resultado era `Cannot access 'IconButton'
+ * before initialization` e a tela em branco, sem pista do ciclo.
+ *
+ * Um recipiente que estiliza o botao por dentro adia isso para a
+ * renderizacao, e ainda permite `:hover`, que estilo em linha nao permite.
+ */
+function BotaoTocar(props: {
+  onPress: () => void;
+  isDisabled?: boolean;
+  "aria-label"?: string;
+  children: JSX.Element;
+}) {
+  return (
+    <Destaque>
+      <IconButton
+        onPress={props.onPress}
+        isDisabled={props.isDisabled}
+        aria-label={props["aria-label"]}
+      >
+        {props.children}
+      </IconButton>
+    </Destaque>
+  );
+}
+
+const Destaque = styled("div", {
   base: {
-    background: "var(--md-sys-color-primary)",
-    color: "var(--md-sys-color-on-primary)",
-    "&:hover": { background: "var(--md-sys-color-primary)" },
+    display: "contents",
+
+    "& button": {
+      background: "var(--md-sys-color-primary)",
+      color: "var(--md-sys-color-on-primary)",
+    },
+    "& button:hover": {
+      background: "var(--md-sys-color-primary)",
+    },
   },
 });
 

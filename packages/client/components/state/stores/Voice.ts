@@ -62,6 +62,19 @@ export const CallArrangements: CallArrangement[] = [
 /** Where the non-pinned tiles live */
 export type CallFilmstrip = "bottom" | "side" | "hidden";
 
+/**
+ * O que a chamada mostra acima da barra de controles.
+ *
+ * Uma coisa de cada vez, e nao duas dividindo a altura. Dividir fazia o
+ * soundboard caber tres linhas e a fila de musica caber tres faixas; nenhum
+ * dos dois servia para o que existe.
+ *
+ * - `people`      quem esta na chamada e as telas compartilhadas
+ * - `soundboard`  os sons do servidor
+ * - `musicbox`    a fila de musica
+ */
+export type CallView = "people" | "soundboard" | "musicbox";
+
 export const CallFilmstrips: CallFilmstrip[] = ["bottom", "side", "hidden"];
 
 export interface TypeVoice {
@@ -95,6 +108,9 @@ export interface TypeVoice {
 
   /** Where the tiles that are not pinned are shown */
   callFilmstrip: CallFilmstrip;
+
+  /** O que a chamada mostra acima da barra de controles */
+  callView: CallView;
 
   userVolumes: Record<string, number>;
   userMutes: Record<string, boolean>;
@@ -146,6 +162,7 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
       showCallChat: false,
       callArrangement: "auto",
       callFilmstrip: "bottom",
+      callView: "people",
       userVolumes: {},
       userMutes: {},
       screenShareVolumes: {},
@@ -237,6 +254,14 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
     if (input.callFilmstrip && CallFilmstrips.includes(input.callFilmstrip)) {
       data.callFilmstrip = input.callFilmstrip;
+    }
+
+    if (
+      input.callView === "people" ||
+      input.callView === "soundboard" ||
+      input.callView === "musicbox"
+    ) {
+      data.callView = input.callView;
     }
 
     if (typeof input.inputVolume === "number") {
@@ -548,6 +573,11 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
   /**
    * Whether the text chat stays visible underneath an active call
+   *
+   * Canal de voz nao tem chat: o servidor ja tem canais de texto para isso, e
+   * a conversa ali so roubava altura de quem esta na chamada. Isto continua
+   * valendo para conversas diretas e grupos, onde a chamada acontece dentro
+   * de um chat que existe por si.
    */
   get showCallChat(): boolean {
     return this.get().showCallChat;
@@ -565,6 +595,27 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
    */
   toggleCallChat() {
     this.set("showCallChat", !this.get().showCallChat);
+  }
+
+  /**
+   * O que a chamada mostra acima da barra de controles
+   */
+  get callView(): CallView {
+    return this.get().callView;
+  }
+
+  set callView(value: CallView) {
+    this.set("callView", value);
+  }
+
+  /**
+   * Alterna para uma visao, ou volta para as pessoas se ja estiver nela.
+   *
+   * Clicar de novo no botao aceso volta ao padrao em vez de nao fazer nada:
+   * um botao que parece ligado e nao desliga confunde.
+   */
+  toggleCallView(view: CallView) {
+    this.set("callView", this.get().callView === view ? "people" : view);
   }
 
   /**

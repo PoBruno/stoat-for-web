@@ -7,7 +7,9 @@ import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { useVoice } from "@revolt/rtc";
 import { useState } from "@revolt/state";
-import { Row, Slider, Symbol, Text } from "@revolt/ui";
+import { Slider, Text } from "@revolt/ui/components/design";
+import { Row } from "@revolt/ui/components/layout";
+import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 /**
  * Volume da musica, dentro do menu de contexto do botao do MusicBox.

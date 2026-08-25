@@ -28,8 +28,6 @@ import {
 } from "@revolt/ui";
 import { VoiceChannelCallCardMount } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
-import { SoundboardPanel } from "../voice/SoundboardPanel";
-import { MusicBoxPanel } from "../voice/musicbox/MusicBoxPanel";
 
 import { ChannelHeader } from "../ChannelHeader";
 import { ChannelPageProps } from "../ChannelPage";
@@ -99,14 +97,25 @@ export function TextChannel(props: ChannelPageProps) {
     props.channel.isVoice && props.channel.havePermission("Connect");
 
   /**
-   * Whether the text chat is shown.
+   * Se este canal e dedicado a voz.
    *
-   * While connected to *this* voice channel the chat is hidden by default so
-   * the call card can use the entire channel body; toggled from the call
-   * controls and persisted in the voice store.
+   * Um canal de voz nao e um tipo proprio: e um canal de texto com informacao
+   * de voz anexada, e por isso ele herdava o chat. Conversa direta e grupo
+   * tambem tem chamada, mas ali o chat existe por si e deve continuar.
+   */
+  const ehCanalDeVoz = () =>
+    props.channel.type === "TextChannel" && props.channel.isVoice;
+
+  /**
+   * Se o chat de texto aparece.
+   *
+   * Em canal de voz, nunca: o servidor ja tem canais de texto, e a conversa
+   * ali so roubava altura de quem esta na chamada. Nos demais canais com
+   * chamada, segue a preferencia de quem usa.
    */
   const showChat = () =>
-    voice.channel()?.id !== props.channel.id || state.voice.showCallChat;
+    !ehCanalDeVoz() &&
+    (voice.channel()?.id !== props.channel.id || state.voice.showCallChat);
 
   // Get a reference to the message box's load latest function
   let jumpToBottomRef: ((nearby?: string) => void) | undefined;
@@ -232,48 +241,6 @@ export function TextChannel(props: ChannelPageProps) {
             }
           >
             <VoiceChannelCallCardMount channel={props.channel} />
-          </Show>
-
-          {/*
-            Painel do soundboard: so aparece na chamada em que o usuario esta
-            de fato conectado. Abrir num canal que ele apenas olha nao faria
-            sentido, porque nao ha para onde mandar o audio.
-          */}
-          <Show
-            when={
-              voice.soundboardOpen() &&
-              voice.channel()?.id === props.channel.id &&
-              props.channel.server
-            }
-          >
-            {(server) => (
-              <SoundboardHolder>
-                <SoundboardPanel
-                  server={server()}
-                  onClose={() => voice.toggleSoundboard()}
-                />
-              </SoundboardHolder>
-            )}
-          </Show>
-
-          {/*
-            Painel do MusicBox. Mesma regra do soundboard: so na chamada em
-            que a pessoa esta de fato conectada.
-
-            Os dois nunca aparecem juntos - abrir um fecha o outro no estado
-            da chamada - porque este aqui ocupa a altura inteira.
-          */}
-          <Show
-            when={
-              voice.musicboxOpen() && voice.channel()?.id === props.channel.id
-            }
-          >
-            <MusicBoxHolder>
-              <MusicBoxPanel
-                channelId={props.channel.id}
-                onClose={() => voice.toggleMusicbox()}
-              />
-            </MusicBoxHolder>
           </Show>
 
           <Show when={showChat()}>
@@ -423,42 +390,4 @@ const SidebarTitle = styled("div", {
   },
 });
 
-/**
- * Espaco do painel de soundboard dentro da view do canal.
- *
- * Altura fixa em vez de crescer com o conteudo: a lista de sons e rolavel por
- * dentro, e deixar o painel empurrar as mensagens faria a chamada saltar toda
- * vez que alguem subisse um som.
- */
-const SoundboardHolder = styled("div", {
-  base: {
-    height: "min(46vh, 420px)",
-    padding: "0 var(--gap-md) var(--gap-md)",
-    flexShrink: 0,
-  },
-});
 
-/**
- * Espaco do MusicBox.
- *
- * Ao contrario do soundboard, toma a maior parte da altura: e uma fila que a
- * pessoa fica lendo e reordenando, e cortar em 46vh deixaria tres faixas
- * visiveis.
- *
- * `flexBasis: 0` nao e detalhe. Com a base em `auto`, a base de calculo vira a
- * altura do conteudo — e uma playlist de 100 faixas espreme o espaco reservado
- * para a chamada ate zero. O cartao da chamada e desenhado por fora deste
- * container, entao ele nao some junto: passa a cobrir o topo do painel, e o
- * player some atras dele.
- *
- * Com base zero, os dois repartem a altura na proporcao do `flexGrow`: tres
- * quartos para a musica, um quarto para quem esta na chamada.
- */
-const MusicBoxHolder = styled("div", {
-  base: {
-    flexGrow: 3,
-    flexBasis: 0,
-    minHeight: 0,
-    padding: "0 var(--gap-md) var(--gap-md)",
-  },
-});

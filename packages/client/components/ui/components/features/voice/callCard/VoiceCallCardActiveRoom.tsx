@@ -5,9 +5,11 @@ import {
   createMemo,
   createSignal,
   For,
+  Match,
   onCleanup,
   onMount,
   Show,
+  Switch,
 } from "solid-js";
 import { TrackLoop } from "solid-livekit-components";
 import { styled } from "styled-system/jsx";
@@ -24,20 +26,47 @@ import { VoiceCallCardActions } from "./VoiceCallCardActions";
 import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
 import { ContextMenu } from "../../../../../app/menus/ContextMenu";
 import { VolumeMusicBox } from "../../../../../../src/interface/channels/voice/musicbox/VolumeMusicBox";
+import { MusicBoxPanel } from "../../../../../../src/interface/channels/voice/musicbox/MusicBoxPanel";
+import { SoundboardPanel } from "../../../../../../src/interface/channels/voice/SoundboardPanel";
 
 /**
  * Call card (active)
+ *
+ * Uma area em cima e uma barra fixa embaixo. A area mostra UMA coisa de cada
+ * vez -- pessoas, soundboard ou musica -- em vez de dividir a altura entre
+ * duas. Dividir dava tres linhas de som e tres faixas de fila; nenhum dos
+ * dois servia para o que existe.
+ *
+ * A barra nunca sai do lugar, como a barra de tarefas: mudo, ensurdecer,
+ * camera, tela e desligar ficam sempre no mesmo pixel, independente do que
+ * esteja aberto acima.
  */
 export function VoiceCallCardActiveRoom() {
+  const state = useState();
+
   return (
     <View>
-      <Participants />
+      <Palco>
+        <Switch fallback={<Participants />}>
+          <Match when={state.voice.callView === "soundboard"}>
+            <PainelEmbutido>
+              <SoundboardEmbutido />
+            </PainelEmbutido>
+          </Match>
+          <Match when={state.voice.callView === "musicbox"}>
+            <PainelEmbutido>
+              <MusicBoxEmbutido />
+            </PainelEmbutido>
+          </Match>
+        </Switch>
+      </Palco>
+
       <VoiceCallControls>
         <VoiceCallControlHolder right>
           <VoiceCallArrangement />
+          <VoiceCallPeopleToggle />
           <VoiceCallSoundboardToggle />
           <VoiceCallMusicBoxToggle />
-          <VoiceCallChatToggle />
           <VoiceCallFullscreen />
         </VoiceCallControlHolder>
         <VoiceCallCardActions size="sm" />
@@ -46,6 +75,48 @@ export function VoiceCallCardActiveRoom() {
         </VoiceCallControlHolder>
       </VoiceCallControls>
     </View>
+  );
+}
+
+/**
+ * Soundboard dentro da chamada.
+ *
+ * Precisa do servidor, e uma conversa direta nao tem um. Nesse caso o botao
+ * nem aparece, mas a checagem fica aqui tambem para o componente nunca ser
+ * montado sem o que ele exige.
+ */
+function SoundboardEmbutido() {
+  const voice = useVoice();
+  const state = useState();
+  const server = () => voice.channel()?.server;
+
+  return (
+    <Show when={server()}>
+      {(s) => (
+        <SoundboardPanel
+          server={s()}
+          onClose={() => (state.voice.callView = "people")}
+        />
+      )}
+    </Show>
+  );
+}
+
+/** Fila de musica dentro da chamada. */
+function MusicBoxEmbutido() {
+  const voice = useVoice();
+  const state = useState();
+  const canal = () => voice.channel();
+
+  return (
+    <Show when={canal()}>
+      {(c) => (
+        <MusicBoxPanel
+          channelId={c().id}
+          onClose={() => (state.voice.callView = "people")}
+        />
+      )}
+    </Show>
   );
 }
 
@@ -113,14 +184,15 @@ function VoiceCallArrangement() {
  */
 function VoiceCallSoundboardToggle() {
   const voice = useVoice();
+  const state = useState();
   const { t } = useLingui();
 
   return (
     <IconButton
       size="sm"
-      variant={voice.soundboardOpen() ? "tonal" : "standard"}
-      onPress={() => voice.toggleSoundboard()}
-      isDisabled={!voice.soundboardPermission}
+      variant={state.voice.callView === "soundboard" ? "tonal" : "standard"}
+      onPress={() => state.voice.toggleCallView("soundboard")}
+      isDisabled={!voice.soundboardPermission || !voice.channel()?.server}
       use:floating={{
         tooltip: {
           placement: "top",
@@ -140,13 +212,14 @@ function VoiceCallSoundboardToggle() {
  */
 function VoiceCallMusicBoxToggle() {
   const voice = useVoice();
+  const state = useState();
   const { t } = useLingui();
 
   return (
     <IconButton
       size="sm"
-      variant={voice.musicboxOpen() ? "tonal" : "standard"}
-      onPress={() => voice.toggleMusicbox()}
+      variant={state.voice.callView === "musicbox" ? "tonal" : "standard"}
+      onPress={() => state.voice.toggleCallView("musicbox")}
       isDisabled={!voice.musicboxPermission}
       use:floating={{
         tooltip: {
@@ -169,29 +242,34 @@ function VoiceCallMusicBoxToggle() {
 }
 
 /**
- * Show or hide the text chat underneath the call
+ * Voltar para as pessoas da chamada.
+ *
+ * Ocupa o lugar do antigo alternador de chat. Canal de voz nao tem chat: o
+ * servidor ja tem canais de texto, e a conversa ali so roubava a altura de
+ * quem esta na chamada.
  */
-function VoiceCallChatToggle() {
+function VoiceCallPeopleToggle() {
   const state = useState();
+  const voice = useVoice();
   const { t } = useLingui();
+
+  /** Quantos estao na chamada, para o botao dizer se ha alguem la. */
+  const quantos = () => voice.vidTracks().length;
 
   return (
     <IconButton
       size="sm"
-      variant={"standard"}
-      onPress={() => state.voice.toggleCallChat()}
+      variant={state.voice.callView === "people" ? "tonal" : "standard"}
+      onPress={() => (state.voice.callView = "people")}
       use:floating={{
         tooltip: {
           placement: "top",
-          content: state.voice.showCallChat ? t`Hide chat` : t`Show chat`,
+          content: t`People and screens`,
         },
       }}
     >
-      <Show
-        when={state.voice.showCallChat}
-        fallback={<Symbol>chat_bubble</Symbol>}
-      >
-        <Symbol>speaker_notes_off</Symbol>
+      <Show when={quantos() > 1} fallback={<Symbol>person</Symbol>}>
+        <Symbol>group</Symbol>
       </Show>
     </IconButton>
   );
@@ -492,6 +570,32 @@ const View = styled("div", {
     flexDirection: "column",
     gap: "var(--gap-md)",
     padding: "var(--gap-md)",
+  },
+});
+
+/**
+ * A area que troca de conteudo.
+ *
+ * `minHeight: 0` e o que permite o filho rolar por dentro. Sem isso um filho
+ * de flex nunca encolhe abaixo do proprio conteudo, e a lista de sons ou a
+ * fila de musica empurrariam a barra de controles para fora da tela.
+ */
+const Palco = styled("div", {
+  base: {
+    flexGrow: 1,
+    minHeight: 0,
+    display: "flex",
+    flexDirection: "column",
+  },
+});
+
+/** Moldura dos paineis que nao sao a lista de participantes. */
+const PainelEmbutido = styled("div", {
+  base: {
+    flexGrow: 1,
+    minHeight: 0,
+    display: "flex",
+    flexDirection: "column",
   },
 });
 

@@ -22,6 +22,7 @@ import { VolumeMusicBox } from "../../channels/voice/musicbox/VolumeMusicBox";
  */
 export function VoiceDock() {
   const voice = useVoice();
+  const state = useState();
   const { t } = useLingui();
 
   const conectado = () => voice.state() === "CONNECTED";
@@ -81,10 +82,10 @@ export function VoiceDock() {
 
             <IconButton
               size="xs"
-              variant={voice.soundboardOpen() ? "tonal" : "standard"}
+              variant={state.voice.callView === "soundboard" ? "tonal" : "standard"}
               aria-label={t`Soundboard`}
               isDisabled={!voice.soundboardPermission}
-              onPress={() => voice.toggleSoundboard()}
+              onPress={() => state.voice.toggleCallView("soundboard")}
               // Botao direito abre o volume aqui mesmo, sem precisar abrir o
               // painel inteiro so para mexer no controle deslizante.
               use:floating={{
@@ -100,10 +101,10 @@ export function VoiceDock() {
 
             <IconButton
               size="xs"
-              variant={voice.musicboxOpen() ? "tonal" : "standard"}
+              variant={state.voice.callView === "musicbox" ? "tonal" : "standard"}
               aria-label={t`MusicBox`}
               isDisabled={!voice.musicboxPermission}
-              onPress={() => voice.toggleMusicbox()}
+              onPress={() => state.voice.toggleCallView("musicbox")}
               // Botao direito abre o volume, igual ao soundboard. E por
               // usuario: cada um regula a musica no proprio ouvido.
               use:floating={{

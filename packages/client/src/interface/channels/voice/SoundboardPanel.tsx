@@ -19,7 +19,9 @@ import { useClient } from "@revolt/client";
 import { useModals } from "@revolt/modal";
 import { useVoice } from "@revolt/rtc";
 import { useState } from "@revolt/state";
-import { Button, IconButton, Row, Symbol, Text } from "@revolt/ui";
+import { Button, IconButton, Text } from "@revolt/ui/components/design";
+import { Row } from "@revolt/ui/components/layout";
+import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import {
   ContextMenu,
@@ -422,6 +424,9 @@ const Painel = styled("div", {
     height: "100%",
     minHeight: 0,
     background: "var(--md-sys-color-surface-container-low)",
+    // Quem pinta o fundo precisa definir o texto: dentro do cartao flutuante
+    // a cor herdada e escura, e o painel sairia ilegivel sobre o proprio fundo.
+    color: "var(--md-sys-color-on-surface)",
     borderRadius: "var(--borderRadius-lg)",
   },
 });
