@@ -6,6 +6,7 @@ import { Key } from "@solid-primitives/keyed";
 import { RemoteTrackPublication, Track } from "livekit-client";
 
 import { useState } from "@revolt/state";
+import { gainForVolumePosition } from "@revolt/state/stores/Voice";
 
 import { useVoice } from "../state";
 
@@ -50,9 +51,13 @@ export function RoomAudioManager() {
             trackRef={track()}
             volume={
               state.voice.outputVolume *
-              (track().source === Track.Source.ScreenShareAudio
-                ? state.voice.getScreenShareVolume(track().participant.identity)
-                : state.voice.getUserVolume(track().participant.identity))
+              gainForVolumePosition(
+                track().source === Track.Source.ScreenShareAudio
+                  ? state.voice.getScreenShareVolume(
+                      track().participant.identity,
+                    )
+                  : state.voice.getUserVolume(track().participant.identity),
+              )
             }
             muted={
               (track().source === Track.Source.ScreenShareAudio

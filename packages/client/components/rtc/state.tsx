@@ -33,6 +33,7 @@ import {
   NoiseSuppresionState,
   ScreenShareQualityName,
   Voice as VoiceSettings,
+  gainForVolumePosition,
 } from "@revolt/state/stores/Voice";
 import { VoiceCallCardContext } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
@@ -937,7 +938,7 @@ class Voice {
     // propria track, entao sem este ramo quem aperta o botao nao ouve nada —
     // e sozinho no canal parece que a feature nao funciona.
     const monitor = ctx.createGain();
-    monitor.gain.value = this.#settings.soundboardVolume;
+    monitor.gain.value = gainForVolumePosition(this.#settings.soundboardVolume);
     fonte.connect(monitor);
     monitor.connect(ctx.destination);
 

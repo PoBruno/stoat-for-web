@@ -77,6 +77,31 @@ export type CallView = "people" | "soundboard" | "musicbox";
 
 export const CallFilmstrips: CallFilmstrip[] = ["bottom", "side", "hidden"];
 
+/**
+ * Turn a volume slider position into the gain to actually apply.
+ *
+ * A slider that sets amplitude directly feels broken at the quiet end, and it
+ * is not the listener's fault. Loudness is perceived roughly logarithmically,
+ * so an amplitude of 0.05 does not sound like five percent of full — it sounds
+ * like something closer to a sixth of it. The bottom of the slider ends up
+ * doing almost nothing while the top does everything.
+ *
+ * Squaring the position below unity spreads the quiet end out: a fifth of the
+ * way up is a fifth of the perceived loudness, near enough. Above unity the
+ * position is used as-is, because boosting past the original level is coarse
+ * by nature and squaring it would quadruple the ceiling.
+ *
+ * Unity and the maximum are both unchanged, so nobody's existing setting
+ * changes meaning at the ends.
+ *
+ * @param position Slider position, 0 to 2, where 1 is the original level
+ * @returns Gain to multiply the signal by
+ */
+export function gainForVolumePosition(position: number): number {
+  if (position <= 0) return 0;
+  return position <= 1 ? position * position : position;
+}
+
 export interface TypeVoice {
   preferredAudioInputDevice?: string;
   preferredAudioOutputDevice?: string;
@@ -328,11 +353,17 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
   /**
    * Get a user's volume
+   *
+   * `??` and not `||`: zero is a volume the user can choose, and it is also
+   * the one value JavaScript treats as absent. With `||`, silencing someone
+   * read back as full volume — the slider sprang back to the middle and the
+   * mute button did nothing.
+   *
    * @param userId User ID
    * @returns Volume or default
    */
   getUserVolume(userId: string): number {
-    return this.get().userVolumes[userId] || 1.0;
+    return this.get().userVolumes[userId] ?? 1.0;
   }
 
   /**
@@ -364,11 +395,15 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
   /**
    * Get a user's screen share volume
+   *
+   * `??` and not `||`, for the same reason as {@link getUserVolume}: zero is
+   * a choice, not an absence.
+   *
    * @param userId User ID
    * @returns Volume or default
    */
   getScreenShareVolume(userId: string): number {
-    return this.get().screenShareVolumes[userId] || 1.0;
+    return this.get().screenShareVolumes[userId] ?? 1.0;
   }
 
   /**
