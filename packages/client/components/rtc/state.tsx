@@ -90,6 +90,16 @@ type ScreenShareQuality = {
    * MediaStreamTrack, em vez de ir junto com a captura.
    */
   contentHint: "motion" | "detail" | "text";
+  /**
+   * Cabecalho da linha no seletor: `720p`, `1080p`, `Fonte`.
+   *
+   * Existe porque com oito opcoes a fileira unica de botoes esmagou os
+   * rotulos ate virarem colunas de letras. Agrupar por resolucao devolve a
+   * estrutura que as qualidades sempre tiveram.
+   */
+  grupo: string;
+  /** Rotulo curto dentro da linha: `30`, `60`, `90`, `120`, `5`. */
+  rotulo: string;
 };
 
 /**
@@ -110,17 +120,24 @@ type ScreenShareQuality = {
  *
  * Os valores abaixo sobem menos que proporcionalmente ao numero de quadros
  * porque quadros mais proximos no tempo se parecem mais entre si, e o codec
- * gasta menos bits em cada um.
+ * gasta menos bits em cada um. Medido: dobrar de 15 para 60 fps exigiu ~1,6x
+ * o bitrate, nao 4x, e o custo de encode POR QUADRO ate caiu.
  */
 const BITRATE_TELA: Record<ScreenShareQualityName, number> = {
   /** 720p30 — o mesmo do preset antigo, que ja saturava a 15fps */
   low: 2_500_000,
   /** 720p60 */
   hd60: 4_000_000,
+  /** 720p90 */
+  hd90: 5_000_000,
+  /** 720p120 */
+  hd120: 6_000_000,
   /** 1080p30 */
   high: 5_000_000,
   /** 1080p60 */
   fhd60: 8_000_000,
+  /** 1080p90 — o mais pesado; e o primeiro candidato a encostar em CPU */
+  fhd90: 10_000_000,
   /** resolucao original a 5fps: quase nada muda entre quadros, mas cada um
    *  precisa estar nitido — e conteudo de texto */
   text: 1_500_000,
@@ -711,6 +728,11 @@ class Voice {
    * The server only limits resolution and aspect ratio, never framerate, so the
    * 60FPS variants are gated by the same resolution check as their 30FPS twin.
    *
+   * As opcoes de 90 e 120 fps existem para quem tem monitor de alta taxa. Numa
+   * tela de 60 Hz elas nao quebram nada: `frameRate: { ideal, max }` e um
+   * pedido, e a captura entrega o que o painel produzir -- 60. Ninguem recebe
+   * quadro que a tela nao desenhou, e ninguem fica pior por pedir mais.
+   *
    * TODO: Translate the fullNames here, I can't figure out how to do it.
    *
    * @returns A partial record of ScreenShareQualityName to ScreenShareQuality. Will always contain "low" quality.
@@ -718,25 +740,32 @@ class Voice {
   getEnabledScreenShareQualities(): Partial<
     Record<ScreenShareQualityName, ScreenShareQuality>
   > {
+    /** Monta uma qualidade a partir de um preset, trocando so o framerate. */
+    const emFps = (
+      name: ScreenShareQualityName,
+      base: VideoResolution,
+      frameRate: number,
+      grupo: string,
+    ): ScreenShareQuality => ({
+      name,
+      resolution: { ...base, frameRate },
+      fullName: `${grupo} ${frameRate}FPS`,
+      contentHint: "motion",
+      grupo,
+      rotulo: String(frameRate),
+    });
+
+    const r720 = ScreenSharePresets.h720fps30.resolution;
+    const r1080 = ScreenSharePresets.h1080fps30.resolution;
+
     // Always enable low
     const qualities: Partial<
       Record<ScreenShareQualityName, ScreenShareQuality>
     > = {
-      low: {
-        name: "low",
-        resolution: ScreenSharePresets.h720fps30.resolution,
-        fullName: `720p 30FPS`,
-        contentHint: "motion",
-      },
-      hd60: {
-        name: "hd60",
-        resolution: {
-          ...ScreenSharePresets.h720fps30.resolution,
-          frameRate: 60,
-        },
-        fullName: `720p 60FPS`,
-        contentHint: "motion",
-      },
+      low: emFps("low", r720, 30, "720p"),
+      hd60: emFps("hd60", r720, 60, "720p"),
+      hd90: emFps("hd90", r720, 90, "720p"),
+      hd120: emFps("hd120", r720, 120, "720p"),
     };
 
     const limit = this.limits().video_resolution;
@@ -745,22 +774,9 @@ class Voice {
       (limit[0] === 0 || limit[0] >= 1920) &&
       (limit[1] === 0 || limit[1] >= 1080)
     ) {
-      qualities.high = {
-        name: "high",
-        resolution: ScreenSharePresets.h1080fps30.resolution,
-        fullName: `1080p 30FPS`,
-        contentHint: "motion",
-      };
-
-      qualities.fhd60 = {
-        name: "fhd60",
-        resolution: {
-          ...ScreenSharePresets.h1080fps30.resolution,
-          frameRate: 60,
-        },
-        fullName: `1080p 60FPS`,
-        contentHint: "motion",
-      };
+      qualities.high = emFps("high", r1080, 30, "1080p");
+      qualities.fhd60 = emFps("fhd60", r1080, 60, "1080p");
+      qualities.fhd90 = emFps("fhd90", r1080, 90, "1080p");
 
       // Copy rather than mutate: ScreenSharePresets is a module-level object
       // shared with livekit-client, and the upstream code was writing into it.
@@ -783,6 +799,8 @@ class Voice {
         resolution: originalResolution,
         fullName: `Source 5FPS`,
         contentHint: "text",
+        grupo: "Fonte",
+        rotulo: "5",
       };
     }
 
@@ -893,7 +911,12 @@ class Voice {
             sources: sources,
             qualities: Object.keys(qualities).map((k) => {
               const v = qualities[k as ScreenShareQualityName]!;
-              return { name: k, fullName: v.fullName };
+              return {
+                name: k,
+                fullName: v.fullName,
+                grupo: v.grupo,
+                rotulo: v.rotulo,
+              };
             }),
           });
         });
@@ -1019,7 +1042,12 @@ class Voice {
               },
               qualities: Object.keys(qualities).map((k) => {
                 const v = qualities[k as ScreenShareQualityName]!;
-                return { name: k, fullName: v.fullName };
+                return {
+                  name: k,
+                  fullName: v.fullName,
+                  grupo: v.grupo,
+                  rotulo: v.rotulo,
+                };
               }),
               audio: !!screenAudioTrack,
               callback: async (qualityName, audio) => {

@@ -1,4 +1,4 @@
-import { TrackReference } from "solid-livekit-components";
+﻿import { TrackReference } from "solid-livekit-components";
 import {
   API,
   Bot,
@@ -345,7 +345,14 @@ export type Modals =
   | {
       type: "screen_share_settings";
       trackReference: TrackReference;
-      qualities: { name: string; fullName: string }[];
+      qualities: {
+        name: string;
+        fullName: string;
+        /** Cabecalho da linha no seletor: `720p`, `1080p`, `Fonte`. */
+        grupo: string;
+        /** Rotulo curto do botao: `30`, `60`, `90`, `120`, `5`. */
+        rotulo: string;
+      }[];
       audio: boolean;
       callback: (qualityName: ScreenShareQualityName, audio: boolean) => void;
       onCancel: () => void;
@@ -357,7 +364,14 @@ export type Modals =
         qualityName: ScreenShareQualityName,
         audio: boolean,
       ) => void;
-      qualities: { name: string; fullName: string }[];
+      qualities: {
+        name: string;
+        fullName: string;
+        /** Cabecalho da linha no seletor: `720p`, `1080p`, `Fonte`. */
+        grupo: string;
+        /** Rotulo curto do botao: `30`, `60`, `90`, `120`, `5`. */
+        rotulo: string;
+      }[];
       sources: {
         idx: number;
         name: string;

@@ -8,6 +8,7 @@ import { VideoTrack } from "solid-livekit-components";
 
 import { Show } from "solid-js";
 import { Modals } from "../types";
+import { SeletorQualidadeTela } from "./SeletorQualidadeTela";
 
 export function ScreenShareSettingsModal(
   props: DialogProps & Modals & { type: "screen_share_settings" },
@@ -73,14 +74,9 @@ export function ScreenShareSettingsModal(
       />
       <form onSubmit={submit}>
         <Column>
-          <Form2.ButtonGroup
+          <SeletorQualidadeTela
             control={group.controls.qualityName}
-            buttonDefinitions={props.qualities.map((quality) => {
-              return {
-                children: quality.fullName,
-                value: quality.name,
-              };
-            })}
+            qualities={props.qualities}
           />
           <Show when={props.audio}>
             <Form2.Checkbox control={group.controls.audio}>

@@ -25,18 +25,28 @@ const NoiseSuppresionStates: NoiseSuppresionState[] = [
 export type ScreenShareQualityName =
   | "low" // 720p 30FPS
   | "hd60" // 720p 60FPS
+  | "hd90" // 720p 90FPS
+  | "hd120" // 720p 120FPS
   | "high" // 1080p 30FPS
   | "fhd60" // 1080p 60FPS
+  | "fhd90" // 1080p 90FPS
   | "text"; // source 5FPS
 
 /**
  * Array of available screen share quality names.
+ *
+ * Na ordem em que a interface as mostra: resolucao crescente e, dentro de
+ * cada resolucao, framerate crescente. `text` fica por ultimo por ser de
+ * outra natureza -- e para ler codigo, nao para assistir.
  */
 export const ScreenShareQualityNames: ScreenShareQualityName[] = [
   "low",
   "hd60",
+  "hd90",
+  "hd120",
   "high",
   "fhd60",
+  "fhd90",
   "text",
 ];
 

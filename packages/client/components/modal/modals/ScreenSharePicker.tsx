@@ -8,6 +8,7 @@ import { Avatar, Column, Dialog, DialogProps, Form2, Ripple } from "@revolt/ui";
 import { createMemo } from "solid-js";
 import { styled } from "styled-system/jsx";
 import { Modals } from "../types";
+import { SeletorQualidadeTela } from "./SeletorQualidadeTela";
 
 export function ScreenSharePickerModal(
   props: DialogProps & Modals & { type: "screen_share_picker" },
@@ -82,14 +83,9 @@ export function ScreenSharePickerModal(
               </Item>
             )}
           </Form2.VirtualSelect>
-          <Form2.ButtonGroup
+          <SeletorQualidadeTela
             control={group.controls.qualityName}
-            buttonDefinitions={props.qualities.map((quality) => {
-              return {
-                children: quality.fullName,
-                value: quality.name,
-              };
-            })}
+            qualities={props.qualities}
           />
           <Form2.Checkbox control={group.controls.audio}>
             <Trans>Share audio</Trans>
