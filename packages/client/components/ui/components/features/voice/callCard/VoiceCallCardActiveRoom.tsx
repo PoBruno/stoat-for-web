@@ -21,13 +21,13 @@ import { IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { scrollableStyles } from "@revolt/ui/directives";
 
+import { MusicBoxPanel } from "../../../../../../src/interface/channels/voice/musicbox/MusicBoxPanel";
+import { VolumeMusicBox } from "../../../../../../src/interface/channels/voice/musicbox/VolumeMusicBox";
+import { SoundboardPanel } from "../../../../../../src/interface/channels/voice/SoundboardPanel";
+import { ContextMenu } from "../../../../../app/menus/ContextMenu";
 import { ParticipantTile, tile } from "./ParticipantTile";
 import { VoiceCallCardActions } from "./VoiceCallCardActions";
 import { VoiceCallCardStatus } from "./VoiceCallCardStatus";
-import { ContextMenu } from "../../../../../app/menus/ContextMenu";
-import { VolumeMusicBox } from "../../../../../../src/interface/channels/voice/musicbox/VolumeMusicBox";
-import { MusicBoxPanel } from "../../../../../../src/interface/channels/voice/musicbox/MusicBoxPanel";
-import { SoundboardPanel } from "../../../../../../src/interface/channels/voice/SoundboardPanel";
 
 /**
  * Call card (active)
@@ -248,6 +248,14 @@ function VoiceCallMusicBoxToggle() {
  * servidor ja tem canais de texto, e a conversa ali so roubava a altura de
  * quem esta na chamada.
  */
+/**
+ * Mostra ou esconde no palco quem esta na chamada sem video.
+ *
+ * Antes este botao apenas ATRIBUIA `callView = "people"`, sem alternar nada:
+ * clicar nele ja estando na vista de pessoas era no-op, e ele nao tinha
+ * relacao alguma com o que o palco desenhava. Agora ele faz as duas coisas —
+ * volta da vista de soundboard/musicbox E alterna a exibicao das pessoas.
+ */
 function VoiceCallPeopleToggle() {
   const state = useState();
   const voice = useVoice();
@@ -256,15 +264,30 @@ function VoiceCallPeopleToggle() {
   /** Quantos estao na chamada, para o botao dizer se ha alguem la. */
   const quantos = () => voice.vidTracks().length;
 
+  /** Se ha algum video; sem nenhum, o palco mostra as pessoas de qualquer jeito. */
+  const temVideo = () => voice.tracksComVideo().length > 0;
+
+  const mostrando = () => state.voice.callShowPeople || !temVideo();
+
   return (
     <IconButton
       size="sm"
-      variant={state.voice.callView === "people" ? "tonal" : "standard"}
-      onPress={() => (state.voice.callView = "people")}
+      variant={mostrando() ? "tonal" : "standard"}
+      isDisabled={!temVideo()}
+      onPress={() => {
+        // Sair de soundboard/musicbox tambem, senao o toggle parece nao
+        // fazer nada quando um desses paineis esta aberto.
+        state.voice.callView = "people";
+        state.voice.toggleCallShowPeople();
+      }}
       use:floating={{
         tooltip: {
           placement: "top",
-          content: t`People and screens`,
+          content: !temVideo()
+            ? t`Nobody is sharing video`
+            : mostrando()
+              ? t`Hide people without video`
+              : t`Show people without video`,
         },
       }}
     >
@@ -398,6 +421,24 @@ function Participants() {
   }
 
   /**
+   * As faixas candidatas ao palco.
+   *
+   * Por padrao so o que tem imagem. A sidebar do servidor ja lista quem esta
+   * na chamada; repetir os mesmos nomes no palco como avatarões gigantes
+   * empurra para baixo o que se quer ver, que e a tela compartilhada.
+   *
+   * Duas salvaguardas:
+   * - se NINGUEM tem video, cai para todo mundo, senao a chamada vira uma
+   *   tela preta e parece quebrada;
+   * - o usuario pode pedir as pessoas de volta pelo botao da barra.
+   */
+  const candidatas = () => {
+    if (state.voice.callShowPeople) return voice.vidTracks();
+    const comVideo = voice.tracksComVideo();
+    return comVideo.length ? comVideo : voice.vidTracks();
+  };
+
+  /**
    * Tiles shown on the stage.
    *
    * Falls back to everyone when nothing is pinned - and also when the pins no
@@ -405,12 +446,14 @@ function Participants() {
    */
   const stageTracks = () => {
     const pinned = voice.pinnedTracks();
-    return pinned.length ? pinned : voice.vidTracks();
+    return pinned.length ? pinned : candidatas();
   };
 
   /** Tiles shown in the filmstrip */
   const stripTracks = () =>
-    voice.pinnedTracks().length ? voice.unpinnedTracks() : [];
+    voice.pinnedTracks().length
+      ? candidatas().filter((t) => !voice.isPinned(t))
+      : [];
 
   const hasStrip = () =>
     stripTracks().length > 0 && state.voice.callFilmstrip !== "hidden";

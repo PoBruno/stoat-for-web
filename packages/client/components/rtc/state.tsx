@@ -10,6 +10,7 @@ import {
   useContext,
 } from "solid-js";
 import {
+  isTrackReference,
   RoomContext,
   TrackReferenceOrPlaceholder,
   useTracks,
@@ -171,6 +172,25 @@ class Voice {
 
   vidTracks: Accessor<TrackReferenceOrPlaceholder[]>;
 
+  /**
+   * Subconjunto de `vidTracks` que realmente desenha imagem.
+   *
+   * Exclui os placeholders (pessoa sem camera publicada) e o que esta mutado.
+   * Ver a construcao em `connect` para o porque de cada exclusao.
+   */
+  tracksComVideo: Accessor<TrackReferenceOrPlaceholder[]>;
+
+  /**
+   * Contador que muda a cada mute/unmute na sala.
+   *
+   * `publication.isMuted` e um campo comum, nao um signal: lido dentro de um
+   * memo ele nao dispara recalculo. Este tique e o que torna
+   * `tracksComVideo` reativo a mudo, sem precisar de um hook por faixa --
+   * que nao daria para chamar em cima de uma lista dinamica.
+   */
+  #tiqueMute: Accessor<number>;
+  #setTiqueMute: Setter<number>;
+
   state: Accessor<State>;
   #setState: Setter<State>;
 
@@ -237,6 +257,11 @@ class Voice {
     this.#setMusicboxOpen = setMusicboxOpen;
 
     this.vidTracks = () => [];
+    this.tracksComVideo = () => [];
+
+    const [tiqueMute, setTiqueMute] = createSignal(0);
+    this.#tiqueMute = tiqueMute;
+    this.#setTiqueMute = setTiqueMute;
 
     const [state, setState] = createSignal<State>("READY");
     this.state = state;
@@ -374,6 +399,28 @@ class Voice {
       ),
     );
 
+    // Tracks que de fato mostram alguma coisa.
+    //
+    // `useTracks` e chamado com `withPlaceholder: true` para a camera, o que
+    // FABRICA uma entrada por pessoa mesmo sem camera publicada -- e o que
+    // desenha os avatarões gigantes no palco, repetindo a lista que a sidebar
+    // ja mostra. O placeholder nao tem `publication`, e e exatamente isso que
+    // `isTrackReference` distingue.
+    //
+    // O tique de mudo entra na conta porque um screenshare mutado e
+    // publicado, mas o `ParticipantTile` se recusa a desenha-lo; sem isto o
+    // grid declararia uma coluna a mais do que os itens existentes.
+    this.tracksComVideo = createMemo(() => {
+      this.#tiqueMute();
+      return this.vidTracks().filter((faixa) => {
+        if (!isTrackReference(faixa)) return false;
+        if (faixa.source === Track.Source.ScreenShare) {
+          return !faixa.publication.isMuted;
+        }
+        return !faixa.publication.isMuted;
+      });
+    });
+
     batch(() => {
       this.#setRoom(room);
       this.#setChannel(channel);
@@ -461,11 +508,13 @@ class Voice {
     );
 
     room.addListener("trackMuted", (_pub, participante) => {
+      this.#setTiqueMute((n) => n + 1);
       if (participante === room.localParticipant)
         this.#reafirmarPresenca(channel, room);
     });
 
     room.addListener("trackUnmuted", (_pub, participante) => {
+      this.#setTiqueMute((n) => n + 1);
       if (participante === room.localParticipant)
         this.#reafirmarPresenca(channel, room);
     });
@@ -646,6 +695,7 @@ class Voice {
         this.#setChannel();
         this.#setFullscreen(false);
         this.vidTracks = () => [];
+        this.tracksComVideo = () => [];
       });
 
       this.screenShareTracks = new Set();

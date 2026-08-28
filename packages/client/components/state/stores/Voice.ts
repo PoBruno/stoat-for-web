@@ -144,6 +144,16 @@ export interface TypeVoice {
   /** Where the tiles that are not pinned are shown */
   callFilmstrip: CallFilmstrip;
 
+  /**
+   * Mostrar no palco quem esta na chamada sem video.
+   *
+   * Padrao `false`: a lista de quem esta na call ja vive na sidebar, e
+   * repeti-la no palco como avatarões gigantes empurra para baixo o que
+   * importa -- a tela compartilhada. Quando ninguem tem video, o palco cai
+   * para as pessoas de qualquer forma, senao a chamada fica uma tela preta.
+   */
+  callShowPeople: boolean;
+
   /** O que a chamada mostra acima da barra de controles */
   callView: CallView;
 
@@ -197,6 +207,7 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
       showCallChat: false,
       callArrangement: "auto",
       callFilmstrip: "bottom",
+      callShowPeople: false,
       callView: "people",
       userVolumes: {},
       userMutes: {},
@@ -278,6 +289,10 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
 
     if (typeof input.showCallChat === "boolean") {
       data.showCallChat = input.showCallChat;
+    }
+
+    if (typeof input.callShowPeople === "boolean") {
+      data.callShowPeople = input.callShowPeople;
     }
 
     if (
@@ -680,9 +695,25 @@ export class Voice extends AbstractStore<"voice", TypeVoice> {
   get callFilmstrip(): CallFilmstrip {
     return this.get().callFilmstrip;
   }
-
   set callFilmstrip(value: CallFilmstrip) {
     this.set("callFilmstrip", value);
+  }
+
+  /**
+   * Mostrar no palco quem esta na chamada sem video.
+   *
+   * Ver a doc do campo em `TypeVoice`: o padrao e `false` porque a sidebar ja
+   * lista quem esta na call.
+   */
+  get callShowPeople(): boolean {
+    return this.get().callShowPeople;
+  }
+  set callShowPeople(value: boolean) {
+    this.set("callShowPeople", value);
+  }
+
+  toggleCallShowPeople() {
+    this.callShowPeople = !this.callShowPeople;
   }
 
   /**
