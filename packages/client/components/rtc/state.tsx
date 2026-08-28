@@ -81,7 +81,49 @@ type ScreenShareQuality = {
   name: ScreenShareQualityName;
   resolution: VideoResolution;
   fullName: string;
-  contentHint: string;
+  /**
+   * Dica de conteudo para o encoder.
+   *
+   * Declarado como uniao, e nao como `string`: o `contentHint` do DOM e
+   * `string` solto, mas `ScreenShareCaptureOptions` do livekit exige estes
+   * tres valores, e era por isso que a dica so podia ser aplicada tarde, na
+   * MediaStreamTrack, em vez de ir junto com a captura.
+   */
+  contentHint: "motion" | "detail" | "text";
+};
+
+/**
+ * Bits por segundo para cada qualidade de compartilhamento de tela.
+ *
+ * POR QUE ISTO PRECISA EXISTIR
+ *
+ * `setScreenShareEnabled(enabled, captureOptions, publishOptions)` tem tres
+ * argumentos e o codigo passava dois. Sem o terceiro valem os
+ * `publishDefaults` do livekit-client, cujo default de tela e
+ * `ScreenSharePresets.h1080fps15.encoding` — **2.5 Mbps a 15 quadros por
+ * segundo**, independentemente da opcao escolhida pelo usuario.
+ *
+ * Medido na maquina do usuario com 720p60 selecionado: captura entregava
+ * 1280x720@60, o encoder recebia `maxFramerate: 15`, e a saida ficava entre
+ * 14 e 16 fps com `qualityLimitationReason: "none"` em 15 de 15 amostras —
+ * ou seja, nem CPU nem banda: o teto configurado.
+ *
+ * Os valores abaixo sobem menos que proporcionalmente ao numero de quadros
+ * porque quadros mais proximos no tempo se parecem mais entre si, e o codec
+ * gasta menos bits em cada um.
+ */
+const BITRATE_TELA: Record<ScreenShareQualityName, number> = {
+  /** 720p30 — o mesmo do preset antigo, que ja saturava a 15fps */
+  low: 2_500_000,
+  /** 720p60 */
+  hd60: 4_000_000,
+  /** 1080p30 */
+  high: 5_000_000,
+  /** 1080p60 */
+  fhd60: 8_000_000,
+  /** resolucao original a 5fps: quase nada muda entre quadros, mas cada um
+   *  precisa estar nitido — e conteudo de texto */
+  text: 1_500_000,
 };
 
 class Voice {
@@ -747,6 +789,75 @@ class Voice {
     return qualities;
   }
 
+  /**
+   * Reaplica bitrate, framerate e preferencia de degradacao no sender.
+   *
+   * A publicacao ja aconteceu quando o modal de qualidade abre, entao trocar
+   * de opcao la so mudava a captura. Sem isto, escolher 1080p60 num usuario
+   * cuja preferencia salva era 720p30 entregava 1080p60 capturado dentro de
+   * um envelope de 720p30.
+   *
+   * As camadas de simulcast tem bitrates proporcionais entre si; a proporcao
+   * e preservada em vez de igualar todas ao teto.
+   */
+  async #reaplicarEncoding(
+    videoTrack: { sender?: RTCRtpSender },
+    qualidade: ScreenShareQuality,
+  ) {
+    const sender = videoTrack.sender;
+    if (!sender?.getParameters) return;
+
+    try {
+      const parametros = sender.getParameters();
+      if (!parametros.encodings?.length) return;
+
+      const opcoes = this.#opcoesDePublicacao(qualidade);
+      parametros.degradationPreference = opcoes.degradationPreference;
+
+      const teto = opcoes.screenShareEncoding.maxBitrate;
+      const maior =
+        Math.max(...parametros.encodings.map((e) => e.maxBitrate ?? 0)) || teto;
+
+      for (const camada of parametros.encodings) {
+        camada.maxFramerate = opcoes.screenShareEncoding.maxFramerate;
+        camada.maxBitrate = Math.round(
+          ((camada.maxBitrate ?? maior) / maior) * teto,
+        );
+      }
+
+      await sender.setParameters(parametros);
+    } catch (erro) {
+      // Nao derruba o compartilhamento por causa disto: o stream continua
+      // valendo com o envelope da publicacao inicial.
+      console.warn("[tela] nao consegui reaplicar o encoding:", erro);
+    }
+  }
+
+  /**
+   * Opcoes de PUBLICACAO para uma qualidade de tela.
+   *
+   * O terceiro argumento de `setScreenShareEnabled`, que nao era passado.
+   *
+   * `degradationPreference` merece atencao: o default do livekit para tela e
+   * `'maintain-resolution'` (`getDefaultDegradationPreference`), que derruba
+   * QUADROS para preservar nitidez. Para jogo e video e o oposto do desejado
+   * — quem escolheu 60fps quer fluidez, e perder um pouco de nitidez num
+   * quadro em movimento rapido nem se percebe. Para `text`, que e conteudo
+   * parado onde a nitidez e tudo, mantemos o comportamento original.
+   */
+  #opcoesDePublicacao(qualidade: ScreenShareQuality) {
+    return {
+      screenShareEncoding: {
+        maxFramerate: qualidade.resolution.frameRate,
+        maxBitrate: BITRATE_TELA[qualidade.name],
+      },
+      degradationPreference:
+        qualidade.contentHint === "text"
+          ? ("maintain-resolution" as const)
+          : ("maintain-framerate" as const),
+    };
+  }
+
   async toggleScreenshare() {
     const room = this.room();
     if (!room) throw "invalid state";
@@ -789,13 +900,19 @@ class Voice {
       }
 
       try {
+        const qualidadeInicial =
+          qualities[this.#settings.screenShareQuality || "low"] ??
+          qualities.low!;
+
         const localTrack = await room.localParticipant.setScreenShareEnabled(
           true,
           {
-            resolution:
-              this.getEnabledScreenShareQualities()[
-                this.#settings.screenShareQuality || "low"
-              ]?.resolution,
+            resolution: qualidadeInicial.resolution,
+            // Na CAPTURA, nao depois da publicacao. Setar `contentHint` na
+            // MediaStreamTrack apos a negociacao chega tarde para a escolha
+            // inicial do encoder — e no caminho em que o modal nao abre nao
+            // chegava nunca (medido: `contentHint: ""`).
+            contentHint: qualidadeInicial.contentHint,
             audio: {
               autoGainControl: false,
               echoCancellation: false,
@@ -804,6 +921,7 @@ class Voice {
               restrictOwnAudio: true,
             },
           },
+          this.#opcoesDePublicacao(qualidadeInicial),
         );
 
         const screenAudioTrack = room.localParticipant.getTrackPublication(
@@ -834,7 +952,13 @@ class Voice {
 
             if (localTrack.videoTrack) {
               await localTrack.videoTrack.mediaStreamTrack.applyConstraints({
-                frameRate: { max: quality.resolution.frameRate },
+                // `max` sozinho e TETO, nao alvo: o navegador pode entregar
+                // qualquer coisa abaixo dele. `ideal` e o que de fato pede os
+                // 60. Largura e altura ja passavam os dois; framerate nao.
+                frameRate: {
+                  ideal: quality.resolution.frameRate,
+                  max: quality.resolution.frameRate,
+                },
                 width:
                   quality.resolution.width === 0
                     ? undefined
@@ -856,6 +980,12 @@ class Voice {
               });
               localTrack.videoTrack.mediaStreamTrack.contentHint =
                 quality.contentHint;
+
+              // A publicacao aconteceu com a qualidade das PREFERENCIAS. Se a
+              // pessoa escolheu outra no modal, sem isto so a captura mudaria
+              // e o encoder ficaria com o bitrate e o framerate da anterior.
+              await this.#reaplicarEncoding(localTrack.videoTrack, quality);
+
               if (!audio && screenAudioTrack?.track) {
                 room.localParticipant.unpublishTrack(screenAudioTrack.track);
               }
@@ -864,46 +994,52 @@ class Voice {
           };
 
           if (screenPickerQualityName) {
-            callback(
+            await callback(
               screenPickerQualityName || "low",
               screenPickerAudio || false,
             );
-          } else if (this.#settings.screenShareQualityAsk) {
-            if (Object.keys(qualities).length > 1) {
-              localTrack.pauseUpstream();
-              screenAudioTrack?.pauseUpstream();
-              this.openModal({
-                onCancel: async () => {
-                  await room.localParticipant.setScreenShareEnabled(false);
-                  this.#setScreenshare(
-                    room.localParticipant.isScreenShareEnabled,
-                  );
-                },
-                type: "screen_share_settings",
-                trackReference: {
-                  participant: room.localParticipant,
-                  publication: localTrack,
-                  source: Track.Source.ScreenShare,
-                },
-                qualities: Object.keys(qualities).map((k) => {
-                  const v = qualities[k as ScreenShareQualityName]!;
-                  return { name: k, fullName: v.fullName };
-                }),
-                audio: !!screenAudioTrack,
-                callback: async (qualityName, audio) => {
-                  callback(qualityName, audio);
-                  localTrack.resumeUpstream();
-                  if (audio) {
-                    screenAudioTrack?.resumeUpstream();
-                  }
-                },
-              });
-            } else {
-              callback(
-                this.#settings.screenShareQuality || "low",
-                this.#settings.screenShareAudio,
-              );
-            }
+          } else if (
+            this.#settings.screenShareQualityAsk &&
+            Object.keys(qualities).length > 1
+          ) {
+            localTrack.pauseUpstream();
+            screenAudioTrack?.pauseUpstream();
+            this.openModal({
+              onCancel: async () => {
+                await room.localParticipant.setScreenShareEnabled(false);
+                this.#setScreenshare(
+                  room.localParticipant.isScreenShareEnabled,
+                );
+              },
+              type: "screen_share_settings",
+              trackReference: {
+                participant: room.localParticipant,
+                publication: localTrack,
+                source: Track.Source.ScreenShare,
+              },
+              qualities: Object.keys(qualities).map((k) => {
+                const v = qualities[k as ScreenShareQualityName]!;
+                return { name: k, fullName: v.fullName };
+              }),
+              audio: !!screenAudioTrack,
+              callback: async (qualityName, audio) => {
+                await callback(qualityName, audio);
+                localTrack.resumeUpstream();
+                if (audio) {
+                  screenAudioTrack?.resumeUpstream();
+                }
+              },
+            });
+          } else {
+            // Caminho que NAO EXISTIA. Quando a pessoa marca "nao perguntar de
+            // novo", ou quando so ha uma qualidade disponivel, o callback
+            // nunca rodava: `applyConstraints` e `contentHint` jamais eram
+            // aplicados e o som de inicio nao tocava. Medido: `contentHint`
+            // chegando vazio em toda execucao sem modal.
+            await callback(
+              this.#settings.screenShareQuality || "low",
+              this.#settings.screenShareAudio,
+            );
           }
         }
       } catch (e) {
