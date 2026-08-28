@@ -1,151 +1,215 @@
 import { createContext, JSXElement, useContext } from "solid-js";
 
-import { Sounds, TypeSounds, useState } from "@revolt/state";
+import { NomeSom, Sounds, useState } from "@revolt/state";
 import deafenSound from "../../public/assets/sounds/deafen.ogg";
 import messageSound from "../../public/assets/sounds/message_sound.ogg";
 import muteSound from "../../public/assets/sounds/mute.ogg";
-import ringtoneIncomingSound from "../../public/assets/sounds/ringtone_incoming.ogg";
-import ringtoneOutgoingSound from "../../public/assets/sounds/ringtone_outgoing.ogg";
+import selfJoinVoiceSound from "../../public/assets/sounds/self_join_voice.ogg";
+import selfLeaveVoiceSound from "../../public/assets/sounds/self_leave_voice.ogg";
 import streamEndSound from "../../public/assets/sounds/stream_end.ogg";
 import streamStartSound from "../../public/assets/sounds/stream_start.ogg";
-import streamViewerJoinSound from "../../public/assets/sounds/stream_viewer_join.ogg";
-import streamViewerLeaveSound from "../../public/assets/sounds/stream_viewer_leave.ogg";
 import undeafenSound from "../../public/assets/sounds/undeafen.ogg";
 import unmuteSound from "../../public/assets/sounds/unmute.ogg";
 import userJoinVoiceSound from "../../public/assets/sounds/user_join_voice.ogg";
 import userLeaveVoiceSound from "../../public/assets/sounds/user_leave_voice.ogg";
 import userMovedSound from "../../public/assets/sounds/user_moved.ogg";
+import voiceDisconnectedSound from "../../public/assets/sounds/voice_disconnected.ogg";
+
+/** Nome do som -> URL do arquivo, resolvida pelo Vite com hash. */
+const ARQUIVOS: Record<NomeSom, string> = {
+  deafen: deafenSound,
+  message: messageSound,
+  mute: muteSound,
+  selfJoinVoice: selfJoinVoiceSound,
+  selfLeaveVoice: selfLeaveVoiceSound,
+  streamEnd: streamEndSound,
+  streamStart: streamStartSound,
+  undeafen: undeafenSound,
+  unmute: unmuteSound,
+  userJoinVoice: userJoinVoiceSound,
+  userLeaveVoice: userLeaveVoiceSound,
+  userMoved: userMovedSound,
+  voiceDisconnected: voiceDisconnectedSound,
+};
 
 /**
- * A controller class for making sure sounds are managed in one place and to prevent undesirable sound overlaps
+ * Janela em que o MESMO som nao toca de novo.
+ *
+ * Sem isto, seis pessoas entrando juntas numa chamada disparam seis vezes o
+ * mesmo clipe sobrepostos, o que soma amplitude e vira estalo. Sons
+ * DIFERENTES continuam podendo se sobrepor -- mutar enquanto alguem entra sao
+ * dois fatos, e o usuario deve ouvir os dois.
+ */
+const JANELA_REPETICAO_MS = 90;
+
+/**
+ * Toca os avisos sonoros da interface.
+ *
+ * Reescrito em 2026-08-28. O que havia antes:
+ *
+ * - `new Audio(url)` a CADA disparo, com um `switch` de 14 casos. Cada toque
+ *   criava um elemento novo e refazia a decodificacao; o anterior era
+ *   descartado no meio se ainda estivesse tocando.
+ * - **Nenhum controle de volume.** `node.volume` nunca era atribuido, entao
+ *   tudo saia em ganho cheio e a unica opcao era desligar.
+ * - `canPlay()` declarava tratar colisao mas os dois ramos devolviam `true`,
+ *   entao nao decidia nada.
+ *
+ * Agora: um `AudioContext`, buffers decodificados uma vez e cacheados, um
+ * `GainNode` com o volume do usuario, e guarda de repeticao de verdade.
+ * O modelo veio do fork `Trifall/stoat-for-web`, citado em
+ * `stoatchat/for-web#1046` como referencia de sons decentes.
+ *
+ * Nao confundir com `Voice.playSound` (`components/rtc/state.tsx`), que tem o
+ * mesmo nome, e do soundboard e PUBLICA uma track no LiveKit.
  */
 export class SoundController {
   readonly soundState: Sounds;
 
-  node?: HTMLAudioElement;
+  #ctx?: AudioContext;
+  #buffers = new Map<NomeSom, AudioBuffer>();
+  #ultimoToque = new Map<NomeSom, number>();
+  #houveInteracao = false;
+  #precarregou = false;
 
-  lastPlayedSound?: keyof TypeSounds;
+  lastPlayedSound?: NomeSom;
 
   constructor(soundState: Sounds) {
     this.soundState = soundState;
 
-    this.isPlaying = this.isPlaying.bind(this);
     this.canPlay = this.canPlay.bind(this);
     this.playSound = this.playSound.bind(this);
+
+    if (typeof document !== "undefined") {
+      // A politica de autoplay so libera audio depois de um gesto do usuario.
+      // Antes isso aparecia como um `NotAllowedError` no console e o som
+      // simplesmente nao saia; agora o contexto e retomado no primeiro gesto
+      // e os buffers ja ficam prontos.
+      const aoInteragir = () => {
+        this.#houveInteracao = true;
+        this.#contexto()?.resume();
+        void this.#precarregar();
+      };
+      for (const evento of ["pointerdown", "keydown", "touchstart"]) {
+        document.addEventListener(evento, aoInteragir, { once: true });
+      }
+    }
+  }
+
+  #contexto(): AudioContext | undefined {
+    if (typeof window === "undefined") return undefined;
+    if (!this.#ctx) {
+      const Ctor =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext })
+          .webkitAudioContext;
+      if (!Ctor) return undefined;
+      this.#ctx = new Ctor();
+    }
+    return this.#ctx;
   }
 
   /**
-   * Get whether a sound is currently being played by the sound controller
+   * Decodifica todos os clipes de uma vez.
    *
-   * @returns Whether a sound is currently playing
+   * Feito no primeiro gesto e nao no boot: decodificar 13 arquivos concorre
+   * com a carga inicial do app, e antes do gesto o contexto esta suspenso de
+   * qualquer forma.
    */
-  isPlaying(): boolean {
-    // `paused` é falso enquanto o som corre, então a resposta é o seu inverso.
-    // Estava trocado, e ninguém notou porque os dois ramos de `canPlay`
-    // devolvem `true` — o resultado nunca chegou a decidir nada.
-    return !(this.node?.paused ?? true);
+  async #precarregar() {
+    if (this.#precarregou) return;
+    this.#precarregou = true;
+
+    const ctx = this.#contexto();
+    if (!ctx) return;
+
+    await Promise.all(
+      (Object.keys(ARQUIVOS) as NomeSom[]).map((nome) =>
+        this.#carregar(nome, ctx).catch(() => undefined),
+      ),
+    );
+  }
+
+  async #carregar(nome: NomeSom, ctx: AudioContext): Promise<AudioBuffer> {
+    const existente = this.#buffers.get(nome);
+    if (existente) return existente;
+
+    const resposta = await fetch(ARQUIVOS[nome]);
+    const bytes = await resposta.arrayBuffer();
+    const buffer = await ctx.decodeAudioData(bytes);
+    this.#buffers.set(nome, buffer);
+    return buffer;
   }
 
   /**
-   * Get whether a sound can be played right now
+   * Se este som pode tocar agora.
    *
-   * @param newSound Sound to check for playability
-   * @returns Whether the sound passed is playable currently
+   * @param novoSom Som a verificar
    */
-  canPlay(newSound: keyof TypeSounds): boolean {
-    // Never let a sound turned off play
-    if (!this.soundState.enabled(newSound)) {
+  canPlay(novoSom: NomeSom): boolean {
+    if (!this.soundState.enabled(novoSom)) return false;
+
+    const ultimo = this.#ultimoToque.get(novoSom);
+    if (
+      ultimo !== undefined &&
+      performance.now() - ultimo < JANELA_REPETICAO_MS
+    )
       return false;
-    }
 
-    // Always let the sound play if nothing is currently playing
-    if (!this.isPlaying()) {
-      return true;
-    }
-
-    // If there are any cases where you don't want sound collisions, put them here.
-    // None for now.
     return true;
   }
 
   /**
-   * Play a sound, following the rules of sound playability unless force is true
+   * Toca um aviso sonoro.
    *
-   * @param sound The sound to play
-   * @param force Bypass canPlay check
-   * @returns Whether the sound played
+   * @param sound Som a tocar
+   * @param force Ignora a checagem de `canPlay` (usado pela previa nas
+   *   configuracoes, onde apertar o botao tem que soar sempre)
+   * @returns Se o som foi despachado
    */
-  playSound(sound: keyof TypeSounds, force?: boolean): boolean {
-    if (!force && !this.canPlay(sound)) {
-      return false;
-    }
-    switch (sound) {
-      case "deafen": {
-        this.node = new Audio(deafenSound);
-        break;
-      }
-      case "message": {
-        this.node = new Audio(messageSound);
-        break;
-      }
-      case "mute": {
-        this.node = new Audio(muteSound);
-        break;
-      }
-      case "ringtoneIncoming": {
-        this.node = new Audio(ringtoneIncomingSound);
-        break;
-      }
-      case "ringtoneOutgoing": {
-        this.node = new Audio(ringtoneOutgoingSound);
-        break;
-      }
-      case "streamEnd": {
-        this.node = new Audio(streamEndSound);
-        break;
-      }
-      case "streamStart": {
-        this.node = new Audio(streamStartSound);
-        break;
-      }
-      case "streamViewerJoin": {
-        this.node = new Audio(streamViewerJoinSound);
-        break;
-      }
-      case "streamViewerLeave": {
-        this.node = new Audio(streamViewerLeaveSound);
-        break;
-      }
-      case "undeafen": {
-        this.node = new Audio(undeafenSound);
-        break;
-      }
-      case "unmute": {
-        this.node = new Audio(unmuteSound);
-        break;
-      }
-      case "userJoinVoice": {
-        this.node = new Audio(userJoinVoiceSound);
-        break;
-      }
-      case "userLeaveVoice": {
-        this.node = new Audio(userLeaveVoiceSound);
-        break;
-      }
-      case "userMoved": {
-        this.node = new Audio(userMovedSound);
-        break;
-      }
-    }
+  playSound(sound: NomeSom, force?: boolean): boolean {
+    if (!force && !this.canPlay(sound)) return false;
+
+    const ctx = this.#contexto();
+    if (!ctx) return false;
+
+    const volume = this.soundState.volume;
+    if (volume <= 0 && !force) return false;
+
+    this.#ultimoToque.set(sound, performance.now());
     this.lastPlayedSound = sound;
 
-    // `play()` devolve uma promessa que o navegador rejeita quando a página
-    // ainda não recebeu interação — a política de reprodução automática. Sem
-    // tratador isso vira "unhandled rejection" no console e o som some sem
-    // explicação. Registrar o motivo torna o próximo diagnóstico possível.
-    this.node.play().catch((motivo) => {
-      console.warn(`[sons] "${sound}" não tocou:`, motivo?.name ?? motivo);
-    });
+    void (async () => {
+      try {
+        if (ctx.state === "suspended") {
+          if (!this.#houveInteracao) return;
+          await ctx.resume();
+        }
+
+        const buffer = await this.#carregar(sound, ctx);
+
+        const fonte = ctx.createBufferSource();
+        const ganho = ctx.createGain();
+        fonte.buffer = buffer;
+        ganho.gain.value = volume;
+        fonte.connect(ganho);
+        ganho.connect(ctx.destination);
+        fonte.start();
+
+        fonte.onended = () => {
+          fonte.disconnect();
+          ganho.disconnect();
+        };
+      } catch (motivo) {
+        // Registrar o motivo torna o proximo diagnostico possivel; um som que
+        // some sem explicacao ja custou tempo aqui.
+        console.warn(
+          `[sons] "${sound}" nao tocou:`,
+          (motivo as Error)?.name ?? motivo,
+        );
+      }
+    })();
+
     return true;
   }
 }
@@ -156,6 +220,22 @@ export function SoundContext(props: { children: JSXElement }) {
   const { sounds } = useState();
 
   const controller = new SoundController(sounds);
+
+  // Afordancia de dev, no mesmo espirito de `__stoatClient` e `__stoatVoice`.
+  // Sem uma porta de entrada nao da para provar por teste que os 13 clipes
+  // carregam, decodificam e nao sao silencio -- que foi exatamente o defeito
+  // anterior: quatro arquivos eram 1s de silencio digital e ninguem notou
+  // porque nada os tocava. Some no build de producao.
+  if (import.meta.env.DEV) {
+    (
+      window as unknown as {
+        __stoatSound?: {
+          controlador: SoundController;
+          arquivos: Record<NomeSom, string>;
+        };
+      }
+    ).__stoatSound = { controlador: controller, arquivos: ARQUIVOS };
+  }
 
   return (
     <soundContext.Provider value={controller}>

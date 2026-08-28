@@ -30,16 +30,22 @@ import { useInstance } from "@revolt/instance";
 import { ModalController, useModals } from "@revolt/modal";
 import { useState } from "@revolt/state";
 import {
+  gainForVolumePosition,
   NoiseSuppresionState,
   ScreenShareQualityName,
   Voice as VoiceSettings,
-  gainForVolumePosition,
 } from "@revolt/state/stores/Voice";
 import { VoiceCallCardContext } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
 import { Device, useDevice } from "@revolt/common";
 import { InRoom } from "./components/InRoom";
 import { RoomAudioManager } from "./components/RoomAudioManager";
+import {
+  abrirTempos,
+  fecharTempos,
+  instalarTempos,
+  marcarTempo,
+} from "./tempos";
 import { VoiceProcessor } from "./VoiceProcessor";
 
 /**
@@ -134,6 +140,14 @@ class Voice {
   private openModal;
   private config;
   private limits;
+  /**
+   * Instancia dona do `Client`.
+   *
+   * Guardada porque a insercao otimista precisa do id do proprio usuario
+   * ANTES de a sala do LiveKit existir -- nesse ponto ainda nao ha
+   * `room.localParticipant.identity`.
+   */
+  private instance!: ReturnType<typeof useInstance>;
   private screenShareTracks: Set<string>;
   private voiceProcessor?: VoiceProcessor;
 
@@ -193,6 +207,7 @@ class Voice {
     this.#setShowBar = setShowBar;
 
     const inst = useInstance();
+    this.instance = inst;
     this.config = inst.config;
     this.limits = inst.limits;
     this.openModal = modals.openModal;
@@ -255,6 +270,8 @@ class Voice {
   async connect(channel: Channel, auth?: { url: string; token: string }) {
     this.disconnect();
 
+    abrirTempos("connect", channel.id);
+
     this.device.setWakeLocked();
 
     const room = new Room({
@@ -306,6 +323,8 @@ class Voice {
       this.#setScreenshare(false);
     });
 
+    marcarTempo("conectando");
+
     // Afordancia de dev, no mesmo espirito dos data-* do Call: sem uma porta
     // de entrada para o Room nao da para dirigir a camada de RTC por teste
     // automatizado. Some no build de producao.
@@ -316,10 +335,18 @@ class Voice {
       };
       w.__stoatRoom = room;
       w.__stoatVoice = this;
+      instalarTempos();
     }
 
     room.addListener("connected", () => {
+      marcarTempo("sala-conectada");
       this.#setState("CONNECTED");
+
+      // Insercao otimista: sem isto voce so aparece na propria chamada
+      // quando o `VoiceChannelJoin` volta do servidor, o que exige o webhook
+      // do LiveKit chegar no `voice-ingress`. Medido em ~1.7s (p95 2.1s) no
+      // dev local, com tudo na mesma maquina.
+      this.#reafirmarPresenca(channel, room);
       if (this.speakingPermission)
         room.localParticipant
           .setMicrophoneEnabled(this.#settings.micOn)
@@ -334,10 +361,26 @@ class Voice {
           this.screenShareTracks.add(screenShareTrack.trackSid);
         }
       }
-      this.sound.playSound("userJoinVoice");
+      // VOCE entrando: duas notas subindo. Distinto de outra pessoa entrando,
+      // que e uma nota so e 6 dB mais baixa. Antes os dois casos tocavam o
+      // mesmo clipe e nao dava para saber de quem era o evento.
+      this.sound.playSound("selfJoinVoice");
     });
 
-    room.addListener("disconnected", () => this.#setState("DISCONNECTED"));
+    room.addListener("disconnected", () => {
+      // Este caminho e SO a queda involuntaria: a saida deliberada passa por
+      // `disconnect()`, que remove os listeners antes de derrubar a sala e
+      // portanto nunca chega aqui. Tres notas descendo, para nao confundir
+      // com voce mesmo saindo.
+      this.#setState("DISCONNECTED");
+      this.sound.playSound("voiceDisconnected");
+
+      // A lista tambem precisa parar de mostrar voce: o `VoiceChannelLeave`
+      // de verdade so vem pelo webhook do LiveKit e pode demorar dezenas de
+      // segundos.
+      const meuId = this.instance.client?.user?.id;
+      if (meuId) channel.optimisticVoiceLeave(meuId);
+    });
 
     room.addListener("localTrackPublished", (pub) => {
       if (pub.audioTrack && pub.audioTrack.source === Track.Source.Microphone) {
@@ -346,7 +389,26 @@ class Voice {
             (this.voiceProcessor = new VoiceProcessor(this.#settings)),
           );
         }
+        // No `connected` o microfone ainda nao foi publicado, entao a
+        // insercao otimista nasce com `isPublishing: false` -- que e o que
+        // desenha `mic_off` na sidebar. Reafirmar aqui e o que corrige o
+        // "aparece mudo por padrao" (stoatchat/for-desktop#95).
+        this.#reafirmarPresenca(channel, room);
       }
+    });
+
+    room.addListener("localTrackUnpublished", () =>
+      this.#reafirmarPresenca(channel, room),
+    );
+
+    room.addListener("trackMuted", (_pub, participante) => {
+      if (participante === room.localParticipant)
+        this.#reafirmarPresenca(channel, room);
+    });
+
+    room.addListener("trackUnmuted", (_pub, participante) => {
+      if (participante === room.localParticipant)
+        this.#reafirmarPresenca(channel, room);
     });
 
     room.addListener("participantConnected", (participante) => {
@@ -397,29 +459,106 @@ class Voice {
     });
 
     // Gather latency
-    const selected = await Promise.any(
-      this.config.features.livekit.nodes.map(async (node) => {
-        // fetch() only accepts http(s); map the websocket URL onto it.
-        // Anchored per-scheme so plain `ws://` (non-TLS self-hosted instances)
-        // is handled too - a bare .replace("wss", "https") leaves `ws://`
-        // untouched and fetch() then throws "URL scheme is not supported".
-        const probeUrl = node.public_url
-          .replace(/^wss:/i, "https:")
-          .replace(/^ws:/i, "http:");
+    //
+    // Escolher o no mais proximo so faz sentido quando ha mais de um. Com um
+    // no — o caso de qualquer instancia self-hosted pequena, inclusive esta —
+    // isto e um round-trip de rede inteiro para decidir entre uma opcao, e ele
+    // acontece ANTES de pedir o token, bloqueando a entrada. Medido em 3ms
+    // local mas 314ms na primeira chamada (DNS/TLS frios); atras de um CDN
+    // seria pior.
+    const nos = this.config.features.livekit.nodes;
+    const selected =
+      nos.length === 1
+        ? nos[0].name
+        : await Promise.any(
+            nos.map(async (node) => {
+              // fetch() only accepts http(s); map the websocket URL onto it.
+              // Anchored per-scheme so plain `ws://` (non-TLS self-hosted
+              // instances) is handled too - a bare .replace("wss", "https")
+              // leaves `ws://` untouched and fetch() then throws "URL scheme
+              // is not supported".
+              const probeUrl = node.public_url
+                .replace(/^wss:/i, "https:")
+                .replace(/^ws:/i, "http:");
 
-        return fetch(probeUrl).then(() => {
-          return node.name;
-        });
-      }),
-    );
+              return fetch(probeUrl).then(() => {
+                return node.name;
+              });
+            }),
+          );
+
+    marcarTempo("sondagem");
 
     if (!auth) {
       auth = await channel.joinCall(selected);
     }
 
-    await room.connect(auth.url, auth.token, {
-      autoSubscribe: false,
-    });
+    marcarTempo("token");
+
+    // Insercao otimista, AQUI e nao no evento `connected`.
+    //
+    // O `connected` dispara junto com o fim de `room.connect()`, que a
+    // medicao mostrou custar ~1.75s sozinho (p95 2.1s) mesmo com tudo na
+    // mesma maquina -- inserir la nao adiantaria nada. O token ja chegou em
+    // ~13ms, e a partir daqui a entrada e um fato: ou conecta, ou o catch
+    // abaixo desfaz.
+    const meuId = this.instance.client?.user?.id;
+    if (meuId) channel.optimisticVoiceJoin(meuId, this.#vaiPublicar(room));
+
+    try {
+      await room.connect(auth.url, auth.token, {
+        autoSubscribe: false,
+      });
+    } catch (e) {
+      // Nao deixar a lista mentir: se a conexao falhou, voce nao esta la.
+      if (meuId) channel.optimisticVoiceLeave(meuId);
+      throw e;
+    }
+
+    marcarTempo("fim-connect");
+    fecharTempos();
+  }
+
+  /**
+   * Garante que o proprio usuario esteja na lista de participantes do canal.
+   *
+   * Chamado ao conectar e sempre que o microfone muda, por dois motivos:
+   *
+   * 1. **Aparecer na hora.** A lista so recebe voce quando o
+   *    `VoiceChannelJoin` chega pelo WebSocket, no fim de uma cadeia de cinco
+   *    saltos (browser -> LiveKit -> webhook -> voice-ingress -> Redis ->
+   *    bonfire -> WS).
+   * 2. **Nao ser expulso por um evento atrasado.** O `VoiceChannelLeave` de
+   *    uma sessao anterior pode chegar ate ~28s depois. Se voce reentrou
+   *    nesse meio tempo, o tratador do SDK apaga voce da lista sem checar
+   *    nada (`events/v1.ts:1067`). Reafirmar enquanto conectado desfaz isso.
+   */
+  #reafirmarPresenca(channel: Channel, room: Room) {
+    const meuId =
+      this.instance.client?.user?.id ?? room.localParticipant?.identity;
+    if (!meuId) return;
+    channel.optimisticVoiceJoin(meuId, this.#vaiPublicar(room));
+  }
+
+  /**
+   * Se este usuario deve constar como publicando o microfone.
+   *
+   * Enquanto a publicacao nao existe, vale a INTENCAO (a preferencia do
+   * usuario mais a permissao de falar). Isto e o que corrige o icone de
+   * microfone mudo fantasma: `room.connect()` leva ~1.75s, e ate o
+   * `localTrackPublished` chegar a lista desenhava `mic_off` para quem nao
+   * tinha mutado nada. Medido em 2079ms de mentira antes da correcao.
+   * Ver `stoatchat/for-desktop#95`.
+   *
+   * Depois que a publicacao existe, ela e a verdade — inclusive quando o
+   * usuario muta, que e o caso em que a lista PRECISA dizer mudo.
+   */
+  #vaiPublicar(room: Room): boolean {
+    const pub = room.localParticipant?.getTrackPublication(
+      Track.Source.Microphone,
+    );
+    if (pub) return !pub.isMuted;
+    return !!this.speakingPermission && !!this.#settings.micOn;
   }
 
   disconnect() {
@@ -427,6 +566,17 @@ class Voice {
     try {
       const room = this.room();
       if (!room) return;
+
+      abrirTempos("disconnect", this.channel()?.id);
+
+      // Remocao otimista. Nao existe rota REST de leave: a saida so e
+      // conhecida quando o LiveKit dispara `participant_left` para o
+      // `voice-ingress`. Medido entre 15ms e 28 SEGUNDOS -- e nesse intervalo
+      // voce continua desenhado na chamada de onde acabou de sair, com o
+      // icone de microfone mudo (porque `isPublishing` volta a nascer false).
+      const canalQueSai = this.channel();
+      const meuId = room.localParticipant?.identity;
+      if (canalQueSai && meuId) canalQueSai.optimisticVoiceLeave(meuId);
 
       room.removeAllListeners();
       room.disconnect();
@@ -441,7 +591,11 @@ class Voice {
 
       this.screenShareTracks = new Set();
 
-      this.sound.playSound("userLeaveVoice");
+      // VOCE saindo: duas notas descendo.
+      this.sound.playSound("selfLeaveVoice");
+
+      marcarTempo("fim-disconnect");
+      fecharTempos();
     } catch (e) {
       this.onErr(e);
     }
@@ -1008,6 +1162,14 @@ export function VoiceContext(props: { children: JSX.Element }) {
   const sound = useSound();
   const device = useDevice();
   const voice = new Voice(state.voice, modals, sound, device);
+
+  // A afordancia de dev so era instalada dentro de `connect`, entao um teste
+  // nao conseguia ENTRAR na chamada pela camada de RTC — `__stoatVoice` nao
+  // existia antes da primeira entrada, que era justamente o que ele queria
+  // disparar. Instalar aqui resolve o ovo-e-galinha. Some no build de producao.
+  if (import.meta.env.DEV) {
+    (window as unknown as { __stoatVoice?: Voice }).__stoatVoice = voice;
+  }
 
   return (
     <voiceContext.Provider value={voice}>

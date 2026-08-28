@@ -2,77 +2,79 @@ import { State } from "..";
 
 import { AbstractStore } from ".";
 
-export type TypeSounds = {
-  /**
-   * Play sound on deafen
-   */
-  deafen: boolean;
+/**
+ * Nomes dos sons de interface.
+ *
+ * Cada evento se distingue por tres eixos redundantes -- direcao, timbre e
+ * numero de notas. Ver `.opencode/scripts/gerar-sons.py`, que sintetiza os
+ * arquivos, e `.opencode/plans/voz-latencia-e-sons.md` secao 4.
+ *
+ * Removidos em 2026-08-28: `ringtoneIncoming`, `ringtoneOutgoing`,
+ * `streamViewerJoin` e `streamViewerLeave`. As quatro chaves existiam desde
+ * `feat: Add sounds (#1206)` e nunca foram tocadas por nenhum caminho de
+ * codigo; os quatro arquivos eram o MESMO blob de 1 segundo de silencio
+ * digital (-91 dBFS). Codigo morto com arquivo morto.
+ */
+export type NomeSom =
+  /** Mensagem/notificacao nova. */
+  | "message"
+  /** Voce mutou o microfone. Uma nota grave -- uma coisa mudou. */
+  | "mute"
+  /** Voce desmutou o microfone. */
+  | "unmute"
+  /** Voce ensurdeceu: microfone + audio. Duas notas -- duas coisas mudaram. */
+  | "deafen"
+  /** Voce desensurdeceu. */
+  | "undeafen"
+  /** VOCE entrou na chamada. */
+  | "selfJoinVoice"
+  /** VOCE saiu da chamada. */
+  | "selfLeaveVoice"
+  /** OUTRA pessoa entrou. Uma nota, 6 dB mais baixo que o seu. */
+  | "userJoinVoice"
+  /** OUTRA pessoa saiu. */
+  | "userLeaveVoice"
+  /** Comecou um compartilhamento de tela. */
+  | "streamStart"
+  /** Terminou um compartilhamento de tela. */
+  | "streamEnd"
+  /** Alguem foi movido de canal. */
+  | "userMoved"
+  /** A chamada caiu sem voce pedir. */
+  | "voiceDisconnected";
 
+/** Liga/desliga por som. */
+export type TypeSounds = Record<NomeSom, boolean> & {
   /**
-   * Play a sound on message/notification
+   * Volume dos sons de interface, de 0 a 1.
+   *
+   * Nao existia: o `SoundController` nunca atribuia `volume` no elemento de
+   * audio, entao tudo tocava em ganho cheio e a unica saida era desligar o
+   * som. Os volumes do store `Voice` sao de MIDIA do LiveKit e nao tocam
+   * nestes avisos.
    */
-  message: boolean;
-
-  /**
-   * Play sound on mute
-   */
-  mute: boolean;
-
-  /**
-   * Play sound when receiving a DM call
-   */
-  ringtoneIncoming: boolean;
-
-  /**
-   * Play sound when dialing someone in a DM call
-   */
-  ringtoneOutgoing: boolean;
-
-  /**
-   * Play a sound when a stream ends
-   */
-  streamEnd: boolean;
-
-  /**
-   * Play a sound when a stream starts
-   */
-  streamStart: boolean;
-
-  /**
-   * Play a sound when a user starts viewing your stream
-   */
-  streamViewerJoin: boolean;
-
-  /**
-   * Play a sound when a user stops viewing your stream
-   */
-  streamViewerLeave: boolean;
-
-  /**
-   * Play a sound when you undeafen
-   */
-  undeafen: boolean;
-
-  /**
-   * Play a sound when you unmute
-   */
-  unmute: boolean;
-
-  /**
-   * Play a sound when a user joins your voice channel
-   */
-  userJoinVoice: boolean;
-
-  /**
-   * Play a sound when a user leaves your voice channel
-   */
-  userLeaveVoice: boolean;
-
-  /**
-   * Play a sound when a user moves channels
-   */
-  userMoved: boolean;
+  volume: number;
 };
+
+/** Todas as chaves de som, na ordem em que a tela de configuracoes as mostra. */
+export const NOMES_SOM: NomeSom[] = [
+  "message",
+  "selfJoinVoice",
+  "selfLeaveVoice",
+  "userJoinVoice",
+  "userLeaveVoice",
+  "mute",
+  "unmute",
+  "deafen",
+  "undeafen",
+  "streamStart",
+  "streamEnd",
+  "userMoved",
+  "voiceDisconnected",
+];
+
+/** Volume padrao. Cheio assusta; mudo demais nao informa. */
+const VOLUME_PADRAO = 0.5;
 
 export class Sounds extends AbstractStore<"sounds", TypeSounds> {
   constructor(state: State) {
@@ -83,62 +85,46 @@ export class Sounds extends AbstractStore<"sounds", TypeSounds> {
 
   default(): TypeSounds {
     return {
-      deafen: true,
-      message: true,
-      mute: true,
-      ringtoneIncoming: true,
-      ringtoneOutgoing: true,
-      streamEnd: true,
-      streamStart: true,
-      streamViewerJoin: true,
-      streamViewerLeave: true,
-      undeafen: true,
-      unmute: true,
-      userJoinVoice: true,
-      userLeaveVoice: true,
-      userMoved: true,
+      ...(Object.fromEntries(NOMES_SOM.map((n) => [n, true])) as Record<
+        NomeSom,
+        boolean
+      >),
+      volume: VOLUME_PADRAO,
     };
   }
 
   clean(input: Partial<TypeSounds>): TypeSounds {
-    return {
-      deafen: typeof input.deafen === "boolean" ? input.deafen : true,
-      message: typeof input.message === "boolean" ? input.message : true,
-      mute: typeof input.mute === "boolean" ? input.mute : true,
-      ringtoneIncoming:
-        typeof input.ringtoneIncoming === "boolean"
-          ? input.ringtoneIncoming
-          : true,
-      ringtoneOutgoing:
-        typeof input.ringtoneOutgoing === "boolean"
-          ? input.ringtoneOutgoing
-          : true,
-      streamEnd: typeof input.streamEnd === "boolean" ? input.streamEnd : true,
-      streamStart:
-        typeof input.streamStart === "boolean" ? input.streamStart : true,
-      streamViewerJoin:
-        typeof input.streamViewerJoin === "boolean"
-          ? input.streamViewerJoin
-          : true,
-      streamViewerLeave:
-        typeof input.streamViewerLeave === "boolean"
-          ? input.streamViewerLeave
-          : true,
-      undeafen: typeof input.undeafen === "boolean" ? input.undeafen : true,
-      unmute: typeof input.unmute === "boolean" ? input.unmute : true,
-      userJoinVoice:
-        typeof input.userJoinVoice === "boolean" ? input.userJoinVoice : true,
-      userLeaveVoice:
-        typeof input.userLeaveVoice === "boolean" ? input.userLeaveVoice : true,
-      userMoved: typeof input.userMoved === "boolean" ? input.userMoved : true,
-    };
+    const saida = {} as TypeSounds;
+    for (const nome of NOMES_SOM) {
+      saida[nome] = typeof input[nome] === "boolean" ? input[nome] : true;
+    }
+    // Um valor invalido vindo do disco nao pode silenciar o app nem estourar
+    // o ganho; o store e persistido em IndexedDB e ja recebeu chaves de
+    // versoes anteriores.
+    saida.volume =
+      typeof input.volume === "number" &&
+      isFinite(input.volume) &&
+      input.volume >= 0 &&
+      input.volume <= 1
+        ? input.volume
+        : VOLUME_PADRAO;
+    return saida;
   }
 
-  enabled(t: keyof TypeSounds): boolean {
+  enabled(t: NomeSom): boolean {
     return this.get()[t];
   }
 
-  toggle(t: keyof TypeSounds) {
+  toggle(t: NomeSom) {
     return this.set(t, !this.enabled(t));
+  }
+
+  /** Volume dos sons de interface, de 0 a 1. */
+  get volume(): number {
+    return this.get().volume;
+  }
+
+  setVolume(v: number) {
+    return this.set("volume", Math.max(0, Math.min(1, v)));
   }
 }
