@@ -1,6 +1,7 @@
 import { Show } from "solid-js";
 import {
   TrackReference,
+  TrackReferenceOrPlaceholder,
   useEnsureParticipant,
   useIsMuted,
   useIsSpeaking,
@@ -16,6 +17,12 @@ import { styled } from "styled-system/jsx";
 import { UserContextMenu } from "@revolt/app";
 import { useUser } from "@revolt/markdown/users";
 import { useVoice } from "@revolt/rtc";
+import {
+  abrirPopout,
+  fecharPopout,
+  popoutDisponivel,
+  temPopout,
+} from "@revolt/rtc/popout";
 import { useState } from "@revolt/state";
 import { Avatar } from "@revolt/ui/components/design";
 import { Row } from "@revolt/ui/components/layout";
@@ -123,6 +130,9 @@ export function ParticipantTile(props: TileProps) {
           <OverlayInner>
             <OverflowingText>{user().username}</OverflowingText>
             <Row gap="md">
+              <Show when={isScreenShare()}>
+                <BotaoDestacar track={track} nome={user().username} />
+              </Show>
               {isScreenShare() ? (
                 <ScreenShareAudioButton
                   userId={user().user!.id}
@@ -140,6 +150,66 @@ export function ParticipantTile(props: TileProps) {
           </OverlayInner>
         </Overlay>
       </div>
+    </Show>
+  );
+}
+
+/**
+ * Destaca esta tela numa janela propria.
+ *
+ * A janela filha recebe o MESMO `MediaStream` por referencia viva, sem
+ * reconectar no LiveKit — ver `components/rtc/popout.ts` para o porque de
+ * nao fazer a janela entrar na sala sozinha.
+ *
+ * `stopPropagation` importa: o clique no tile alterna o pin
+ * (`ParticipantTile` :79), e destacar nao deveria fixar de quebra.
+ */
+function BotaoDestacar(props: {
+  track: TrackReferenceOrPlaceholder;
+  nome: string;
+}) {
+  const { t } = useLingui();
+
+  const sid = () => props.track.publication?.trackSid;
+  const aberta = () => {
+    const s = sid();
+    return !!s && temPopout(s);
+  };
+
+  return (
+    <Show when={popoutDisponivel() && sid()}>
+      <button
+        type="button"
+        aria-label={aberta() ? t`Close detached window` : t`Detach to a window`}
+        onClick={(e) => {
+          e.stopPropagation();
+          const s = sid();
+          if (!s) return;
+          if (aberta()) fecharPopout(s);
+          else abrirPopout(props.track, props.nome);
+        }}
+        use:floating={{
+          tooltip: {
+            placement: "top",
+            content: aberta()
+              ? t`Close detached window`
+              : t`Detach to a window`,
+          },
+        }}
+        style={{
+          background: "none",
+          border: "none",
+          padding: "0",
+          cursor: "pointer",
+          display: "flex",
+          "align-items": "center",
+          color: "inherit",
+        }}
+      >
+        <Symbol size={16}>
+          {aberta() ? "close_fullscreen" : "open_in_new"}
+        </Symbol>
+      </button>
     </Show>
   );
 }

@@ -15,6 +15,7 @@ import { TrackLoop } from "solid-livekit-components";
 import { styled } from "styled-system/jsx";
 
 import { InRoom, useVoice } from "@revolt/rtc";
+import { podarPopouts } from "@revolt/rtc/popout";
 import { useState } from "@revolt/state";
 import type { CallArrangement } from "@revolt/state/stores/Voice";
 import { IconButton } from "@revolt/ui/components/design";
@@ -471,8 +472,10 @@ function Participants() {
 
   // Drop pins whose track disappeared (participant left, share stopped, ...)
   createEffect(() => {
-    voice.vidTracks();
     voice.prunePins();
+    // Mesma razao, mesmo gatilho: se quem compartilhava parou, a janela
+    // destacada ficaria com o ultimo quadro parado sem dizer que acabou.
+    podarPopouts(voice.vidTracks());
   });
 
   onMount(() => {

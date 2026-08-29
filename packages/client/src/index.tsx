@@ -43,6 +43,7 @@ import "@revolt/ui/styles";
 import { AndroidNag } from "./AndroidNag";
 import AuthPage from "./Auth";
 import Interface from "./Interface";
+import Popout from "./Popout";
 import "./index.css";
 import { DevelopmentPage } from "./interface/Development";
 import { Discover } from "./interface/Discover";
@@ -183,6 +184,15 @@ render(
       <I18nProvider>
         <SnackbarProvider controller={snackbarCtrl}>
           <Router>
+            {/*
+              A janela destacada e IRMA das outras rotas, nao filha.
+              Debaixo de `InstanceContext` ela ficaria presa no gate de
+              carregamento ate a API responder, e debaixo de `Interface`
+              seria redirecionada para /login quando nao houvesse sessao.
+              Ela nao fala com a API: so desenha um MediaStream que ja vive
+              na janela mae.
+            */}
+            <Route path="/popout" component={Popout} />
             <Route path="/i/:host" component={InstanceContext}>
               {routes()}
             </Route>

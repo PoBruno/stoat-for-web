@@ -41,6 +41,7 @@ import { VoiceCallCardContext } from "@revolt/ui/components/features/voice/callC
 import { Device, useDevice } from "@revolt/common";
 import { InRoom } from "./components/InRoom";
 import { RoomAudioManager } from "./components/RoomAudioManager";
+import { fecharTodosPopouts } from "./popout";
 import {
   abrirTempos,
   fecharTempos,
@@ -699,6 +700,11 @@ class Voice {
       });
 
       this.screenShareTracks = new Set();
+
+      // Janelas destacadas nao sobrevivem a chamada: sem isto ficariam
+      // abertas mostrando o ultimo quadro congelado de uma call que ja
+      // terminou, passando por transmissao ao vivo.
+      fecharTodosPopouts();
 
       // VOCE saindo: duas notas descendo.
       this.sound.playSound("selfLeaveVoice");

@@ -42,6 +42,14 @@ declare global {
       ): void;
       screenPickerCallback(idx: number, audio: boolean): void;
       isWayland?(): boolean;
+      /**
+       * Fixa a janela DESTACADA sobre as demais.
+       *
+       * Opcional porque so existe nas versoes do app desktop que liberam
+       * `setWindowOpenHandler`. Ausente = janela destacada indisponivel, e o
+       * botao correspondente nao deve ser desenhado.
+       */
+      popoutAlwaysOnTop?(ligado: boolean): void;
     };
 
     desktopConfig: {
