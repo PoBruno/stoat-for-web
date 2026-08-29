@@ -13,7 +13,7 @@ type Props = Omit<
     JSX.DirectiveAttributes &
     Pick<
       JSX.ButtonHTMLAttributes<HTMLButtonElement>,
-      "role" | "tabIndex" | "aria-selected" | "style"
+      "role" | "tabIndex" | "aria-selected" | "aria-disabled" | "style"
     >,
   "onClick" | "disabled"
 >;
@@ -26,6 +26,14 @@ type Props = Omit<
 export function IconButton(props: Props) {
   const [passthrough, propsRest] = splitProps(props, [
     "aria-selected",
+    // `aria-disabled` em vez de `isDisabled` quando o botao esta indisponivel
+    // MAS ha uma explicacao a dar. `isDisabled` vira `disabled` nativo (o
+    // @solid-aria/button faz isso para elementType "button"), e um botao
+    // nativamente desabilitado sai da ordem de tabulacao e nao e anunciado
+    // por leitor de tela -- ou seja, a explicacao fica inalcancavel
+    // justamente para quem mais precisa dela. Com `aria-disabled` o botao
+    // continua focavel e o tooltip funciona em qualquer versao de Chromium.
+    "aria-disabled",
     "tabIndex",
     "role",
     "style",
@@ -57,11 +65,13 @@ export function IconButton(props: Props) {
       ref={ref}
       class={iconButton2({
         ...style,
-        disabled: buttonProps.disabled,
+        disabled: buttonProps.disabled || passthrough["aria-disabled"] === true,
       })}
       // @codegen directives props=rest include=floating
     >
-      <Show when={!buttonProps.disabled}>
+      <Show
+        when={!buttonProps.disabled && passthrough["aria-disabled"] !== true}
+      >
         <Ripple />
       </Show>
       {rest.children}

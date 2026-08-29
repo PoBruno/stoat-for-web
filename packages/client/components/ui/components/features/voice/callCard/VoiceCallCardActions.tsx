@@ -125,6 +125,46 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
           <Symbol>screen_share</Symbol>
         </Show>
       </IconButton>
+      {/*
+        Liberar anotacoes (laser) no meu compartilhamento.
+
+        So aparece enquanto EU estou compartilhando, porque e um consentimento
+        sobre a minha tela -- e por isso fica aqui, na barra, e nao no hover do
+        tile: controle de consentimento nao pode sumir quando o mouse sai.
+
+        Em compartilhamento de JANELA ele aparece DESABILITADO com a
+        explicacao, em vez de sumir: o usuario consegue resolver isso sozinho
+        (basta compartilhar a tela inteira), entao vale explicar. Ja a ausencia
+        da ponte do desktop esconde o botao, porque ai nao ha o que fazer.
+        Ver .opencode/plans/laser-anotacao.md secao 3.4.
+      */}
+      <Show when={voice.screenshare() && voice.anotacaoDisponivel()}>
+        <IconButton
+          size={props.size}
+          variant={voice.anotacoesLiberadas() ? "filled" : "tonal"}
+          aria-disabled={!voice.fonteEhTelaInteira()}
+          onPress={() => {
+            if (voice.fonteEhTelaInteira()) voice.toggleAnotacoes();
+          }}
+          use:floating={{
+            tooltip: {
+              placement: "top",
+              content: !voice.fonteEhTelaInteira()
+                ? t`Annotations only work when sharing a whole screen`
+                : voice.anotacoesLiberadas()
+                  ? t`Stop letting others draw`
+                  : t`Let others draw on your screen`,
+            },
+          }}
+        >
+          <Show
+            when={voice.anotacoesLiberadas()}
+            fallback={<Symbol>gesture</Symbol>}
+          >
+            <Symbol>draw</Symbol>
+          </Show>
+        </IconButton>
+      </Show>
       <Button
         size={props.size}
         variant="_error"

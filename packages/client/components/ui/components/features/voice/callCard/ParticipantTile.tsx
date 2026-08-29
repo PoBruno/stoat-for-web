@@ -1,4 +1,4 @@
-import { Show } from "solid-js";
+import { createSignal, Show } from "solid-js";
 import {
   TrackReference,
   TrackReferenceOrPlaceholder,
@@ -17,6 +17,7 @@ import { styled } from "styled-system/jsx";
 import { UserContextMenu } from "@revolt/app";
 import { useUser } from "@revolt/markdown/users";
 import { useVoice } from "@revolt/rtc";
+import { CamadaAnotacao } from "@revolt/rtc/CamadaAnotacao";
 import {
   abrirPopout,
   fecharPopout,
@@ -47,6 +48,36 @@ export function ParticipantTile(props: TileProps) {
 
   let videoRef: HTMLVideoElement | undefined;
 
+  /** Se o ponteiro deste usuario esta produzindo tracos neste tile */
+  const [armado, setArmado] = createSignal(false);
+
+  /** Contentor do tile, usado para achar o <video> real */
+  let caixa: HTMLDivElement | undefined;
+
+  /**
+   * O elemento <video> deste tile.
+   *
+   * Por `querySelector` e nao pelo `ref`: o `VideoTrack` do
+   * solid-livekit-components usa um ref interno e so repassa o do chamador via
+   * spread de `elementProps`, entao `videoRef` acima nunca e preenchido. Nao
+   * vale forkar o pacote (e upstream) por causa disto.
+   *
+   * @returns o elemento, se ja montado
+   */
+  const acharVideo = () => caixa?.querySelector("video") ?? undefined;
+
+  /**
+   * Se este usuario pode desenhar sobre esta tela.
+   *
+   * Tres condicoes: e um compartilhamento de tela, nao e o MEU (desenhar na
+   * propria tela nao faz sentido — eu ja estou olhando para ela), e quem
+   * compartilha liberou.
+   */
+  const podeDesenhar = () =>
+    isScreenShare() &&
+    !user().user?.self &&
+    !!voice.anotacao()?.liberadoPor().includes(participant.identity);
+
   const isMuted = useIsMuted({
     participant,
     source: Track.Source.Microphone,
@@ -74,6 +105,7 @@ export function ParticipantTile(props: TileProps) {
   return (
     <Show when={!isScreenShare() || !isRemoteScreenShareMuted()}>
       <div
+        ref={caixa}
         class={
           tile({
             speaking: !isScreenShare() && isSpeaking(),
@@ -83,7 +115,12 @@ export function ParticipantTile(props: TileProps) {
             stage: props.stage,
           }) + (isScreenShare() ? " vc_tile group" : " vc_tile")
         }
-        onClick={() => voice.togglePin(track)}
+        onClick={() => {
+          // Armado, o clique pertence ao traco: sem esta guarda cada risco
+          // fixaria e desfixaria o tile.
+          if (armado()) return;
+          voice.togglePin(track);
+        }}
         use:floating={{
           // TODO: Conflicts with focusing, maybe only show if clicking name itself
           //   userCard: {
@@ -126,12 +163,33 @@ export function ParticipantTile(props: TileProps) {
             ref={videoRef}
           />
         </Show>
+        <Show when={isScreenShare() && voice.anotacao()}>
+          <CamadaAnotacao
+            anotacao={voice.anotacao()!}
+            video={acharVideo}
+            armado={armado()}
+            aoDesarmar={() => setArmado(false)}
+          />
+        </Show>
         <Overlay showOnHover={isScreenShare()}>
           <OverlayInner>
             <OverflowingText>{user().username}</OverflowingText>
             <Row gap="md">
               <Show when={isScreenShare()}>
                 <BotaoDestacar track={track} nome={user().username} />
+              </Show>
+              <Show when={podeDesenhar()}>
+                <BotaoDesenhar
+                  armado={armado()}
+                  aoAlternar={() => {
+                    const novo = !armado();
+                    setArmado(novo);
+                    // Desenhar num tile pequeno da grade e inutil. Armar
+                    // promove a tela ao palco; desarmar NAO desfixa, porque a
+                    // pessoa costuma querer continuar vendo grande.
+                    if (novo && !voice.isPinned(track)) voice.togglePin(track);
+                  }}
+                />
               </Show>
               {isScreenShare() ? (
                 <ScreenShareAudioButton
@@ -211,6 +269,49 @@ function BotaoDestacar(props: {
         </Symbol>
       </button>
     </Show>
+  );
+}
+
+/**
+ * Arma ou desarma o desenho (laser) sobre esta tela.
+ *
+ * Aparece so quando quem compartilha liberou. Armado, o canvas por cima do
+ * video passa a receber o ponteiro; para sair, este mesmo botao ou Esc.
+ *
+ * Mesmo `stopPropagation` do `BotaoDestacar`, e pelo mesmo motivo.
+ */
+function BotaoDesenhar(props: { armado: boolean; aoAlternar: () => void }) {
+  const { t } = useLingui();
+
+  return (
+    <button
+      type="button"
+      aria-label={props.armado ? t`Stop drawing` : t`Draw on this screen`}
+      aria-pressed={props.armado}
+      onClick={(e) => {
+        e.stopPropagation();
+        props.aoAlternar();
+      }}
+      use:floating={{
+        tooltip: {
+          placement: "top",
+          content: props.armado
+            ? t`Stop drawing (Esc)`
+            : t`Draw on this screen`,
+        },
+      }}
+      style={{
+        background: "none",
+        border: "none",
+        padding: "0",
+        cursor: "pointer",
+        display: "flex",
+        "align-items": "center",
+        color: props.armado ? "var(--md-sys-color-primary)" : "inherit",
+      }}
+    >
+      <Symbol size={16}>{props.armado ? "gesture" : "draw"}</Symbol>
+    </button>
   );
 }
 

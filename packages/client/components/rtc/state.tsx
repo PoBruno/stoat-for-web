@@ -39,6 +39,12 @@ import {
 import { VoiceCallCardContext } from "@revolt/ui/components/features/voice/callCard/VoiceCallCard";
 
 import { Device, useDevice } from "@revolt/common";
+import {
+  Anotacao,
+  normalizarSobreVideo,
+  paraPixelsDoVideo,
+  Traco,
+} from "./anotacao";
 import { InRoom } from "./components/InRoom";
 import { RoomAudioManager } from "./components/RoomAudioManager";
 import { fecharTodosPopouts } from "./popout";
@@ -48,6 +54,7 @@ import {
   instalarTempos,
   marcarTempo,
 } from "./tempos";
+import { corDoUsuario, opacidadePelaIdade } from "./traco";
 import { VoiceProcessor } from "./VoiceProcessor";
 
 /**
@@ -214,6 +221,38 @@ class Voice {
   showBar: Accessor<boolean>;
   #setShowBar: Setter<boolean>;
 
+  /**
+   * Estado das anotacoes (laser) da sala, se ja houver sala.
+   *
+   * Criado no `connect` e destruido no `disconnect`. Enquanto ninguem liga a
+   * feature ele so escuta o data channel, que ja existiria de qualquer forma.
+   */
+  anotacao: Accessor<Anotacao | undefined>;
+  #setAnotacao: Setter<Anotacao | undefined>;
+
+  /** Se EU liberei que os outros desenhem no meu compartilhamento */
+  anotacoesLiberadas: Accessor<boolean>;
+  #setAnotacoesLiberadas: Setter<boolean>;
+
+  /**
+   * Id do display que estou capturando, quando a fonte e uma tela inteira.
+   *
+   * Vem do `display_id` do desktopCapturer, atravessando a ponte do Electron.
+   * `undefined` no navegador e em compartilhamento de janela.
+   */
+  displayCapturado: Accessor<string | undefined>;
+  #setDisplayCapturado: Setter<string | undefined>;
+
+  /**
+   * Se a fonte capturada e uma tela inteira (e nao uma janela).
+   *
+   * A anotacao so funciona em tela inteira: uma janela se move, e coberta,
+   * minimiza e muda de tamanho, e nada disso da para acompanhar sem modulo
+   * nativo. Ver .opencode/plans/laser-anotacao.md secao 3.
+   */
+  fonteEhTelaInteira: Accessor<boolean>;
+  #setFonteEhTelaInteira: Setter<boolean>;
+
   private sound: SoundController;
   private device: Device;
 
@@ -290,6 +329,24 @@ class Voice {
     const [showBar, setShowBar] = createSignal(true);
     this.showBar = showBar;
     this.#setShowBar = setShowBar;
+
+    const [anotacao, setAnotacao] = createSignal<Anotacao | undefined>();
+    this.anotacao = anotacao;
+    this.#setAnotacao = setAnotacao;
+
+    const [anotacoesLiberadas, setAnotacoesLiberadas] = createSignal(false);
+    this.anotacoesLiberadas = anotacoesLiberadas;
+    this.#setAnotacoesLiberadas = setAnotacoesLiberadas;
+
+    const [displayCapturado, setDisplayCapturado] = createSignal<
+      string | undefined
+    >();
+    this.displayCapturado = displayCapturado;
+    this.#setDisplayCapturado = setDisplayCapturado;
+
+    const [fonteEhTelaInteira, setFonteEhTelaInteira] = createSignal(false);
+    this.fonteEhTelaInteira = fonteEhTelaInteira;
+    this.#setFonteEhTelaInteira = setFonteEhTelaInteira;
 
     const inst = useInstance();
     this.instance = inst;
@@ -439,11 +496,29 @@ class Voice {
       const w = window as unknown as {
         __stoatRoom?: Room;
         __stoatVoice?: Voice;
+        __stoatAnotacao?: unknown;
       };
       w.__stoatRoom = room;
       w.__stoatVoice = this;
+      // As funcoes puras da anotacao, para o harness poder exercitar a conta
+      // de coordenadas sem precisar de duas contas numa chamada de verdade.
+      w.__stoatAnotacao = {
+        normalizarSobreVideo,
+        paraPixelsDoVideo,
+        corDoUsuario,
+        opacidadePelaIdade,
+      };
       instalarTempos();
     }
+
+    // Anotacao (laser). Instalada aqui porque precisa da sala; ate alguem
+    // liberar, ela so escuta o data channel e nao desenha nada.
+    const anotacao = new Anotacao(room, (identidade) => {
+      const u = this.instance.client?.users.get(identidade);
+      return u?.displayName ?? u?.username ?? "";
+    });
+    anotacao.aoMudar = (tracos) => this.#espelharAnotacoes(tracos);
+    this.#setAnotacao(anotacao);
 
     room.addListener("connected", () => {
       marcarTempo("sala-conectada");
@@ -526,6 +601,9 @@ class Voice {
       // nem aparece na lista de pessoas — seria um som sem dono visível.
       if (ehParticipanteOculto(participante.identity)) return;
       this.sound.playSound("userJoinVoice");
+      // Quem chega depois nunca soube que a anotacao esta liberada: o aviso e
+      // um datagrama pontual, nao um estado persistido. Reanuncia para ele.
+      if (this.anotacoesLiberadas()) this.anotacao()?.reanunciar(true);
     });
 
     room.addListener("participantDisconnected", (participante) => {
@@ -690,11 +768,20 @@ class Voice {
       room.removeAllListeners();
       room.disconnect();
 
+      // Anotacao: solta os listeners e derruba a sobreposicao do desktop.
+      // Sem isto a moldura de aviso ficaria acesa na tela de quem
+      // compartilhava, depois da chamada ter acabado.
+      this.desligarAnotacoes();
+      this.anotacao()?.destruir();
+
       batch(() => {
         this.#setState("READY");
         this.#setRoom();
         this.#setChannel();
         this.#setFullscreen(false);
+        this.#setAnotacao(undefined);
+        this.#setDisplayCapturado(undefined);
+        this.#setFonteEhTelaInteira(false);
         this.vidTracks = () => [];
         this.tracksComVideo = () => [];
       });
@@ -940,6 +1027,12 @@ class Voice {
       await room.localParticipant.setScreenShareEnabled(false);
 
       this.#setScreenshare(room.localParticipant.isScreenShareEnabled);
+      // Parar de compartilhar encerra a liberacao junto: deixar ligado faria
+      // a proxima sessao comecar com estranhos podendo desenhar sem que
+      // ninguem tivesse pedido de novo.
+      this.desligarAnotacoes();
+      this.#setDisplayCapturado(undefined);
+      this.#setFonteEhTelaInteira(false);
 
       this.sound.playSound("streamEnd");
     } else {
@@ -963,6 +1056,12 @@ class Voice {
               window.native.screenPickerCallback(idx, audio);
               screenPickerQualityName = qualityName;
               screenPickerAudio = audio;
+              // Guarda QUAL fonte foi escolhida. Sem isto a anotacao nao tem
+              // como posicionar a sobreposicao -- ate 2026-08-28 so o indice
+              // atravessava a ponte e a identidade da fonte se perdia.
+              const fonte = sources[idx];
+              this.#setDisplayCapturado(fonte?.displayId);
+              this.#setFonteEhTelaInteira(!!fonte?.isFullScreen);
             },
             sources: sources,
             qualities: Object.keys(qualities).map((k) => {
@@ -1193,6 +1292,67 @@ class Voice {
 
   toggleShowBar() {
     this.#setShowBar((s) => !s);
+  }
+
+  /**
+   * Se este app consegue mostrar a sobreposicao na tela real.
+   *
+   * Deteccao de capacidade, nao de versao -- mesmo criterio do
+   * `popoutDisponivel`. Em app desktop antigo a funcao nao existe na ponte e
+   * o botao some, em vez de aparecer e nao fazer nada. No navegador tambem
+   * some: sem sobreposicao, quem compartilha nao veria o traco, que e o
+   * ponto inteiro da feature.
+   */
+  anotacaoDisponivel(): boolean {
+    return typeof window.native?.anotacaoAbrir === "function";
+  }
+
+  /**
+   * Liga ou desliga a liberacao de anotacoes no meu compartilhamento.
+   */
+  toggleAnotacoes() {
+    if (this.anotacoesLiberadas()) {
+      this.desligarAnotacoes();
+      return;
+    }
+
+    const display = this.displayCapturado();
+    if (!this.fonteEhTelaInteira() || !display) return;
+
+    this.#setAnotacoesLiberadas(true);
+    this.anotacao()?.anunciarLiberacao(true);
+    window.native?.anotacaoAbrir?.(display);
+    window.native?.anotacaoMoldura?.(true);
+  }
+
+  /**
+   * Revoga a liberacao e destroi a sobreposicao.
+   *
+   * Idempotente de proposito: e chamada de tres lugares (o botao, parar de
+   * compartilhar e sair da chamada) e nao pode depender da ordem.
+   */
+  desligarAnotacoes() {
+    if (this.anotacoesLiberadas()) this.anotacao()?.anunciarLiberacao(false);
+    this.#setAnotacoesLiberadas(false);
+    window.native?.anotacaoFechar?.();
+  }
+
+  /**
+   * Manda os tracos vivos para a sobreposicao do desktop.
+   *
+   * So faz alguma coisa para quem esta compartilhando COM anotacao liberada;
+   * para todo o resto e um retorno imediato. E o caminho quente da feature,
+   * chamado a cada lote recebido.
+   *
+   * @param tracos tracos vivos
+   */
+  #espelharAnotacoes(tracos: Traco[]) {
+    if (!this.anotacoesLiberadas()) return;
+    const enviar = window.native?.anotacaoTracos;
+    if (typeof enviar !== "function") return;
+    enviar(
+      tracos.map((t) => ({ id: t.id, nome: t.nome, cor: t.cor, pts: t.pts })),
+    );
   }
 
   getConnectedUser(userId: string) {

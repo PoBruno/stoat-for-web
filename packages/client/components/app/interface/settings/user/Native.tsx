@@ -37,6 +37,13 @@ declare global {
             name: string;
             isFullScreen: boolean;
             image?: string;
+            /**
+             * Id do monitor, quando a fonte e uma tela inteira.
+             *
+             * Opcional porque so as versoes a partir da anotacao (laser) o
+             * enviam, e porque vem vazio para fonte de janela.
+             */
+            displayId?: string;
           }[],
         ) => void,
       ): void;
@@ -50,6 +57,22 @@ declare global {
        * botao correspondente nao deve ser desenhado.
        */
       popoutAlwaysOnTop?(ligado: boolean): void;
+      /**
+       * Abre a sobreposicao de anotacao sobre o display capturado.
+       *
+       * Opcional pelo mesmo motivo do `popoutAlwaysOnTop`, e serve de
+       * sentinela: `voice.anotacaoDisponivel()` testa a existencia desta
+       * funcao para decidir se desenha os botoes de anotacao.
+       */
+      anotacaoAbrir?(displayId: string): void;
+      /** Destroi a sobreposicao de anotacao */
+      anotacaoFechar?(): void;
+      /** Manda os tracos vivos para a sobreposicao desenhar */
+      anotacaoTracos?(
+        tracos: { id: string; nome: string; cor: string; pts: number[] }[],
+      ): void;
+      /** Liga ou desliga a moldura de aviso na borda da tela */
+      anotacaoMoldura?(ligada: boolean): void;
     };
 
     desktopConfig: {
