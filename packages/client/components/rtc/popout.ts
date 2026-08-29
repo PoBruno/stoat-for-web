@@ -41,14 +41,28 @@ export function temPopout(sid: string) {
 }
 
 /**
- * Se o navegador consegue abrir uma janela destacada.
+ * Se da para abrir uma janela destacada neste ambiente.
  *
- * No app desktop antes da versao que libera `setWindowOpenHandler`, o
- * `window.open` e negado e a URL vai parar no navegador do sistema -- pior que
- * nao ter o botao. Ver `for-desktop/src/main.ts`.
+ * Tres casos, e o terceiro e o que obriga esta funcao a existir:
+ *
+ * 1. **Navegador** (`window.native` ausente) -> pode. `window.open` funciona.
+ * 2. **App desktop novo** -> pode. Ele libera a rota `/popout` no
+ *    `setWindowOpenHandler` e expoe `popoutAlwaysOnTop` na ponte.
+ * 3. **App desktop ANTIGO** -> NAO pode. O handler dele nega tudo e manda
+ *    qualquer `http:` para `shell.openExternal`: clicar no botao abriria o
+ *    navegador padrao do sistema, fora do Stoat e sem sessao. Pior que nao
+ *    ter o botao.
+ *
+ * A presenca de `popoutAlwaysOnTop` e o que separa (2) de (3) -- por isso ela
+ * e exposta na ponte mesmo sendo usada so dentro da janela filha.
  */
 export function popoutDisponivel() {
-  return typeof window !== "undefined" && typeof window.open === "function";
+  if (typeof window === "undefined" || typeof window.open !== "function") {
+    return false;
+  }
+  // Fora do Electron nao ha `native`, e o navegador abre normalmente.
+  if (!window.native) return true;
+  return typeof window.native.popoutAlwaysOnTop === "function";
 }
 
 function sincronizar() {
