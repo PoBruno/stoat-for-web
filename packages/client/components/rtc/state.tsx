@@ -1308,6 +1308,22 @@ class Voice {
   }
 
   /**
+   * Se os meus tracos conseguem sair daqui.
+   *
+   * O servidor decide `can_publish_data` em tempo de execucao a partir da
+   * permissao de falar, e isso sobrescreve o que o token concede. Quem nao
+   * pode falar tambem nao publica dado: o traco e desenhado na propria tela e
+   * morre ali, sem chegar a ninguem.
+   *
+   * Sem esta checagem o botao aparece e parece funcionar -- o proprio traco
+   * surge sob o cursor -- enquanto o resto da sala nao ve nada. E pior que um
+   * botao ausente: quem desenha nao tem como saber que nao esta sendo visto.
+   */
+  podePublicarAnotacao(): boolean {
+    return this.room()?.localParticipant?.permissions?.canPublishData ?? false;
+  }
+
+  /**
    * Liga ou desliga a liberacao de anotacoes no meu compartilhamento.
    */
   toggleAnotacoes() {

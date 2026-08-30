@@ -69,14 +69,20 @@ export function ParticipantTile(props: TileProps) {
   /**
    * Se este usuario pode desenhar sobre esta tela.
    *
-   * Tres condicoes: e um compartilhamento de tela, nao e o MEU (desenhar na
-   * propria tela nao faz sentido — eu ja estou olhando para ela), e quem
-   * compartilha liberou.
+   * Quatro condicoes: e um compartilhamento de tela, nao e o MEU (desenhar na
+   * propria tela nao faz sentido — eu ja estou olhando para ela), quem
+   * compartilha liberou, e os meus tracos conseguem sair daqui.
+   *
+   * A ultima parece redundante e nao e: quem nao tem permissao de falar nao
+   * publica dado, entao desenharia sozinho, vendo o proprio traco enquanto
+   * ninguem mais ve. Melhor nao oferecer do que oferecer algo que so funciona
+   * pela metade e nao avisa.
    */
   const podeDesenhar = () =>
     isScreenShare() &&
     !user().user?.self &&
-    !!voice.anotacao()?.liberadoPor().includes(participant.identity);
+    !!voice.anotacao()?.liberadoPor().includes(participant.identity) &&
+    voice.podePublicarAnotacao();
 
   const isMuted = useIsMuted({
     participant,
