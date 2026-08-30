@@ -1,4 +1,5 @@
-﻿import { TrackReference } from "solid-livekit-components";
+﻿import { JSX } from "solid-js";
+import { TrackReference } from "solid-livekit-components";
 import {
   API,
   Bot,
@@ -168,6 +169,11 @@ export type Modals =
   | {
       type: "emoji_preview";
       emoji: Emoji;
+    }
+  | {
+      type: "aviso";
+      titulo: JSX.Element;
+      texto: JSX.Element;
     }
   | {
       type: "error2";

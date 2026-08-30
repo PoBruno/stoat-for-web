@@ -6,6 +6,7 @@ import { type ActiveModal } from ".";
 import { AddBotModal } from "./modals/AddBot";
 import { AddFriendModal } from "./modals/AddFriend";
 import { AddMembersToGroupModal } from "./modals/AddMembersToGroup";
+import { AvisoModal } from "./modals/Aviso";
 import { BanMemberModal } from "./modals/BanMember";
 import { BanNonMemberModal } from "./modals/BanNonMember";
 import { ChangelogModal } from "./modals/Changelog";
@@ -145,6 +146,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <EditUsernameModal {...modalProps} />;
     case "emoji_preview":
       return <EmojiPreviewModal {...modalProps} />;
+    case "aviso":
+      return <AvisoModal {...modalProps} />;
     case "error2":
       return <Error2Modal {...modalProps} />;
     case "image_viewer":

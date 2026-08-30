@@ -5,6 +5,7 @@ import { useLingui } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { useInstance } from "@revolt/instance";
+import { useModals } from "@revolt/modal";
 import { useVoice } from "@revolt/rtc";
 import { useState } from "@revolt/state";
 import { Button, IconButton } from "@revolt/ui/components/design";
@@ -16,6 +17,21 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
   const navigate = useNavigate();
   const { t } = useLingui();
   const { limits } = useInstance();
+  const { openModal } = useModals();
+
+  /**
+   * Por que não dá para liberar as anotações agora, ou nada se der.
+   *
+   * As duas causas são acionáveis por quem lê, e é por isso que valem uma
+   * frase em vez de um botão ausente: uma se resolve instalando o app, a
+   * outra trocando o que se compartilha.
+   */
+  const motivoAnotacao = () =>
+    !voice.anotacaoDisponivel()
+      ? t`This needs the desktop app: the browser cannot draw over your real screen. Install the Stoat app on Windows and share from it.`
+      : !voice.fonteEhTelaInteira()
+        ? t`This only works when you share a whole screen, not a single window.`
+        : undefined;
 
   return (
     <Actions>
@@ -132,28 +148,46 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
         sobre a minha tela -- e por isso fica aqui, na barra, e nao no hover do
         tile: controle de consentimento nao pode sumir quando o mouse sai.
 
-        Em compartilhamento de JANELA ele aparece DESABILITADO com a
-        explicacao, em vez de sumir: o usuario consegue resolver isso sozinho
-        (basta compartilhar a tela inteira), entao vale explicar. Ja a ausencia
-        da ponte do desktop esconde o botao, porque ai nao ha o que fazer.
-        Ver .opencode/plans/laser-anotacao.md secao 3.4.
+        Enquanto eu compartilho ele esta SEMPRE presente, mesmo quando nao da
+        para usar. Esconde-lo economizava um botao e custava a explicacao:
+        quem abria o app pelo navegador procurava o controle, nao achava, e
+        concluia que o recurso nao existe. Agora ele diz o que falta -- e
+        dizer isso e o proprio conserto, porque o que falta e acionavel.
       */}
-      <Show when={voice.screenshare() && voice.anotacaoDisponivel()}>
+      <Show when={voice.screenshare()}>
         <IconButton
           size={props.size}
-          variant={voice.anotacoesLiberadas() ? "filled" : "tonal"}
-          aria-disabled={!voice.fonteEhTelaInteira()}
+          // Apagado quando não dá para usar, mas NÃO desabilitado: um botão
+          // desabilitado não recebe clique, e o clique é justamente o momento
+          // em que a pessoa pergunta "por que não?". Ele continua fazendo
+          // algo — responde.
+          variant={
+            voice.anotacoesLiberadas()
+              ? "filled"
+              : motivoAnotacao()
+                ? "standard"
+                : "tonal"
+          }
           onPress={() => {
-            if (voice.fonteEhTelaInteira()) voice.toggleAnotacoes();
+            const motivo = motivoAnotacao();
+            if (motivo) {
+              openModal({
+                type: "aviso",
+                titulo: t`Annotations unavailable`,
+                texto: motivo,
+              });
+              return;
+            }
+            voice.toggleAnotacoes();
           }}
           use:floating={{
             tooltip: {
               placement: "top",
-              content: !voice.fonteEhTelaInteira()
-                ? t`Annotations only work when sharing a whole screen`
-                : voice.anotacoesLiberadas()
+              content:
+                motivoAnotacao() ??
+                (voice.anotacoesLiberadas()
                   ? t`Stop letting others draw`
-                  : t`Let others draw on your screen`,
+                  : t`Let others draw on your screen`),
             },
           }}
         >
