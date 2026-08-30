@@ -529,14 +529,39 @@ const Overlay = styled("div", {
 
     transition: "var(--transitions-fast) all",
     transitionTimingFunction: "ease",
+
+    // Fica ACIMA da camada de desenho.
+    //
+    // Sem isto os controles ficavam inalcançáveis com o laser armado, e a
+    // única saída era Esc. O motivo é uma regra de pintura fácil de esquecer:
+    // a camada é `position: absolute` e este overlay é item de grade, ou seja,
+    // não posicionado — e o posicionado pinta por cima, não importa a ordem
+    // no DOM. Ficar por cima é o mínimo para que um controle seja controle.
+    position: "relative",
+    zIndex: 1,
+
+    // Mas só os botões capturam o ponteiro. O resto atravessa, senão a faixa
+    // de baixo viraria uma zona morta onde não se desenha.
+    pointerEvents: "none",
+    "& button": {
+      pointerEvents: "auto",
+    },
   },
   variants: {
     showOnHover: {
       true: {
         opacity: 0,
+        // Invisível não deve capturar clique: antes de aparecer, o botão não
+        // existe para quem olha, e não deve existir para o ponteiro.
+        "& button": {
+          pointerEvents: "none",
+        },
 
         _groupHover: {
           opacity: 1,
+          "& button": {
+            pointerEvents: "auto",
+          },
         },
       },
       false: {

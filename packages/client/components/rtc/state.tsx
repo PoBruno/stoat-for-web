@@ -234,6 +234,10 @@ class Voice {
   anotacoesLiberadas: Accessor<boolean>;
   #setAnotacoesLiberadas: Setter<boolean>;
 
+  /** Se a moldura de aviso está acesa na minha tela */
+  molduraVisivel: Accessor<boolean>;
+  #setMolduraVisivel: Setter<boolean>;
+
   /**
    * Id do display que estou capturando, quando a fonte e uma tela inteira.
    *
@@ -337,6 +341,10 @@ class Voice {
     const [anotacoesLiberadas, setAnotacoesLiberadas] = createSignal(false);
     this.anotacoesLiberadas = anotacoesLiberadas;
     this.#setAnotacoesLiberadas = setAnotacoesLiberadas;
+
+    const [molduraVisivel, setMolduraVisivel] = createSignal(true);
+    this.molduraVisivel = molduraVisivel;
+    this.#setMolduraVisivel = setMolduraVisivel;
 
     const [displayCapturado, setDisplayCapturado] = createSignal<
       string | undefined
@@ -1338,7 +1346,28 @@ class Voice {
     this.#setAnotacoesLiberadas(true);
     this.anotacao()?.anunciarLiberacao(true);
     window.native?.anotacaoAbrir?.(display);
+    // A moldura sempre volta acesa ao liberar. Quem a desligou numa sessão
+    // desligou por incômodo naquele momento, não deu um consentimento
+    // permanente para compartilhar a tela sem aviso visível.
+    this.#setMolduraVisivel(true);
     window.native?.anotacaoMoldura?.(true);
+  }
+
+  /**
+   * Mostra ou esconde a moldura de aviso, sem mexer na liberação.
+   *
+   * A moldura existe para eu não esquecer que autorizei desenharem na minha
+   * tela. Num uso longo — alguém explicando algo passo a passo — ela deixa de
+   * informar e passa a irritar, e a pessoa então desliga a anotação inteira
+   * só para se livrar dela. Poder esconder só a moldura mantém o recurso em
+   * uso.
+   *
+   * Não é uma preferência guardada: volta acesa na próxima liberação.
+   */
+  toggleMolduraAnotacao() {
+    const visivel = !this.molduraVisivel();
+    this.#setMolduraVisivel(visivel);
+    window.native?.anotacaoMoldura?.(visivel);
   }
 
   /**

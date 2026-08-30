@@ -199,6 +199,36 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
           </Show>
         </IconButton>
       </Show>
+      {/*
+        Esconder a moldura de aviso sem desligar a anotação.
+
+        Só existe enquanto a anotação está liberada, porque é sobre ela. A
+        moldura serve para eu lembrar que autorizei desenharem na minha tela;
+        numa explicação longa ela deixa de informar e passa a incomodar, e sem
+        esta saída a pessoa desliga a anotação inteira só para se livrar dela.
+      */}
+      <Show when={voice.screenshare() && voice.anotacoesLiberadas()}>
+        <IconButton
+          size={props.size}
+          variant="standard"
+          onPress={() => voice.toggleMolduraAnotacao()}
+          use:floating={{
+            tooltip: {
+              placement: "top",
+              content: voice.molduraVisivel()
+                ? t`Hide the border on my screen`
+                : t`Show the border on my screen`,
+            },
+          }}
+        >
+          <Show
+            when={voice.molduraVisivel()}
+            fallback={<Symbol>border_clear</Symbol>}
+          >
+            <Symbol>border_outer</Symbol>
+          </Show>
+        </IconButton>
+      </Show>
       <Button
         size={props.size}
         variant="_error"
