@@ -16,6 +16,7 @@ import { styled } from "styled-system/jsx";
 
 import { UserContextMenu } from "@revolt/app";
 import { useUser } from "@revolt/markdown/users";
+import { useModals } from "@revolt/modal";
 import { useVoice } from "@revolt/rtc";
 import { CamadaAnotacao } from "@revolt/rtc/CamadaAnotacao";
 import {
@@ -45,6 +46,8 @@ export function ParticipantTile(props: TileProps) {
   const participant = useEnsureParticipant();
   const track = useTrackRefContext();
   const user = useUser(participant.identity);
+  const { t } = useLingui();
+  const { openModal } = useModals();
 
   let videoRef: HTMLVideoElement | undefined;
 
@@ -69,20 +72,31 @@ export function ParticipantTile(props: TileProps) {
   /**
    * Se este usuario pode desenhar sobre esta tela.
    *
-   * Quatro condicoes: e um compartilhamento de tela, nao e o MEU (desenhar na
-   * propria tela nao faz sentido — eu ja estou olhando para ela), quem
-   * compartilha liberou, e os meus tracos conseguem sair daqui.
+   * Tres condicoes: e um compartilhamento de tela, nao e o MEU (desenhar na
+   * propria tela nao faz sentido — eu ja estou olhando para ela), e quem
+   * compartilha liberou.
    *
-   * A ultima parece redundante e nao e: quem nao tem permissao de falar nao
-   * publica dado, entao desenharia sozinho, vendo o proprio traco enquanto
-   * ninguem mais ve. Melhor nao oferecer do que oferecer algo que so funciona
-   * pela metade e nao avisa.
+   * Note que NAO entra aqui a permissao de publicar. Faltando ela o botao
+   * continua aparecendo e explica o motivo ao ser tocado: sumir faria a
+   * pessoa concluir que o dono da tela nao liberou, que e falso.
    */
   const podeDesenhar = () =>
     isScreenShare() &&
     !user().user?.self &&
-    !!voice.anotacao()?.liberadoPor().includes(participant.identity) &&
-    voice.podePublicarAnotacao();
+    !!voice.anotacao()?.liberadoPor().includes(participant.identity);
+
+  /**
+   * Por que o meu traco nao sairia daqui, ou nada se ele sair.
+   *
+   * O servidor decide `can_publish_data` a partir da permissao de falar, e
+   * isso sobrescreve o que o token concede. Sem ela o traco e desenhado na
+   * minha tela e morre ali, sem chegar a ninguem — e nada na interface
+   * denunciaria isso.
+   */
+  const motivoNaoDesenha = () =>
+    voice.podePublicarAnotacao()
+      ? undefined
+      : t`You need permission to speak in this channel to draw. Ask a moderator.`;
 
   const isMuted = useIsMuted({
     participant,
@@ -187,7 +201,17 @@ export function ParticipantTile(props: TileProps) {
               <Show when={podeDesenhar()}>
                 <BotaoDesenhar
                   armado={armado()}
+                  motivo={motivoNaoDesenha()}
                   aoAlternar={() => {
+                    const motivo = motivoNaoDesenha();
+                    if (motivo) {
+                      openModal({
+                        type: "aviso",
+                        titulo: t`You cannot draw here`,
+                        texto: motivo,
+                      });
+                      return;
+                    }
                     const novo = !armado();
                     setArmado(novo);
                     // Desenhar num tile pequeno da grade e inutil. Armar
@@ -284,15 +308,25 @@ function BotaoDestacar(props: {
  * Aparece so quando quem compartilha liberou. Armado, o canvas por cima do
  * video passa a receber o ponteiro; para sair, este mesmo botao ou Esc.
  *
+ * Recebendo um `motivo`, continua clicavel e explica em vez de armar: sumir
+ * faria a pessoa culpar quem compartilha por algo que e permissao dela.
+ *
  * Mesmo `stopPropagation` do `BotaoDestacar`, e pelo mesmo motivo.
  */
-function BotaoDesenhar(props: { armado: boolean; aoAlternar: () => void }) {
+function BotaoDesenhar(props: {
+  armado: boolean;
+  motivo?: string;
+  aoAlternar: () => void;
+}) {
   const { t } = useLingui();
 
   return (
     <button
       type="button"
-      aria-label={props.armado ? t`Stop drawing` : t`Draw on this screen`}
+      aria-label={
+        props.motivo ??
+        (props.armado ? t`Stop drawing` : t`Draw on this screen`)
+      }
       aria-pressed={props.armado}
       onClick={(e) => {
         e.stopPropagation();
@@ -301,9 +335,9 @@ function BotaoDesenhar(props: { armado: boolean; aoAlternar: () => void }) {
       use:floating={{
         tooltip: {
           placement: "top",
-          content: props.armado
-            ? t`Stop drawing (Esc)`
-            : t`Draw on this screen`,
+          content:
+            props.motivo ??
+            (props.armado ? t`Stop drawing (Esc)` : t`Draw on this screen`),
         },
       }}
       style={{
