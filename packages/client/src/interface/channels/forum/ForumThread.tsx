@@ -10,8 +10,6 @@ import { Trans, useLingui } from "@lingui/solid/macro";
 import { ForumComment, ForumPost, User } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
-import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
-import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
 
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
@@ -345,7 +343,7 @@ function CommentNode(props: { node: Node; onChange: () => void }) {
                   <ContextMenu>
                     <Show when={props.node.comment.canEdit}>
                       <ContextMenuButton
-                        icon={MdEdit}
+                        icon={<Symbol size={16}>edit</Symbol>}
                         onClick={() => setEditing(!editing())}
                       >
                         <Show when={editing()} fallback={<Trans>Edit</Trans>}>
@@ -355,7 +353,7 @@ function CommentNode(props: { node: Node; onChange: () => void }) {
                     </Show>
                     <Show when={props.node.comment.canDelete}>
                       <ContextMenuButton
-                        icon={MdDelete}
+                        icon={<Symbol size={16}>delete</Symbol>}
                         destructive
                         onClick={() => settle(props.node.comment.delete())}
                       >

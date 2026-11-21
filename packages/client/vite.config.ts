@@ -1,5 +1,6 @@
 import { lingui as linguiSolidPlugin } from "@lingui/vite-plugin";
 import devtools from "@solid-devtools/transform";
+import legacy from "@vitejs/plugin-legacy";
 import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { defineConfig } from "vite";
@@ -32,6 +33,19 @@ export default defineConfig({
       defaultAsComponent: false,
     }),
     addFontPreload(),
+    legacy({
+      // Chrome, Edge and Firefox are set by Uint8Array.prototype.toBase64.
+      // Safari stays at 17 on purpose: iPad 6 and similar devices can't update past iPadOS 17
+      modernTargets: [
+        "chrome >= 140",
+        "edge >= 140",
+        "firefox >= 133",
+        "safari >= 17",
+        "ios_saf >= 17",
+      ],
+      modernPolyfills: true,
+      renderLegacyChunks: false,
+    }),
     VitePWA({
       srcDir: "src",
       registerType: "autoUpdate",
@@ -54,8 +68,8 @@ export default defineConfig({
         scope: pwaScope,
         display_override: ["window-controls-overlay"],
         display: "standalone",
-        background_color: "#101823",
-        theme_color: "#101823",
+        background_color: "#191919",
+        theme_color: "#191919",
         icons: [
           {
             src: `${base}assets/web/android-chrome-192x192.png`,
@@ -86,6 +100,7 @@ export default defineConfig({
   ],
   build: {
     target: "esnext",
+    cssTarget: "esnext",
     rollupOptions: {
       external: ["hast"],
       output: {

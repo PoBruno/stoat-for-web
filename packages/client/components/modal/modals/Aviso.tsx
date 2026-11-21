@@ -3,9 +3,8 @@ import { JSXElement } from "solid-js";
 import { Trans } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
-import { Dialog, DialogProps, iconSize } from "@revolt/ui";
+import { Dialog, DialogProps, Symbol } from "@revolt/ui";
 
-import MdInfo from "@material-design-icons/svg/outlined/info.svg?component-solid";
 
 import { Modals } from "../types";
 
@@ -29,7 +28,7 @@ const Texto = styled("div", {
 export function AvisoModal(props: DialogProps & Modals & { type: "aviso" }) {
   return (
     <Dialog
-      icon={<MdInfo {...iconSize(24)} />}
+      icon={<Symbol size={24}>info</Symbol>}
       show={props.show}
       onClose={props.onClose}
       title={props.titulo}

@@ -1,4 +1,4 @@
-import { Match, Show, Switch } from "solid-js";
+import { Show } from "solid-js";
 
 import { Trans } from "@lingui/solid/macro";
 import { Channel } from "stoat.js";
@@ -6,17 +6,7 @@ import { Channel } from "stoat.js";
 import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { useState } from "@revolt/state";
-
-import MdBadge from "@material-design-icons/svg/outlined/badge.svg?component-solid";
-import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
-import MdGroupAdd from "@material-design-icons/svg/outlined/group_add.svg?component-solid";
-import MdLibraryAdd from "@material-design-icons/svg/outlined/library_add.svg?component-solid";
-import MdLogout from "@material-design-icons/svg/outlined/logout.svg?component-solid";
-import MdMarkChatRead from "@material-design-icons/svg/outlined/mark_chat_read.svg?component-solid";
-import MdSettings from "@material-design-icons/svg/outlined/settings.svg?component-solid";
-import MdShare from "@material-design-icons/svg/outlined/share.svg?component-solid";
-import MdShield from "@material-design-icons/svg/outlined/shield.svg?component-solid";
-
+import { Symbol } from "@revolt/ui";
 import {
   ContextMenu,
   ContextMenuButton,
@@ -132,16 +122,24 @@ export function ChannelContextMenu(props: { channel: Channel }) {
     <ContextMenu>
       <Show
         when={
-          props.channel.unread || props.channel.havePermission("InviteOthers")
+          props.channel.unread ||
+          !!props.channel.mentions?.size ||
+          props.channel.havePermission("InviteOthers")
         }
       >
-        <Show when={props.channel.unread}>
-          <ContextMenuButton icon={MdMarkChatRead} onClick={markAsRead}>
+        <Show when={props.channel.unread || !!props.channel.mentions?.size}>
+          <ContextMenuButton
+            icon={<Symbol size={16}>mark_chat_read</Symbol>}
+            onClick={markAsRead}
+          >
             <Trans>Mark as read</Trans>
           </ContextMenuButton>
         </Show>
         <Show when={props.channel.havePermission("InviteOthers")}>
-          <ContextMenuButton icon={MdGroupAdd} onClick={createInvite}>
+          <ContextMenuButton
+            icon={<Symbol size={16}>group_add</Symbol>}
+            onClick={createInvite}
+          >
             <Trans>Create invite</Trans>
           </ContextMenuButton>
         </Show>
@@ -153,49 +151,75 @@ export function ChannelContextMenu(props: { channel: Channel }) {
       <ContextMenuDivider />
 
       <Show when={props.channel.server?.havePermission("ManageChannel")}>
-        <ContextMenuButton icon={MdLibraryAdd} onClick={createChannel}>
+        <ContextMenuButton
+          icon={<Symbol size={16}>library_add</Symbol>}
+          onClick={createChannel}
+        >
           <Trans>Create channel</Trans>
         </ContextMenuButton>
-        <ContextMenuButton icon={MdLibraryAdd} onClick={createCategory}>
+        <ContextMenuButton
+          icon={<Symbol size={16}>library_add</Symbol>}
+          onClick={createCategory}
+        >
           <Trans>Create category</Trans>
         </ContextMenuButton>
       </Show>
       <Show when={props.channel.havePermission("ManageChannel")}>
-        <ContextMenuButton icon={MdSettings} onClick={editChannel}>
+        <ContextMenuButton
+          icon={<Symbol size={16}>settings</Symbol>}
+          onClick={editChannel}
+        >
           <Trans>Open channel settings</Trans>
         </ContextMenuButton>
+        <Show when={props.channel.type !== "Group"}>
+          <ContextMenuButton
+            icon={<Symbol size={16}>delete</Symbol>}
+            onClick={deleteChannel}
+            destructive
+          >
+            <Trans>Delete channel</Trans>
+          </ContextMenuButton>
+        </Show>{" "}
+      </Show>
+      <Show when={props.channel.type === "Group"}>
         <ContextMenuButton
-          icon={props.channel.type === "Group" ? MdLogout : MdDelete}
+          icon={<Symbol size={16}>logout</Symbol>}
           onClick={deleteChannel}
           destructive
         >
-          <Switch fallback={<Trans>Delete channel</Trans>}>
-            <Match when={props.channel.type === "Group"}>
-              <Trans>Leave group</Trans>
-            </Match>
-          </Switch>
+          <Trans>Leave group</Trans>
         </ContextMenuButton>
       </Show>
 
       <Show
         when={
           props.channel.server?.havePermission("ManageChannel") ||
-          props.channel.havePermission("ManageChannel")
+          props.channel.havePermission("ManageChannel") ||
+          props.channel.type === "Group"
         }
       >
         <ContextMenuDivider />
       </Show>
 
       <Show when={state.settings.getValue("advanced:admin_panel")}>
-        <ContextMenuButton icon={MdShield} onClick={openAdminPanel}>
+        <ContextMenuButton
+          icon={<Symbol size={16}>shield</Symbol>}
+          onClick={openAdminPanel}
+        >
           <Trans>Admin Panel</Trans>
         </ContextMenuButton>
       </Show>
-      <ContextMenuButton icon={MdShare} onClick={copyLink}>
+      <ContextMenuButton
+        icon={<Symbol size={16}>share</Symbol>}
+        onClick={copyLink}
+      >
         <Trans>Copy link</Trans>
       </ContextMenuButton>
       <Show when={state.settings.getValue("advanced:copy_id")}>
-        <ContextMenuButton icon={MdBadge} onClick={copyId}>
+        <ContextMenuButton
+          icon={<Symbol size={16}>badge</Symbol>}
+          onClick={copyId}
+        >
           <Trans>Copy channel ID</Trans>
         </ContextMenuButton>
       </Show>

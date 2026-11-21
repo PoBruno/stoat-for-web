@@ -12,8 +12,6 @@ import { Plural, Trans, useLingui } from "@lingui/solid/macro";
 import { Server, Sound } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
-import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
-import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
 
 import { useClient } from "@revolt/client";
 import { useModals } from "@revolt/modal";
@@ -335,7 +333,7 @@ export function SoundboardPanel(props: {
                         contextMenu: () => (
                           <ContextMenu>
                             <ContextMenuButton
-                              icon={MdEdit}
+                              icon={<Symbol size={16}>edit</Symbol>}
                               onClick={() =>
                                 state.voice.toggleFavouriteSound(som.id)
                               }
@@ -355,7 +353,7 @@ export function SoundboardPanel(props: {
                               )}
                             >
                               <ContextMenuButton
-                                icon={MdDelete}
+                                icon={<Symbol size={16}>delete</Symbol>}
                                 destructive
                                 onClick={() =>
                                   openModal({

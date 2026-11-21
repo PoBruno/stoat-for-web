@@ -9,11 +9,13 @@ import {
 } from "stoat.js";
 import { css } from "styled-system/css";
 
-import { isGifBox, isGif as isGifLib } from "@revolt/common/lib/gifs";
+import { isGif as isGifLib } from "@revolt/common/lib/gifs";
 import { useModals } from "@revolt/modal";
 import { useState } from "@revolt/state";
 import { SizedContent } from "@revolt/ui/components/utils";
 
+import { MessageContextMenu, useMessage } from "@revolt/app";
+import { Gif } from "@revolt/ui/components/utils/GifEmbed";
 import { TextEmbed } from "./TextEmbed";
 
 /**
@@ -24,6 +26,7 @@ export function Embed(props: { embed: MessageEmbed; hovering?: boolean }) {
   const state = useState();
 
   let videoRef: HTMLVideoElement | undefined;
+  const { message, reactPicker } = useMessage();
 
   /**
    * Whether the embed is a GIF
@@ -34,17 +37,22 @@ export function Embed(props: { embed: MessageEmbed; hovering?: boolean }) {
    * Whether there is a video
    */
   const video = () =>
-    (props.embed.type === "Video"
-      ? (props.embed as VideoEmbed)
-      : isGIF() && (props.embed as WebsiteEmbed).video) || undefined;
+    props.embed.type === "Video" ? (props.embed as VideoEmbed) : undefined;
 
   /**
    * Whether there is a image
    */
   const image = () =>
-    (props.embed.type === "Image"
-      ? (props.embed as ImageEmbed)
-      : isGIF() && (props.embed as WebsiteEmbed).image) || undefined;
+    props.embed.type === "Image" ? (props.embed as ImageEmbed) : undefined;
+
+  /**
+   * Link to the page the embed came from (not the raw media)
+   */
+  const pageUrl = () =>
+    props.embed.type === "Website"
+      ? (props.embed as WebsiteEmbed).originalUrl ||
+        (props.embed as WebsiteEmbed).url
+      : undefined;
 
   const hoverOnly = () =>
     state.settings.getValue("accessibility:autoplay_gif_on_hover") ?? false;
@@ -66,22 +74,29 @@ export function Embed(props: { embed: MessageEmbed; hovering?: boolean }) {
 
   return (
     <Switch fallback={`Could not render ${props.embed.type}!`}>
+      <Match when={isGIF()}>
+        <Gif gif={props.embed as WebsiteEmbed} />
+      </Match>
       <Match when={image()}>
         <SizedContent width={image()!.width} height={image()!.height}>
           <img
-            // bypass proxy for known GIF providers
-            // TODO: Remove the Gifbox check here once gifbox embeds are fixed
-            src={
-              isGIF() && !isGifBox(props.embed)
-                ? image()!.url
-                : image()!.proxiedURL
-            }
+            src={image()!.proxiedURL}
+            use:floating={{
+              contextMenu: () => (
+                <MessageContextMenu
+                  message={message}
+                  reactPicker={reactPicker}
+                  file={image()}
+                />
+              ),
+            }}
             loading="lazy"
             class={css({ cursor: "pointer" })}
             onClick={() =>
               openModal({
                 type: "image_viewer",
                 embed: image(),
+                originalUrl: pageUrl(),
               })
             }
           />
@@ -97,21 +112,17 @@ export function Embed(props: { embed: MessageEmbed; hovering?: boolean }) {
             autoplay={isGIF() && !hoverOnly()}
             controls={!isGIF()}
             preload="metadata"
-            // bypass proxy for known GIF providers
-            // TODO: Remove the Gifbox check here once gifbox embeds are fixed
-            src={
-              isGIF() && !isGifBox(props.embed)
-                ? video()!.url
-                : video()!.proxiedURL
-            }
-            class={css({ cursor: isGIF() ? "pointer" : "unset" })}
-            onClick={() =>
-              isGIF() &&
-              openModal({
-                type: "image_viewer",
-                gif: video(),
-              })
-            }
+            src={video()!.proxiedURL}
+            use:floating={{
+              contextMenu: () => (
+                <MessageContextMenu
+                  message={message}
+                  reactPicker={reactPicker}
+                  file={video()}
+                />
+              ),
+            }}
+            class={css({ cursor: "unset" })}
           />
         </SizedContent>
       </Match>

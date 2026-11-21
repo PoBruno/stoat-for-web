@@ -5,6 +5,7 @@ import { useMutation } from "@tanstack/solid-query";
 import { styled } from "styled-system/jsx";
 
 import { useInstance } from "@revolt/instance";
+import Instance from "@revolt/instance/Instance";
 import { Dialog, DialogProps } from "@revolt/ui";
 
 import { useModals } from "..";
@@ -28,6 +29,10 @@ const Invite = styled("div", {
   },
 });
 
+/** Get absolute link from invite id */
+export const getInviteLink = (id: string, inst: Instance) =>
+  inst.isStoat ? `https://stt.gg/${id}` : inst.href(`/invite/${id}`);
+
 /**
  * Modal to create a new invite
  */
@@ -47,7 +52,9 @@ export function CreateInviteModal(
 
   const fetchInvite = useMutation(() => ({
     mutationFn: () =>
-      props.channel.createInvite().then(({ _id }) => setId(_id)),
+      props.channel
+        .createInvite()
+        .then(({ _id }) => setLink(getInviteLink(_id, instance))),
     onError: showError,
   }));
 

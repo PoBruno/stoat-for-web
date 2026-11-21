@@ -4,10 +4,6 @@ import { Plural, Trans, useLingui } from "@lingui/solid/macro";
 import { Channel, ForumPost, User } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
-import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
-import MdEdit from "@material-design-icons/svg/outlined/edit.svg?component-solid";
-import MdLock from "@material-design-icons/svg/outlined/lock.svg?component-solid";
-import MdPushPin from "@material-design-icons/svg/outlined/push_pin.svg?component-solid";
 
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
@@ -629,7 +625,7 @@ export function ForumPostView(props: {
                             <ContextMenu>
                               <Show when={loaded().canEdit}>
                                 <ContextMenuButton
-                                  icon={MdEdit}
+                                  icon={<Symbol size={16}>edit</Symbol>}
                                   onClick={() => {
                                     setDraft(loaded().content ?? "");
                                     setEditing(true);
@@ -641,7 +637,7 @@ export function ForumPostView(props: {
 
                               <Show when={loaded().canModerate}>
                                 <ContextMenuButton
-                                  icon={MdPushPin}
+                                  icon={<Symbol size={16}>push_pin</Symbol>}
                                   onClick={() =>
                                     settle(loaded().setPinned(!loaded().pinned))
                                   }
@@ -654,7 +650,7 @@ export function ForumPostView(props: {
                                   </Show>
                                 </ContextMenuButton>
                                 <ContextMenuButton
-                                  icon={MdLock}
+                                  icon={<Symbol size={16}>lock</Symbol>}
                                   onClick={() =>
                                     settle(loaded().setLocked(!loaded().locked))
                                   }
@@ -671,7 +667,7 @@ export function ForumPostView(props: {
                               <Show when={loaded().canDelete}>
                                 <ContextMenuDivider />
                                 <ContextMenuButton
-                                  icon={MdDelete}
+                                  icon={<Symbol size={16}>delete</Symbol>}
                                   destructive
                                   onClick={() =>
                                     settle(

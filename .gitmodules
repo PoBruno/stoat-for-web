@@ -11,4 +11,4 @@
 [submodule "packages/stoat-api"]
 	path = packages/stoat-api
 	url = git@github.com:PoBruno/stoat-javascript-client-api.git
-	branch = feat/forum-channels
+	branch = feat/sync-upstream-0.16

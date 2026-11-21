@@ -27,8 +27,7 @@ export const main = cva({
 
     _tablet: {
       margin: 0,
-      borderBottomRightRadius: 0,
-      borderBottomLeftRadius: 0,
+      borderRadius: "var(--borderRadius-xl) 0 0 0",
     },
 
     _phone: {

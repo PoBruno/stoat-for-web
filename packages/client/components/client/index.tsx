@@ -3,7 +3,9 @@ import {
   Accessor,
   createContext,
   createEffect,
+  createSignal,
   onCleanup,
+  Show,
   useContext,
 } from "solid-js";
 
@@ -13,11 +15,11 @@ import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { fetchLatestChangelog } from "@revolt/modal/modals/Changelog";
 import { useState } from "@revolt/state";
+import { LoadingScreen } from "@revolt/ui";
 
 import ClientController from "./Controller";
 
 export type { default as ClientController } from "./Controller";
-
 export { useNotifications } from "./NotificationsController";
 export { podeCriarServidor } from "./serverCreation";
 export { SoundContext, SoundController, useSound } from "./Sounds";
@@ -27,12 +29,16 @@ const clientContext = createContext(null! as ClientController);
 /**
  * Mount the modal controller
  */
-export function ClientContext(props: { children: JSXElement }) {
+export function ClientContext(props: {
+  children: JSXElement;
+  preLoad: JSXElement;
+}) {
   const { openModal } = useModals();
   const state = useState();
   const instance = useInstance();
+  const [ready, setReady] = createSignal(false);
 
-  const controller = new ClientController(state, instance);
+  const controller = new ClientController(state, instance, setReady);
   onCleanup(() => controller.dispose());
 
   let fetchedChangelog = false;
@@ -68,7 +74,10 @@ export function ClientContext(props: { children: JSXElement }) {
 
   return (
     <clientContext.Provider value={controller}>
-      {props.children}
+      <Show when={ready()} fallback={<LoadingScreen />}>
+        {props.children}
+      </Show>
+      {props.preLoad}
     </clientContext.Provider>
   );
 }

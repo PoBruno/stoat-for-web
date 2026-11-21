@@ -374,6 +374,15 @@ export function ChannelPermissionsEditor(props: Props) {
         Any: t`React to messages with emoji`,
       },
     },
+    {
+      key: "UseExternalEmojis",
+      value: 2n ** 41n,
+      title: t`Use External Emojis`,
+      description: {
+        Server: t`Use emoji from other servers`,
+        TextChannel: t`Use emoji from other servers`,
+      },
+    },
 
     {
       key: "BypassSlowmode",
@@ -450,7 +459,8 @@ export function ChannelPermissionsEditor(props: Props) {
     },
     {
       key: "UseSoundboard",
-      value: 2n ** 41n,
+      // Era 41; movido para nao colidir com os bits do upstream.
+      value: 2n ** 49n,
       title: t`Use Soundboard`,
       description: {
         // Fora de forum e grupo: nao ha chamada nesses contextos.
@@ -462,7 +472,8 @@ export function ChannelPermissionsEditor(props: Props) {
     },
     {
       key: "ManageSoundboard",
-      value: 2n ** 42n,
+      // Era 42; movido para nao colidir com os bits do upstream.
+      value: 2n ** 50n,
       title: t`Manage Soundboard`,
       description: {
         ForumChannel: null,
@@ -473,7 +484,8 @@ export function ChannelPermissionsEditor(props: Props) {
     },
     {
       key: "UseMusicBox",
-      value: 2n ** 43n,
+      // Era 43; movido para nao colidir com os bits do upstream.
+      value: 2n ** 51n,
       title: t`Use MusicBox`,
       description: {
         ForumChannel: null,

@@ -4,9 +4,7 @@ import { Motion, Presence } from "solid-motionone";
 import { css } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
-import { Breadcrumbs, IconButton, Text } from "@revolt/ui";
-
-import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
+import { Breadcrumbs, IconButton, Symbol, Text } from "@revolt/ui";
 
 import { SettingsList } from "..";
 import { useSettingsNavigation } from "../Settings";
@@ -53,7 +51,7 @@ export function SettingsContent(props: {
         <Show when={props.onClose}>
           <CloseAction class="close">
             <IconButton variant="tonal" onPress={props.onClose}>
-              <MdClose />
+              <Symbol>close</Symbol>
             </IconButton>
           </CloseAction>
         </Show>
@@ -130,7 +128,7 @@ const InnerContent = styled("div", {
     zIndex: 1,
 
     _tablet: { padding: "12px" },
-    _phone: { height: "100vh" },
+    _phone: { height: "100%" },
   },
 });
 
@@ -152,9 +150,9 @@ const InnerColumn = styled("div", {
  */
 const ActionRail = styled("div", {
   base: {
-    height: "100vh",
+    height: "100%",
     minWidth: "56px",
-    padding: "80px 8px calc(var(--gap-xl) + env(safe-area-inset-bottom))",
+    padding: "80px 8px var(--gap-xl)",
 
     zIndex: 2,
     flexGrow: 1,
@@ -172,7 +170,9 @@ const ActionRail = styled("div", {
       insetInlineEnd: 0,
       height: "100dvh",
       padding: "12px",
-      paddingBlockEnd: "calc(12px + env(safe-area-inset-bottom))",
+      paddingBlockStart: "calc(12px + var(--inset-top))",
+      paddingInlineEnd: "calc(12px + var(--inset-right))",
+      paddingBlockEnd: "calc(12px + var(--inset-bottom))",
       alignItems: "flex-end",
       justifyContent: "flex-end",
       pointerEvents: "none",

@@ -1,9 +1,7 @@
 import { ComponentProps, splitProps } from "solid-js";
 
-import emojiRegex from "emoji-regex";
-
 import { useState } from "@revolt/state";
-import { EmojiBase, toCodepoint } from ".";
+import { EmojiBase, RE_UNICODE_EMOJI_REGIONAL_INDICATOR, toCodepoint } from ".";
 
 // openmoji is off due to incomplete implementation
 
@@ -35,14 +33,6 @@ export const UNICODE_EMOJI_PACK_PUA: Record<string, string> = {
   twemoji: "\uE0E6",
 };
 
-/**
- * Regex for matching emoji
- */
-export const RE_UNICODE_EMOJI = new RegExp(
-  "([\uE0E0-\uE0E6]?(?:" + emojiRegex().source + "))",
-  "g",
-);
-
 export const UNICODE_EMOJI_MIN_PACK = "\uE0E0".codePointAt(0)!;
 export const UNICODE_EMOJI_MAX_PACK = "\uE0E6".codePointAt(0)!;
 
@@ -61,6 +51,10 @@ export const startsWithPackPUA = (emoji: string) => {
   if (emoji.slice(0, 1).match("[\uE0E0-\uE0E6]")) return true;
 
   return false;
+};
+
+export const isRegionalIndicator = (emoji: string): boolean => {
+  return !!emoji.match(RE_UNICODE_EMOJI_REGIONAL_INDICATOR);
 };
 
 export function unicodeEmojiUrl(

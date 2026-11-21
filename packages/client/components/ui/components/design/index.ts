@@ -30,11 +30,18 @@ export { Badge } from "./Badge";
 export { Button } from "./Button";
 export { type CategorySelectOption, CategoryButton } from "./CategoryButton";
 export { Checkbox } from "./Checkbox";
+export { COLOUR_PALETTE, ColourPicker } from "./ColourPicker";
 export { DataTable } from "./DataTable";
 export { type DialogProps, Dialog } from "./Dialog";
 export { Fab } from "./Fab";
 export { FloatingSelect } from "./FloatingSelect";
 export { IconButton } from "./IconButton";
+export {
+  type ImageCropperHandle,
+  type ImageCropperProps,
+  CropSizeError,
+  ImageCropper,
+} from "./ImageCropper";
 export { List } from "./List";
 export { CircularProgress } from "./LoadingProgress";
 export { LoadingScreen } from "./LoadingScreen";
@@ -42,6 +49,7 @@ export { MenuItem } from "./Menu";
 export { MenuButton } from "./MenuButton";
 export { Radio2 } from "./Radio";
 export { Ripple } from "./Ripple";
+export { Searchbar } from "./Searchbar";
 export { Slider } from "./Slider";
 export {
   type ShowSnackbarOptions,

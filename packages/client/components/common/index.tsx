@@ -1,4 +1,5 @@
 export * from "./Device";
+export { getChannelIcon } from "./lib/channels";
 export { debounce } from "./lib/debounce";
 export {
   DOWNLOAD_APPIMAGE,

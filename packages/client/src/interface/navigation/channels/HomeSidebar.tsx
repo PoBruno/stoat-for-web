@@ -20,12 +20,9 @@ import {
   OverflowingText,
   Tooltip,
   UserStatus,
-  iconSize,
   typography,
 } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
-
-import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
 
 import { SidebarBase } from "./common";
 
@@ -72,9 +69,9 @@ export const HomeSidebar = (props: Props) => {
     <SidebarBase class="channel_bar home">
       <div ref={scrollTargetElement} use:invisibleScrollable>
         <List>
-          <SidebarTitle>
+          <Header>
             <Trans>Conversations</Trans>
-          </SidebarTitle>
+          </Header>
 
           <MenuButton
             href="/app"
@@ -201,15 +198,20 @@ export const HomeSidebar = (props: Props) => {
   );
 };
 
-/**
- * Sidebar title
- */
-const SidebarTitle = styled("p", {
+export const Header = styled("div", {
   base: {
-    paddingBlock: "calc(var(--gap-md) + 15px)",
-    paddingInline: "var(--gap-md)",
-
-    ...typography.raw({ class: "title" }),
+    alignItems: "center",
+    fontWeight: 600,
+    userSelect: "none",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    height: "48px",
+    lineHeight: "48px",
+    verticalAlign: "middle",
+    margin: "var(--gap-md)",
+    marginLeft: "var(--gap-lg)",
+    color: "var(--md-sys-color-on-surface)",
+    backgroundColor: "var(--md-sys-color-surface-variant)",
   },
 });
 
@@ -335,21 +337,6 @@ function Entry(
           </Match>
         </Switch>
       }
-      actions={
-        <Show when={!local.isMobile}>
-          <a
-            onClick={(e) => {
-              e.preventDefault();
-              openModal({
-                type: "delete_channel",
-                channel: local.channel,
-              });
-            }}
-          >
-            <MdClose {...iconSize("18px")} />
-          </a>
-        </Show>
-      }
       use:floating={{
         contextMenu: () =>
           local.channel.type === "DirectMessage" ? (
@@ -406,7 +393,6 @@ function Entry(
  */
 const List = styled("div", {
   base: {
-    paddingLeft: "var(--gap-md)",
     width: "var(--layout-width-channel-sidebar)",
   },
 });

@@ -5,18 +5,13 @@ import { cva } from "styled-system/css";
 
 import { MessageContextMenu, useMessage } from "@revolt/app";
 import { useClient } from "@revolt/client";
-import { STOAT_HOST } from "@revolt/common/lib/env";
+import { getChannelIcon } from "@revolt/common/lib/channels";
 import { DefaultHost, useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { paramsFromPathname } from "@revolt/routing";
 import { useState } from "@revolt/state";
-import { Avatar, iconSize } from "@revolt/ui";
+import { Avatar, Symbol } from "@revolt/ui";
 import { Invite } from "@revolt/ui/components/features/messaging/elements/Invite";
-import { Symbol } from "@revolt/ui/components/utils/Symbol";
-
-import MdChat from "@material-design-icons/svg/outlined/chat.svg?component-solid";
-import MdChevronRight from "@material-design-icons/svg/outlined/chevron_right.svg?component-solid";
-import MdPeople from "@material-design-icons/svg/outlined/people.svg?component-solid";
 
 const link = cva({
   base: {
@@ -69,6 +64,7 @@ export function RenderAnchor(
 
   const [localProps, remoteProps] = splitProps(props, [
     "href",
+    "title",
     "target",
     "disabled",
   ]);
@@ -106,13 +102,33 @@ export function RenderAnchor(
       const client = useClient(),
         params = paramsFromPathname(url.pathname);
 
-      params.host ||= STOAT_HOST;
+      // HOTFIX: This code should have been in multi-instance, not the instance pr.
+      // This hotfix ensures that the host matches the url hostname and remote urls
+      // are rendered as external links
+      params.host = url.hostname;
+      // END HOTFIX
+
+      params.host ||= DefaultHost;
       const remote = params.host !== (instance.host || DefaultHost);
 
       if (params.exactChannel) {
         const channel = () => client().channels.get(params.channelId!);
-        const internalUrl = () =>
-          new URL(
+        const internalUrl = () => {
+          // HOTFIX: See above
+          // Override remote links until multi-tenant implemented.
+          if (remote) {
+            return new URL(
+              `https://${params.host}` +
+                (channel()?.serverId ? `/server/${channel()!.serverId}` : "") +
+                `/channel/${params.channelId}` +
+                (params.exactMessage && params.messageId
+                  ? `/${params.messageId}`
+                  : ""),
+              location.origin,
+            ).href;
+          }
+          // END HOTFIX
+          return new URL(
             `/i/${params.host}` +
               (channel()?.serverId ? `/server/${channel()!.serverId}` : "") +
               `/channel/${params.channelId}` +
@@ -121,7 +137,7 @@ export function RenderAnchor(
                 : ""),
             location.origin,
           ).href;
-
+        };
         return (
           <Show
             when={remote || channel()}
@@ -136,13 +152,22 @@ export function RenderAnchor(
               class={internalLink()}
               disabled={props.disabled}
               href={internalUrl()}
+              // HOTFIX: See above
+              target={remote ? "_blank" : void 0}
+              // END HOTFIX
             >
-              <Symbol>tag</Symbol>
+              <Symbol>
+                {remote ? "tag" : getChannelIcon(channel(), "mention")}
+              </Symbol>
               {remote ? <Trans>Remote Channel</Trans> : channel()!.name}
               {params.exactMessage && (
                 <>
-                  <MdChevronRight {...iconSize("1em")} />
-                  <MdChat {...iconSize("1em")} />
+                  <Symbol size={14} position="relative" top="1px">
+                    chevron_right
+                  </Symbol>
+                  <Symbol size={14} position="relative" top="1px">
+                    chat
+                  </Symbol>
                 </>
               )}
             </LinkComponent>
@@ -161,7 +186,9 @@ export function RenderAnchor(
             when={remote || server()}
             fallback={
               <span class={internalLink()}>
-                <MdPeople {...iconSize("1em")} />
+                <Symbol size={14} position="relative" top="1px">
+                  people
+                </Symbol>
                 <Trans>Unknown Server</Trans>
               </span>
             }
@@ -173,7 +200,9 @@ export function RenderAnchor(
             >
               {remote ? (
                 <>
-                  <MdPeople {...iconSize("1em")} />
+                  <Symbol size={14} position="relative" top="1px">
+                    people
+                  </Symbol>
                   <Trans>Remote Server</Trans>
                 </>
               ) : (
@@ -203,6 +232,7 @@ export function RenderAnchor(
             class={link()}
             disabled={localProps.disabled}
             href={internalUrl()}
+            title={localProps.title ?? localProps.href}
           />
         );
       }
@@ -237,7 +267,9 @@ export function RenderAnchor(
             dest={localProps.href}
             disabled={localProps.disabled}
             onClick={onHandleWarning}
+            href={localProps.href}
             onAuxClick={onHandleWarning}
+            title={localProps.title ?? localProps.href}
           />
         }
       >
@@ -247,6 +279,7 @@ export function RenderAnchor(
           disabled={localProps.disabled}
           dest={localProps.href}
           href={localProps.href}
+          title={localProps.title ?? localProps.href}
           target={"_blank"}
           rel="noreferrer"
         />

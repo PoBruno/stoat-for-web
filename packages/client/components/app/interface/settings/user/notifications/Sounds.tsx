@@ -11,11 +11,9 @@ import {
   IconButton,
   Row,
   Slider,
+  Symbol,
   Text,
-  iconSize,
 } from "@revolt/ui";
-
-import MdVolumeUp from "@material-design-icons/svg/outlined/volume_up.svg?component-solid";
 
 export default function Sounds() {
   const { settings, sounds } = useState();
@@ -127,7 +125,7 @@ export default function Sounds() {
               tooltip: { placement: "top", content: playSoundString },
             }}
           >
-            <MdVolumeUp {...iconSize(18)} />
+            <Symbol size={18}>volume_up</Symbol>
           </IconButton>
         </Linha>
 
@@ -151,7 +149,7 @@ export default function Sounds() {
                       },
                     }}
                   >
-                    <MdVolumeUp {...iconSize(18)} />
+                    <Symbol size={18}>volume_up</Symbol>
                   </IconButton>
                 </Content>
               </CategoryButton>

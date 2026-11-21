@@ -6,9 +6,6 @@ import { BiLogosWindows } from "solid-icons/bi";
 import { FaBrandsLinux } from "solid-icons/fa";
 import { styled } from "styled-system/jsx";
 
-import MdInfo from "@material-design-icons/svg/outlined/info.svg?component-solid";
-import MdInventory2 from "@material-design-icons/svg/outlined/inventory_2.svg?component-solid";
-import MdArchive from "@material-design-icons/svg/outlined/archive.svg?component-solid";
 
 import {
   DOWNLOAD_APPIMAGE,
@@ -17,7 +14,7 @@ import {
   DOWNLOAD_RELEASES,
   DOWNLOAD_WINDOWS,
 } from "@revolt/common";
-import { CategoryButton, Column, Text, iconSize } from "@revolt/ui";
+import { CategoryButton, Column, Text, Symbol } from "@revolt/ui";
 
 /**
  * Sistema operacional de quem está acessando, para destacar o instalador certo.
@@ -104,7 +101,7 @@ export function DownloadApp() {
         <CategoryButton
           action="external"
           ignoreClick
-          icon={<MdArchive {...iconSize(22)} />}
+          icon={<Symbol size={22}>archive</Symbol>}
           description={
             <Trans>
               Para as demais distribuições. Não instala nada: dê permissão com
@@ -122,7 +119,7 @@ export function DownloadApp() {
     <Column gap="lg">
       <Show when={window.native}>
         <Aviso>
-          <MdInfo {...iconSize(18)} />
+          <Symbol size={18}>info</Symbol>
           <Text class="body" size="small">
             <Trans>
               Você já está usando o aplicativo para computador. Os links abaixo
@@ -151,7 +148,7 @@ export function DownloadApp() {
           <CategoryButton
             action="external"
             ignoreClick
-            icon={<MdInventory2 {...iconSize(22)} />}
+            icon={<Symbol size={22}>inventory_2</Symbol>}
             description={
               <Trans>
                 Todas as versões publicadas, incluindo as anteriores.

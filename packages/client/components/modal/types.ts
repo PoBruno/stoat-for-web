@@ -6,7 +6,6 @@ import {
   Channel,
   Client,
   Emoji,
-  File,
   ForumPost,
   ImageEmbed,
   Message,
@@ -20,15 +19,18 @@ import {
   ServerRole,
   Session,
   Sound,
+  File as StoatFile,
   User,
-  VideoEmbed,
+  WebsiteEmbed,
 } from "stoat.js";
 
 import type { SettingsConfigurations } from "@revolt/app";
 import { CategoryData } from "@revolt/app/menus/CategoryContextMenu";
+import { ServerFolder } from "@revolt/state/stores/ServerFolders";
 import { ScreenShareQualityName } from "@revolt/state/stores/Voice";
 
 import type { ChangelogResponse } from "./modals/Changelog";
+import { CropProcessOptions } from "./modals/CropProcess";
 
 export type Modals =
   | {
@@ -123,6 +125,7 @@ export type Modals =
   | {
       type: "delete_bot";
       bot: Bot;
+      onDelete: () => void;
     }
   | {
       type: "delete_channel";
@@ -144,6 +147,7 @@ export type Modals =
   | {
       type: "delete_server";
       server: Server;
+      onDelete: () => void;
     }
   | {
       type: "delete_role";
@@ -177,15 +181,14 @@ export type Modals =
     }
   | {
       type: "error2";
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      error: any;
+      error: unknown;
     }
   | {
       type: "image_viewer";
       embed?: ImageEmbed;
-      gif?: VideoEmbed;
-      file?: File;
+      gif?: WebsiteEmbed;
+      file?: StoatFile;
+      originalUrl?: string;
     }
   | {
       type: "join_server";
@@ -344,6 +347,10 @@ export type Modals =
       category: CategoryData;
     }
   | {
+      type: "edit_server_folder";
+      folder: ServerFolder;
+    }
+  | {
       type: "remove_member";
       group: Channel;
       user: User;
@@ -387,6 +394,35 @@ export type Modals =
       onCancel: () => void;
     }
   | {
+      type: "timeout_member";
+      member: ServerMember;
+    }
+  | {
+      type: "remove_timeout";
+      member: ServerMember;
+    }
+  | {
       type: "edit_bot_username";
       bot: Bot;
+    }
+  | {
+      type: "edit_emoji";
+      emoji: Emoji;
+    }
+  | {
+      type: "delete_emoji";
+      emoji: Emoji;
+    }
+  | {
+      type: "crop";
+      options: CropProcessOptions;
+      files: File[];
+      resolve: (files: File[] | null) => void;
+      maxSize: number | undefined;
+    }
+  | {
+      type: "swap_user";
+    }
+  | {
+      type: "quick_switch";
     };

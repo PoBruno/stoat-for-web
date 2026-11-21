@@ -1,13 +1,14 @@
 import {
   Accessor,
+  createContext,
+  createMemo,
+  createSignal,
   For,
   JSX,
   Match,
+  onMount,
   Show,
   Switch,
-  createContext,
-  createSignal,
-  onMount,
   useContext,
 } from "solid-js";
 
@@ -22,6 +23,7 @@ import { isGif } from "@revolt/common/lib/gifs";
 import { useTime } from "@revolt/i18n";
 import { Markdown } from "@revolt/markdown";
 import { startsWithPackPUA } from "@revolt/markdown/emoji/UnicodeEmoji";
+import { useModals } from "@revolt/modal";
 import { useState } from "@revolt/state";
 import {
   Attachment,
@@ -45,6 +47,7 @@ import {
   floatingUserMenusFromMessage,
 } from "../../../menus/UserContextMenu";
 
+import { createIsTimedOut } from "@revolt/common/lib/createIsTimedOut";
 import { EditMessage } from "./EditMessage";
 
 /**
@@ -113,6 +116,7 @@ export function Message(props: Props) {
   const state = useState();
   const { t } = useLingui();
   const client = useClient();
+  const { showError } = useModals();
 
   const [isHovering, setIsHovering] = createSignal(false);
   const [reactPicker, setReactPicker] = createSignal<MediaPickerProps>();
@@ -130,19 +134,35 @@ export function Message(props: Props) {
 
   /**
    * React with an emoji
-   * @param emoji Emoji
+   * @param emojiId Emoji
+   * @param track Whether to track this as a usage
    */
-  const react = (emoji: string) => props.message.react(emoji);
+  const react = (emojiId: string, track = true) => {
+    if (track) {
+      state.favourites.recordUse(emojiId);
+    }
+    return props.message.react(emojiId).catch(showError);
+  };
 
   /**
    * Remove emoji reaction
    * @param emoji Emoji
    */
-  const unreact = (emoji: string) => props.message.unreact(emoji);
+  const unreact = (emoji: string) =>
+    props.message.unreact(emoji).catch(showError);
 
   // Derive pronouns member takes precedence over author
   const pronouns = () =>
     props.message.member?.pronouns ?? props.message.author?.pronouns;
+
+  const timedOut = createIsTimedOut(() => props.message.member?.timeout);
+
+  const moderationPerms = createMemo(() =>
+    props.message.member?.server?.member?.hasPermission(
+      props.message.member!.server! ?? props.message.channel!,
+      "TimeoutMembers",
+    ),
+  );
 
   return (
     <MessageContext message={props.message} reactPicker={reactPicker}>
@@ -272,6 +292,16 @@ export function Message(props: Props) {
                 </Symbol>
               </Tooltip>
             </Match>
+            <Match when={timedOut() && moderationPerms()}>
+              <Tooltip
+                content={t`Timed Out until ${props.message.member!.timeout!.toLocaleString()}`}
+                placement="top"
+              >
+                <Symbol size={16} color="var(--md-sys-color-error)">
+                  timer_off
+                </Symbol>
+              </Tooltip>
+            </Match>
             <Match
               when={
                 props.message.authorId &&
@@ -334,6 +364,7 @@ export function Message(props: Props) {
           />
         </Show>
         <CompositionMediaPicker
+          channel={props.message.channel}
           onMessage={(content) =>
             props.message?.channel?.sendMessage({
               content,
@@ -347,6 +378,7 @@ export function Message(props: Props) {
                 : startsWithPackPUA(emoji)
                   ? emoji.slice(1)
                   : emoji,
+              false,
             )
           }
         >

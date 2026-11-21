@@ -10,6 +10,7 @@ import { scrollableStyles } from "../../../directives/scrollable";
 import { AutoCompleteSearchSpace } from "../../utils/autoComplete";
 
 import { useDevice } from "@revolt/common";
+import { useState } from "@revolt/state";
 import { codeMirrorAutoComplete } from "./codeMirrorAutoComplete";
 import { isInFencedCodeBlock } from "./codeMirrorCommon";
 import { smartLineWrapping } from "./codeMirrorLineWrap";
@@ -104,6 +105,7 @@ export function TextEditor2(props: Props) {
   const editorScrollbarClasses = scrollableStyles();
 
   const { isMobile } = useDevice();
+  const { favourites } = useState();
   const codeMirror = document.createElement("div");
   codeMirror.className = editor;
 
@@ -183,7 +185,9 @@ export function TextEditor2(props: Props) {
 
         /* Autocomplete */
         // eslint-disable-next-line solid/reactivity
-        codeMirrorAutoComplete(props.autoCompleteSearchSpace),
+        codeMirrorAutoComplete(props.autoCompleteSearchSpace, (emoji) =>
+          favourites.recordUse(emoji),
+        ),
 
         /* Custom items */
         codeMirrorWidgets(),
@@ -316,13 +320,14 @@ export function TextEditor2(props: Props) {
       () => props.nodeReplacement,
       (value) => {
         if (value) {
-          view.focus();
-
           const text = value[0];
           if (text !== "_focus") {
+            if (!isMobile) view.focus();
             view.dispatch(view.state.replaceSelection(text));
             if (text) props.onTyping?.();
             props.onChange(view.state.doc.toString());
+          } else {
+            view.focus();
           }
         }
       },

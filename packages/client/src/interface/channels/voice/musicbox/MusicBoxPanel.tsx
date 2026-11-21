@@ -7,21 +7,9 @@ import {
   onMount,
 } from "solid-js";
 
+import { Symbol } from "@revolt/ui";
 import { styled } from "styled-system/jsx";
 
-import MdClose from "@material-design-icons/svg/outlined/close.svg?component-solid";
-import MdDelete from "@material-design-icons/svg/outlined/delete.svg?component-solid";
-import MdMusic from "@material-design-icons/svg/outlined/music_note.svg?component-solid";
-import MdPause from "@material-design-icons/svg/outlined/pause.svg?component-solid";
-import MdPlay from "@material-design-icons/svg/outlined/play_arrow.svg?component-solid";
-import MdRepeat from "@material-design-icons/svg/outlined/repeat.svg?component-solid";
-import MdRepeatOne from "@material-design-icons/svg/outlined/repeat_one.svg?component-solid";
-import MdSearch from "@material-design-icons/svg/outlined/search.svg?component-solid";
-import MdShuffle from "@material-design-icons/svg/outlined/shuffle.svg?component-solid";
-import MdNext from "@material-design-icons/svg/outlined/skip_next.svg?component-solid";
-import MdStop from "@material-design-icons/svg/outlined/stop.svg?component-solid";
-import MdVolumeUp from "@material-design-icons/svg/outlined/volume_up.svg?component-solid";
-import MdVolumeOff from "@material-design-icons/svg/outlined/volume_off.svg?component-solid";
 
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
@@ -133,7 +121,7 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
 
       <BarraDeBusca onSubmit={buscar}>
         <Lupa>
-          <MdSearch />
+          <Symbol>search</Symbol>
         </Lupa>
         <Campo
           value={termo()}
@@ -148,7 +136,7 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
         />
         <Show when={termo()}>
           <IconButton onPress={limparBusca} aria-label="Limpar busca">
-            <MdClose />
+            <Symbol>close</Symbol>
           </IconButton>
         </Show>
       </BarraDeBusca>
@@ -187,7 +175,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
         <Capa>
           <Show
             when={atual()?.cover_url}
-            fallback={<MdMusic style={{ opacity: 0.4 }} />}
+            fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}
           >
             {(capa) => <img src={capa()} alt="" />}
           </Show>
@@ -205,7 +193,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
         <VolumeDaMusica mb={props.mb} />
 
         <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
-          <MdClose />
+          <Symbol>close</Symbol>
         </IconButton>
       </LinhaDoTopo>
 
@@ -234,7 +222,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
           variant={props.mb.estado().shuffle ? "tonal" : "standard"}
           aria-label="Ordem aleatoria"
         >
-          <MdShuffle />
+          <Symbol>shuffle</Symbol>
         </IconButton>
 
         <IconButton
@@ -242,7 +230,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
           isDisabled={!atual()}
           aria-label="Parar e limpar"
         >
-          <MdStop />
+          <Symbol>stop</Symbol>
         </IconButton>
 
         <BotaoTocar
@@ -250,8 +238,8 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
           isDisabled={!atual()}
           aria-label={props.mb.estado().playing ? "Pausar" : "Tocar"}
         >
-          <Show when={props.mb.estado().playing} fallback={<MdPlay />}>
-            <MdPause />
+          <Show when={props.mb.estado().playing} fallback={<Symbol>play_arrow</Symbol>}>
+            <Symbol>pause</Symbol>
           </Show>
         </BotaoTocar>
 
@@ -260,7 +248,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
           isDisabled={!props.mb.estado().queue.length}
           aria-label="Proxima"
         >
-          <MdNext />
+          <Symbol>skip_next</Symbol>
         </IconButton>
 
         <IconButton
@@ -270,9 +258,9 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
         >
           <Show
             when={props.mb.estado().repeat === "one"}
-            fallback={<MdRepeat />}
+            fallback={<Symbol>repeat</Symbol>}
           >
-            <MdRepeatOne />
+            <Symbol>repeat_one</Symbol>
           </Show>
         </IconButton>
       </Controles>
@@ -311,8 +299,8 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
             }
             aria-label={volume() > 0 ? "Silenciar a musica" : "Tirar do mudo"}
           >
-            <Show when={volume() > 0} fallback={<MdVolumeOff />}>
-              <MdVolumeUp />
+            <Show when={volume() > 0} fallback={<Symbol>volume_off</Symbol>}>
+              <Symbol>volume_up</Symbol>
             </Show>
           </IconButton>
           <Slider
@@ -435,7 +423,7 @@ function Fila(props: { mb: ClienteMusicBox }) {
               onPress={() => void props.mb.remover(indice())}
               aria-label="Tirar da fila"
             >
-              <MdDelete />
+              <Symbol>delete</Symbol>
             </IconButton>
           </Item>
         )}
@@ -480,7 +468,7 @@ function BotaoTocar(props: {
 function Miniatura(props: { capa: string | null }) {
   return (
     <MiniCapa>
-      <Show when={props.capa} fallback={<MdMusic style={{ opacity: 0.4 }} />}>
+      <Show when={props.capa} fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}>
         {(capa) => <img src={capa()} alt="" loading="lazy" />}
       </Show>
     </MiniCapa>

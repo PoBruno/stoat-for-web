@@ -22,6 +22,7 @@ import {
   MessageContainer,
   Row,
   Slider,
+  Symbol,
   Text,
 } from "@revolt/ui";
 import {
@@ -32,8 +33,6 @@ import {
   MONOSPACE_FONTS,
   MonospaceFonts,
 } from "@revolt/ui/themes/fonts";
-
-import MDPalette from "@material-design-icons/svg/outlined/palette.svg?component-solid";
 
 /**
  * All appearance options for the client
@@ -68,7 +67,7 @@ export function AppearanceMenu() {
           Colours
         </Text>
 
-        <Row justify="stretch">
+        <Row gap="xs" justify="stretch">
           <Button
             group="connected-start"
             groupActive={state.theme.mode === "light"}
@@ -92,7 +91,7 @@ export function AppearanceMenu() {
           </Button>
         </Row>
 
-        {/* <Row justify="stretch">
+        {/* <Row gap="xs justify="stretch">
           <Button
             group="connected-start"
             groupActive={state.theme.preset === "stoat"}
@@ -118,7 +117,7 @@ export function AppearanceMenu() {
               size="md"
               onPress={() => pickerRef()?.click()}
             >
-              <MDPalette />
+              <Symbol>palette</Symbol>
             </IconButton>
             <input
               ref={setPickerRef}
@@ -176,13 +175,13 @@ export function AppearanceMenu() {
               cursor: "pointer",
             })}
           >
-            <MdColorize />
+            <Symbol>colorize</Symbol>
           </div> */}
           </Row>
 
           {/* TODO: Cursed on mobile; may need to be replaced
           with FloatingSelect / similar on small screens */}
-          <Row justify="stretch">
+          <Row gap="xs" justify="stretch">
             <Button
               size="xs"
               group="connected-start"
@@ -217,7 +216,7 @@ export function AppearanceMenu() {
             </Button>
           </Row>
 
-          <Row justify="stretch">
+          <Row gap="xs" justify="stretch">
             <Button
               size="xs"
               group="connected-start"

@@ -69,6 +69,13 @@ export function UserContextMenu(props: {
   }
 
   /**
+   * Whether the member is in timeout
+   */
+  function isInTimeout(member: ServerMember): boolean {
+    return !!member.timeout && member.timeout.getTime() > Date.now();
+  }
+
+  /**
    * Open user profile
    */
   function openProfile() {
@@ -114,6 +121,26 @@ export function UserContextMenu(props: {
   function editRoles() {
     openModal({
       type: "user_profile_roles",
+      member: props.member!,
+    });
+  }
+
+  /**
+   * Timeout the member
+   */
+  function timeoutMember() {
+    openModal({
+      type: "timeout_member",
+      member: props.member!,
+    });
+  }
+
+  /**
+   * Remove timeout from the member
+   */
+  function removeTimeout() {
+    openModal({
+      type: "remove_timeout",
       member: props.member!,
     });
   }
@@ -249,6 +276,17 @@ export function UserContextMenu(props: {
   }
 
   /**
+   * Whether the user can timeout this member
+   */
+  function canTimeout() {
+    return (
+      !props.user.self &&
+      props.member?.server?.havePermission("TimeoutMembers") &&
+      props.member.inferiorTo(props.member.server.member!)
+    );
+  }
+
+  /**
    * Whether the user can kick this member
    */
   function canKick() {
@@ -332,7 +370,7 @@ export function UserContextMenu(props: {
           />
         </ContextMenuButton>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16} fill={state.voice.getUserMuted(props.user.id)}>
                 mic_off
@@ -345,7 +383,7 @@ export function UserContextMenu(props: {
               !state.voice.getUserMuted(props.user.id),
             )
           }
-          actionSymbol={
+          actionIcon={
             <IconSlot>
               <Show
                 when={state.voice.getUserMuted(props.user.id)}
@@ -383,7 +421,7 @@ export function UserContextMenu(props: {
           />
         </ContextMenuButton>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol
                 size={16}
@@ -399,7 +437,7 @@ export function UserContextMenu(props: {
               !state.voice.getScreenShareMuted(props.user.id),
             )
           }
-          actionSymbol={
+          actionIcon={
             <IconSlot>
               <Show
                 when={state.voice.getScreenShareMuted(props.user.id)}
@@ -419,7 +457,7 @@ export function UserContextMenu(props: {
       {/* Quick actions: Profile, Message, Mention */}
       <Show when={!isProfileOpen()}>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>account_circle</Symbol>
             </IconSlot>
@@ -431,7 +469,7 @@ export function UserContextMenu(props: {
       </Show>
       <Show when={props.user.relationship === "Friend" || props.user.bot}>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>chat</Symbol>
             </IconSlot>
@@ -443,7 +481,7 @@ export function UserContextMenu(props: {
       </Show>
       <Show when={props.channel?.type === "TextChannel"}>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>alternate_email</Symbol>
             </IconSlot>
@@ -458,7 +496,7 @@ export function UserContextMenu(props: {
       <Show when={props.channel?.type === "DirectMessage"}>
         <ContextMenuDivider />
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>close</Symbol>
             </IconSlot>
@@ -476,7 +514,7 @@ export function UserContextMenu(props: {
         <ContextMenuDivider />
         <Show when={canEditIdentity()}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>face</Symbol>
               </IconSlot>
@@ -492,7 +530,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={canEditRoles()}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>assignment_ind</Symbol>
               </IconSlot>
@@ -517,7 +555,7 @@ export function UserContextMenu(props: {
         <ContextMenuDivider />
         <Show when={props.user.relationship === "None"}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>person_add_alt</Symbol>
               </IconSlot>
@@ -529,7 +567,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={props.user.relationship === "Incoming"}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>person_add_alt</Symbol>
               </IconSlot>
@@ -539,7 +577,7 @@ export function UserContextMenu(props: {
             <Trans>Accept friend request</Trans>
           </ContextMenuButton>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>cancel</Symbol>
               </IconSlot>
@@ -552,7 +590,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={props.user.relationship === "Outgoing"}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>cancel</Symbol>
               </IconSlot>
@@ -570,13 +608,13 @@ export function UserContextMenu(props: {
       <Show
         when={
           canRemoveMemberFromGroup() ||
-          (props.member && (canKick() || canBan()))
+          (props.member && (canTimeout() || canKick() || canBan()))
         }
       >
         <ContextMenuDivider />
         <Show when={canRemoveMemberFromGroup()}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>person_remove</Symbol>
               </IconSlot>
@@ -589,9 +627,9 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={canTransferGroup()}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
-                <Symbol size={16}>admin_panel_settings</Symbol>
+                <Symbol size={16}>person_add_alt</Symbol>
               </IconSlot>
             }
             onClick={transferGroup}
@@ -600,9 +638,35 @@ export function UserContextMenu(props: {
             <Trans>Transfer Ownership</Trans>
           </ContextMenuButton>
         </Show>
+        <Show when={canTimeout() && !isInTimeout(props.member!)}>
+          <ContextMenuButton
+            icon={
+              <IconSlot>
+                <Symbol size={16}>timer</Symbol>
+              </IconSlot>
+            }
+            onClick={timeoutMember}
+            destructive
+          >
+            <Trans>Timeout Member</Trans>
+          </ContextMenuButton>
+        </Show>
+        <Show when={canTimeout() && isInTimeout(props.member!)}>
+          <ContextMenuButton
+            icon={
+              <IconSlot>
+                <Symbol size={16}>timer_off</Symbol>
+              </IconSlot>
+            }
+            onClick={removeTimeout}
+            destructive
+          >
+            <Trans>Remove Timeout</Trans>
+          </ContextMenuButton>
+        </Show>
         <Show when={canKick()}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>person_remove</Symbol>
               </IconSlot>
@@ -615,7 +679,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={canBan()}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>do_not_disturb_on</Symbol>
               </IconSlot>
@@ -630,7 +694,7 @@ export function UserContextMenu(props: {
       <Show when={canBanNonMember()}>
         <ContextMenuDivider />
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>do_not_disturb_on</Symbol>
             </IconSlot>
@@ -647,7 +711,7 @@ export function UserContextMenu(props: {
         <ContextMenuDivider />
         <Show when={props.user.relationship === "Friend"}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>person_remove</Symbol>
               </IconSlot>
@@ -660,7 +724,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={props.user.relationship !== "Blocked"}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>block</Symbol>
               </IconSlot>
@@ -673,7 +737,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={props.user.relationship === "Blocked"}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>add_circle_outline</Symbol>
               </IconSlot>
@@ -685,7 +749,7 @@ export function UserContextMenu(props: {
         </Show>
         <Show when={!props.user.privileged}>
           <ContextMenuButton
-            symbol={
+            icon={
               <IconSlot>
                 <Symbol size={16}>report</Symbol>
               </IconSlot>
@@ -709,7 +773,7 @@ export function UserContextMenu(props: {
       </Show>
       <Show when={state.settings.getValue("advanced:admin_panel")}>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>admin_panel_settings</Symbol>
             </IconSlot>
@@ -721,7 +785,7 @@ export function UserContextMenu(props: {
       </Show>
       <Show when={state.settings.getValue("advanced:copy_id")}>
         <ContextMenuButton
-          symbol={
+          icon={
             <IconSlot>
               <Symbol size={16}>badge</Symbol>
             </IconSlot>

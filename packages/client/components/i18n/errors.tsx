@@ -1,12 +1,13 @@
-import { Trans, useLingui } from "@lingui/solid/macro";
 import { createMemo, Match, Switch } from "solid-js";
+
+import { Trans, useLingui } from "@lingui/solid/macro";
 import { API } from "stoat.js";
+
+import { AuthError } from "@revolt/state/stores/Auth";
 
 const RE_BREAK = /\s*\n\s*/g;
 
-function cleanError(
-  error: unknown,
-): { type?: never } | { message?: never } | string | undefined {
+function cleanError(error: unknown) {
   // Attempt to parse the incoming error as JSON if it is a string,
   // as some errors (e.g on login) are sent to this function as a string,
   // which then causes the error message to be unlocalised and unhelpful.
@@ -15,12 +16,13 @@ function cleanError(
       return JSON.parse(error);
     } catch {
       // Ignore JSON parse errors
-      return error;
     }
   }
-
-  return error as { type?: never } | { message?: never } | undefined;
+  return error;
 }
+
+/** Any error we can translate */
+type KnownError = API.Error | AuthError | { type: "SocketError" };
 
 /**
  * Translate any error
@@ -28,17 +30,15 @@ function cleanError(
 export function useError() {
   const { t } = useLingui();
 
-  return (error: unknown) => {
+  return (error: unknown, context?: string) => {
     error = cleanError(error);
+    console.error(error);
 
     // TODO: HTTP errors
 
     // handle Revolt API errors
-    if (
-      (error as { type?: never } | undefined)?.type &&
-      typeof (error as { type: never }).type === "string"
-    ) {
-      const err = error as API.Error;
+    if (typeof (error as { type: never })?.type === "string") {
+      const err = error as KnownError;
 
       switch (err.type) {
         case "AlreadyFriends":
@@ -54,6 +54,8 @@ export function useError() {
         case "AlreadySentRequest":
           return t`You've already sent a request to this user.`;
         case "Banned":
+          if (context === "discover")
+            return t`You may not submit this item to discover.`;
           return t`You are banned from this server.`;
         case "Blocked":
           return t`You have this user blocked.`;
@@ -96,7 +98,7 @@ export function useError() {
         case "InvalidCredentials":
           return t`Provided email or password is wrong.`;
         case "InvalidSession":
-          return t`Please log in again.`;
+          return t`Your session ended, possibly because you logged out on another device. Log in again to continue.`;
         case "InvalidUsername":
           return t`This username is not allowed.`;
         case "MissingPermission":
@@ -132,6 +134,38 @@ export function useError() {
           return t`This account is not activated! Please check your account's inbox and try again.`;
         case "TotpAlreadyEnabled":
           return t`Multi-factor authentication is already enabled for this account.`;
+        case "AuthError":
+          switch (err.name) {
+            case "save_fail":
+              return t`Encountered a problem while saving previous session.`;
+            case "dup_login":
+              return t`Whoops, you're already logged in as this user!`;
+            case "ses_not_found":
+              return t`User session not found. Try switching users or logging in again.`;
+            default:
+              return `AuthError: ${err.name}`;
+          }
+        case "SocketError":
+          return t`The web socket was unable to connect to the backend.`;
+        case "ContactSupport":
+          switch (err.locale) {
+            case "discover.bot_removal_approved":
+              return t`The bot is already on discover, the user must contact support to have it removed`;
+            case "discover.bot_removal_removed":
+              return t`The bot has been removed from discover by moderators, the user must contact support.`;
+            case "discover.server_removal_approved":
+              return t`The server is already on discover, the user must contact support to have it removed.`;
+            case "discover.server_removal_removed":
+              return t`The server has been removed from discover by moderators, the user must contact support.`;
+            case "discover.declined_apply_again":
+              return t`The Discover request was declined. Declined requests cannot be removed, but the user may submit again.`;
+            case "discover.cannot_auto_remove":
+              return t`The Discover request is approved or the item has been removed from discover. In either case, the user must contact support.`;
+            case "discover.removed_cannot_apply":
+              return t`The item was removed by moderators, and as such future applications are prohibited. Contact support for more information.`;
+            default:
+              return t`Your request failed. Please contact support.`;
+          }
 
         // unreachable errors (in theory)
         case "FileTooLarge":
@@ -169,10 +203,7 @@ export function useError() {
     }
 
     // pass-through pre-localised errors with new Error({ message: <> })
-    if (
-      (error as { message?: never } | undefined)?.message &&
-      typeof (error as { message: never }).message === "string"
-    ) {
+    if (typeof (error as { message: never })?.message === "string") {
       const message = (error as { message: string }).message.trim();
       if (message) return message;
     } else if (typeof error === "string") {

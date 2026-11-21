@@ -20,8 +20,10 @@ import {
   LocalAudioTrack,
   LocalTrackPublication,
   Room,
+  ScreenShareCaptureOptions,
   ScreenSharePresets,
   Track,
+  VideoPresets,
   VideoResolution,
 } from "livekit-client";
 import { Channel } from "stoat.js";
@@ -86,9 +88,10 @@ type State =
   | "CONNECTED"
   | "RECONNECTING";
 
-type ScreenShareQuality = {
+type ScreenShareQuality = Required<
+  Pick<ScreenShareCaptureOptions, "contentHint" | "resolution">
+> & {
   name: ScreenShareQualityName;
-  resolution: VideoResolution;
   fullName: string;
   /**
    * Dica de conteudo para o encoder.
@@ -436,12 +439,13 @@ class Voice {
         deviceId: this.#settings.preferredAudioOutputDevice,
       },
       videoCaptureDefaults: {
-        resolution: {
-          width: 1280,
-          height: 720,
-          frameRate: 30,
-        },
+        // TODO: Support higher resolutions based on limits
+        resolution: VideoPresets.h720.resolution,
         deviceId: this.#settings.preferredVideoDevice,
+      },
+      publishDefaults: {
+        videoEncoding: VideoPresets.h720.encoding,
+        screenShareEncoding: ScreenSharePresets.h720fps30.encoding,
       },
     });
 
@@ -1044,6 +1048,8 @@ class Voice {
 
       this.sound.playSound("streamEnd");
     } else {
+      // Exit fullscreen before starting a screen share (screen picker cannot show in fullscreen)
+      if (document.fullscreenElement) document.exitFullscreen();
       const qualities = this.getEnabledScreenShareQualities();
       let screenPickerQualityName: ScreenShareQualityName | undefined;
       let screenPickerAudio: boolean | undefined;

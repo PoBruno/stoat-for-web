@@ -16,6 +16,7 @@ import { ListServerInvites } from "./server/invites/ListServerInvites";
 import { ServerRoleEditor } from "./server/roles/ServerRoleEditor";
 import { ServerRoleOverview } from "./server/roles/ServerRoleOverview";
 import { SoundList } from "./server/sounds/SoundList";
+import { Discoverable } from "./shared/Discoverable";
 import { BackCard } from "./user/_AccountCard";
 
 const Config: SettingsConfiguration<Server> = {
@@ -63,6 +64,8 @@ const Config: SettingsConfiguration<Server> = {
     switch (id) {
       case "overview":
         return <Overview server={server} />;
+      case "discover":
+        return <Discoverable discoverable={server} fullPage={true} />;
       case "emojis":
         return <EmojiList server={server} />;
       case "sounds":
@@ -86,7 +89,7 @@ const Config: SettingsConfiguration<Server> = {
    */
   list(server, onClose) {
     const user = useUser();
-    const { openModal } = useModals();
+    const { openModal, pop } = useModals();
 
     return {
       context: server,
@@ -99,6 +102,12 @@ const Config: SettingsConfiguration<Server> = {
               id: "overview",
               icon: <Symbol size={20}>info</Symbol>,
               title: <Trans>Overview</Trans>,
+            },
+            {
+              id: "discover",
+              hidden: !(server.ownerId === user()?.id),
+              icon: <Symbol size={20}>public</Symbol>,
+              title: <Trans>Discover</Trans>,
             },
           ],
         },
@@ -181,6 +190,7 @@ const Config: SettingsConfiguration<Server> = {
                 openModal({
                   type: "delete_server",
                   server,
+                  onDelete: () => pop(),
                 });
               },
             },

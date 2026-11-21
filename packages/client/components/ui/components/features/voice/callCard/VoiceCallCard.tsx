@@ -221,7 +221,9 @@ const Float = styled("div", {
     },
     fullscreen: {
       true: {
-        zIndex: 100,
+        // 90 (upstream #1770): abaixo do cartao de usuario (99) e dos menus,
+        // senao eles abrem por tras da chamada em tela cheia.
+        zIndex: 90,
         height: "100vh",
         top: 0,
         // Width is set by floating logic in effect above

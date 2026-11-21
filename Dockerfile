@@ -15,8 +15,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 
 COPY packages/ packages/
 
-# Copy panda config needed by client's "prepare" lifecycle script (panda codegen)
-COPY packages/client/panda.config.ts packages/client/
+COPY patches/ patches/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -49,7 +48,8 @@ ARG PWA_SCOPE
 ENV BASE_PATH=${BASE_PATH}
 ENV PWA_SCOPE=${PWA_SCOPE}
 
-RUN pnpm --filter client exec vite build
+# plugin-legacy's polyfill detection needs more than Node's default heap
+RUN NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--max-old-space-size=4096" pnpm --filter client exec vite build
 
 # ============================================
 # Stage 2: Minimal runtime image

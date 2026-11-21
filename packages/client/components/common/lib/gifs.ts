@@ -21,33 +21,13 @@ export function isGif(embed: MessageEmbed) {
     if (webEmbed.specialContent?.type === "GIF") {
       return true;
     }
+    if (!webEmbed.image && !webEmbed.video) {
+      return false;
+    }
     const chosenURL = webEmbed.originalUrl || webEmbed.url;
     if (chosenURL) {
       return GIF_PROVIDERS.includes(new URL(chosenURL).origin);
     }
-  }
-
-  if (embed.type === "Image" || embed.type === "Video") {
-    const embedWithURL = embed as { url?: string };
-    if (embedWithURL.url)
-      return GIF_PROVIDERS.includes(new URL(embedWithURL.url).origin);
-  }
-  return false;
-}
-
-export function isGifBox(embed: MessageEmbed) {
-  if (embed.type === "Website") {
-    const webEmbed = embed as WebsiteEmbed;
-    const chosenURL = webEmbed.originalUrl || webEmbed.url;
-    if (chosenURL) {
-      return new URL(chosenURL).origin === "https://gifbox.me";
-    }
-  }
-
-  if (embed.type === "Image" || embed.type === "Video") {
-    const embedWithURL = embed as { url?: string };
-    if (embedWithURL.url)
-      return new URL(embedWithURL.url).origin === "https://gifbox.me";
   }
   return false;
 }
