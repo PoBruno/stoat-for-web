@@ -22,7 +22,10 @@ const isNative = !!window.native;
 
 export function Titlebar() {
   const [isMaximised, setIsMaximised] = createSignal(
-    isNative ? window.desktopConfig.get().windowState.isMaximised : false,
+    // O desktop só entrega a config no `did-finish-load`; com o bundle em
+    // cache esta linha roda antes disso e `get()` ainda é undefined. Sem o
+    // `?.` a exceção derruba a renderização inteira e a janela fica preta.
+    (isNative && window.desktopConfig.get()?.windowState?.isMaximised) ?? false,
   );
   const { lifecycle } = useClientLifecycle();
 
@@ -44,7 +47,10 @@ export function Titlebar() {
     <Presence>
       <Show
         when={
-          (isNative && window.desktopConfig?.get().customFrame) ||
+          // Mesmo caso do `isMaximised` acima: sem config ainda, assume o
+          // padrão do desktop (moldura própria), senão a janela sem moldura
+          // fica sem os botões de fechar/minimizar.
+          (isNative && (window.desktopConfig?.get()?.customFrame ?? true)) ||
           isDisconnected()
         }
       >
