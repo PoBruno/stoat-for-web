@@ -84,16 +84,42 @@ export const TETO_DA_PLAYLIST = 200;
 export const TETO_DO_MIX = 50;
 
 /**
+ * Teto de uma playlist do Spotify: o agente le a pagina de embed, que
+ * entrega no maximo 100 faixas.
+ */
+export const TETO_DO_SPOTIFY = 100;
+
+/** Mesmo reconhecimento do agente (classe Spotify em provedores.ts). */
+const RE_LINK_SPOTIFY =
+  /^(https?:\/\/)?(open\.spotify\.com|spotify\.link|spotify\.app\.link)\/|^spotify:(track|album|playlist):/i;
+
+/** O que cada entrada vira. */
+export type TipoDeEntrada =
+  | "busca"
+  | "video"
+  | "playlist"
+  | "mix"
+  | "spotify-musica"
+  | "spotify-album"
+  | "spotify-playlist";
+
+/**
  * O que a pessoa colou ou digitou.
  *
  * Link vai direto para a fila, como num bot de Discord: quem cola uma
  * playlist quer ouvir a playlist, nao escolher faixa por faixa. Texto vira
  * busca, porque ai sim ha o que escolher.
  */
-export function tipoDeEntrada(
-  texto: string,
-): "busca" | "video" | "playlist" | "mix" {
+export function tipoDeEntrada(texto: string): TipoDeEntrada {
   const limpo = texto.trim();
+  if (RE_LINK_SPOTIFY.test(limpo)) {
+    // O Spotify nao entrega o audio: o agente le a lista la e toca a mesma
+    // musica do YouTube. Link curto (spotify.link) so revela o tipo depois
+    // de aberto; trata como playlist, que cobre os tres casos.
+    if (/track[/:]/i.test(limpo)) return "spotify-musica";
+    if (/album[/:]/i.test(limpo)) return "spotify-album";
+    return "spotify-playlist";
+  }
   if (!RE_LINK_YOUTUBE.test(limpo)) return "busca";
   const lista = /[?&]list=([^&#]+)/.exec(limpo)?.[1];
   if (!lista) return "video";

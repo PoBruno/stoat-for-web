@@ -11,8 +11,10 @@ import { useConfirmacao } from "./Controles";
 import {
   type ClienteMusicBox,
   type Faixa,
+  type TipoDeEntrada,
   TETO_DA_PLAYLIST,
   TETO_DO_MIX,
+  TETO_DO_SPOTIFY,
   duracaoDaFila,
   duracaoLegivel,
   duracaoOuAoVivo,
@@ -50,9 +52,7 @@ export function MusicBoxPanel(props: {
 
   const [termo, setTermo] = createSignal("");
   const [resultados, setResultados] = createSignal<Faixa[]>([]);
-  const [buscando, setBuscando] = createSignal<
-    false | ReturnType<typeof tipoDeEntrada>
-  >(false);
+  const [buscando, setBuscando] = createSignal<false | TipoDeEntrada>(false);
   const [aviso, setAviso] = createSignal<string>();
   const [retorno, setRetorno] = createSignal<Retorno>();
   const [adicionadas, setAdicionadas] = createSignal<Set<string>>(
@@ -81,19 +81,10 @@ export function MusicBoxPanel(props: {
 
       const faixas = await mb.buscar(
         texto,
-        tipo === "video" ? 1 : TETO_DA_PLAYLIST,
+        tipo === "video" || tipo === "spotify-musica" ? 1 : TETO_DA_PLAYLIST,
       );
       if (!faixas.length) {
-        setRetorno(
-          tipo === "video"
-            ? { tipo: "vazio", texto: "Esse vídeo não está disponível." }
-            : {
-                tipo: "vazio",
-                texto: "Essa playlist está vazia, é privada ou não existe.",
-                detalhe:
-                  "“Curtidos” e “Assistir mais tarde” são da sua conta e não podem ser lidos. Copie as músicas para uma playlist pública ou não listada.",
-              },
-        );
+        setRetorno(retornoVazio(tipo));
         return;
       }
       if (!(await mb.adicionar(faixas))) return;
@@ -168,8 +159,8 @@ export function MusicBoxPanel(props: {
             </Icone>
             <Campo
               value={termo()}
-              placeholder="Buscar ou colar link do YouTube (vídeo ou playlist)"
-              aria-label="Buscar música ou colar link do YouTube"
+              placeholder="Buscar, ou colar link do YouTube ou do Spotify"
+              aria-label="Buscar música ou colar link do YouTube ou do Spotify"
               onInput={(e: InputEvent) =>
                 setTermo((e.currentTarget as HTMLInputElement).value)
               }
@@ -192,7 +183,8 @@ export function MusicBoxPanel(props: {
                 isDisabled={!!buscando()}
                 onPress={() => void enviar()}
               >
-                {tipoDeEntrada(termo()) === "video"
+                {tipoDeEntrada(termo()) === "video" ||
+                tipoDeEntrada(termo()) === "spotify-musica"
                   ? "Adicionar"
                   : "Adicionar tudo"}
               </Button>
@@ -205,15 +197,7 @@ export function MusicBoxPanel(props: {
                 {(tipo) => (
                   <Vazio>
                     <CircularProgress />
-                    <Text class="label">
-                      {tipo() === "playlist"
-                        ? "Abrindo a playlist…"
-                        : tipo() === "mix"
-                          ? "Abrindo o Mix…"
-                          : tipo() === "video"
-                            ? "Abrindo o vídeo…"
-                            : "Buscando…"}
-                    </Text>
+                    <Text class="label">{ABRINDO[tipo()]}</Text>
                   </Vazio>
                 )}
               </Match>
@@ -293,16 +277,80 @@ export function MusicBoxPanel(props: {
   );
 }
 
+/** O que dizer enquanto o link abre. */
+const ABRINDO: Record<TipoDeEntrada, string> = {
+  busca: "Buscando…",
+  video: "Abrindo o vídeo…",
+  playlist: "Abrindo a playlist…",
+  mix: "Abrindo o Mix…",
+  "spotify-musica": "Abrindo a música do Spotify…",
+  "spotify-album": "Abrindo o álbum do Spotify…",
+  "spotify-playlist": "Abrindo a playlist do Spotify…",
+};
+
+/** Por que um link nao trouxe nada, dito de um jeito que ajude. */
+function retornoVazio(tipo: TipoDeEntrada): Retorno {
+  switch (tipo) {
+    case "video":
+      return { tipo: "vazio", texto: "Esse vídeo não está disponível." };
+    case "spotify-musica":
+    case "spotify-album":
+      return {
+        tipo: "vazio",
+        texto: "O Spotify não mostrou isso.",
+        detalhe:
+          "Pode ter saído do catálogo ou não estar disponível no Brasil.",
+      };
+    case "spotify-playlist":
+      return {
+        tipo: "vazio",
+        texto: "O Spotify não mostrou essa playlist.",
+        detalhe:
+          "Ela precisa ser pública. “Músicas curtidas” é da sua conta e não pode ser lida: copie as músicas para uma playlist pública.",
+      };
+    default:
+      return {
+        tipo: "vazio",
+        texto: "Essa playlist está vazia, é privada ou não existe.",
+        detalhe:
+          "“Curtidos” e “Assistir mais tarde” são da sua conta e não podem ser lidos. Copie as músicas para uma playlist pública ou não listada.",
+      };
+  }
+}
+
 /** Frase do que entrou na fila depois de colar um link. */
-function resumoDoLink(
-  tipo: ReturnType<typeof tipoDeEntrada>,
-  faixas: Faixa[],
-): Retorno {
+function resumoDoLink(tipo: TipoDeEntrada, faixas: Faixa[]): Retorno {
+  const n = faixas.length;
+  const musicas = n === 1 ? "1 música" : `${n} músicas`;
+  const peloYoutube = "Do Spotify só vem a lista; o áudio toca pelo YouTube.";
+
   if (tipo === "video") {
     return { tipo: "ok", texto: `Na fila: ${faixas[0].title}` };
   }
-  const n = faixas.length;
-  const musicas = n === 1 ? "1 música" : `${n} músicas`;
+  if (tipo === "spotify-musica") {
+    return {
+      tipo: "ok",
+      texto: `Na fila: ${faixas[0].title}`,
+      detalhe: peloYoutube,
+    };
+  }
+  if (tipo === "spotify-album") {
+    return {
+      tipo: "ok",
+      texto: `${musicas} do álbum na fila`,
+      detalhe: peloYoutube,
+    };
+  }
+  if (tipo === "spotify-playlist") {
+    return {
+      tipo: "ok",
+      texto: `${musicas} da playlist na fila`,
+      detalhe:
+        n >= TETO_DO_SPOTIFY
+          ? `O Spotify mostra no máximo ${TETO_DO_SPOTIFY} por playlist. O áudio toca pelo YouTube.`
+          : peloYoutube,
+    };
+  }
   if (tipo === "mix") {
     return {
       tipo: "ok",
@@ -343,6 +391,13 @@ function Dicas() {
         <Symbol size={20}>smart_display</Symbol>
         <span>
           <b>Cole o link de um vídeo</b> para tocar só ele.
+        </span>
+      </li>
+      <li>
+        <Symbol size={20}>library_music</Symbol>
+        <span>
+          <b>Links do Spotify</b> também valem: música, álbum ou playlist
+          pública (até {TETO_DO_SPOTIFY}). O áudio toca pelo YouTube.
         </span>
       </li>
     </ListaDeDicas>
