@@ -47,6 +47,10 @@ declare global {
              * enviam, e porque vem vazio para fonte de janela.
              */
             displayId?: string;
+            /** Previa em JPEG (data URL); desktop v1.9.1+ */
+            thumbnail?: string;
+            /** Monitor da fonte de tela; desktop v1.9.1+ */
+            monitor?: { principal: boolean; largura: number; altura: number };
           }[],
         ) => void,
       ): void;

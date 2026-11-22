@@ -533,6 +533,10 @@ msgstr ""
 msgid "Appearance"
 msgstr "Вигляд"
 
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Applications"
+msgstr ""
+
 #: components/app/interface/settings/user/DownloadApp.tsx
 msgid "Arch, CachyOS, Manjaro e EndeavourOS. Instale com: sudo pacman -U ./stoat-x86_64.pkg.tar.zst"
 msgstr ""
@@ -2124,7 +2128,6 @@ msgstr "Надіслати відгук про Stoat"
 msgid "Give us some detail"
 msgstr "Додайте якихось деталей"
 
-#: components/modal/modals/ScreenSharePicker.tsx
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Go"
 msgstr "Транслювати"
@@ -2135,6 +2138,10 @@ msgstr "Транслювати"
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Go back to login"
 msgstr "Повернутися до входу"
+
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Go Live"
+msgstr ""
 
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 msgid "Go to account settings to edit your username"
@@ -2593,6 +2600,10 @@ msgstr ""
 msgid "Lowercase letters, numbers and underscores only."
 msgstr "Виключно маленькі літери, цифри і нижні підкреслення."
 
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "main"
+msgstr ""
+
 #: components/ui/components/design/LoadingScreen.tsx
 msgid "Major Outage"
 msgstr "Масштабний Збій"
@@ -3037,6 +3048,10 @@ msgstr ""
 
 #: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Nothing to preview yet."
+msgstr ""
+
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Nothing to share here."
 msgstr ""
 
 #: components/app/interface/settings/UserSettings.tsx
@@ -3695,6 +3710,11 @@ msgstr "Аферизм/шахрайство"
 msgid "Scan with your phone, or"
 msgstr "Відскануйте за допомогою телефону або"
 
+#. placeholder {0}: posicao + 1
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Screen {0}"
+msgstr ""
+
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Screen share ended"
 msgstr ""
@@ -3711,6 +3731,10 @@ msgstr ""
 #: components/app/menus/UserContextMenu.tsx
 msgid "Screen Share Volume"
 msgstr "Гучність трансляції екрану"
+
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Screens"
+msgstr ""
 
 #: src/interface/channels/ChannelHeader.tsx
 msgid "Search"

@@ -398,6 +398,10 @@ export type Modals =
         name: string;
         isFullScreen: boolean;
         image?: string;
+        /** Previa em JPEG (data URL); desktop v1.9.1+ */
+        thumbnail?: string;
+        /** Monitor da fonte de tela; desktop v1.9.1+ */
+        monitor?: { principal: boolean; largura: number; altura: number };
       }[];
       onCancel: () => void;
     }

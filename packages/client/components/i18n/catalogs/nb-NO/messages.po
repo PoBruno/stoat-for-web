@@ -533,6 +533,10 @@ msgstr ""
 msgid "Appearance"
 msgstr "Utseende"
 
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Applications"
+msgstr ""
+
 #: components/app/interface/settings/user/DownloadApp.tsx
 msgid "Arch, CachyOS, Manjaro e EndeavourOS. Instale com: sudo pacman -U ./stoat-x86_64.pkg.tar.zst"
 msgstr ""
@@ -2123,7 +2127,6 @@ msgstr "Gi oss tilbakemeldinger for Stoat"
 msgid "Give us some detail"
 msgstr "Gi oss noen detaljer"
 
-#: components/modal/modals/ScreenSharePicker.tsx
 #: components/modal/modals/ScreenShareSettings.tsx
 msgid "Go"
 msgstr ""
@@ -2134,6 +2137,10 @@ msgstr ""
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Go back to login"
 msgstr "Gå tilbake til innlogging"
+
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Go Live"
+msgstr ""
 
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 msgid "Go to account settings to edit your username"
@@ -2592,6 +2599,10 @@ msgstr ""
 msgid "Lowercase letters, numbers and underscores only."
 msgstr ""
 
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "main"
+msgstr ""
+
 #: components/ui/components/design/LoadingScreen.tsx
 msgid "Major Outage"
 msgstr ""
@@ -3036,6 +3047,10 @@ msgstr ""
 
 #: src/interface/channels/forum/MarkdownComposer.tsx
 msgid "Nothing to preview yet."
+msgstr ""
+
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Nothing to share here."
 msgstr ""
 
 #: components/app/interface/settings/UserSettings.tsx
@@ -3694,6 +3709,11 @@ msgstr "Svindel eller bedrageri"
 msgid "Scan with your phone, or"
 msgstr ""
 
+#. placeholder {0}: posicao + 1
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Screen {0}"
+msgstr ""
+
 #: components/app/interface/settings/user/notifications/Sounds.tsx
 msgid "Screen share ended"
 msgstr ""
@@ -3709,6 +3729,10 @@ msgstr ""
 
 #: components/app/menus/UserContextMenu.tsx
 msgid "Screen Share Volume"
+msgstr ""
+
+#: components/modal/modals/ScreenSharePicker.tsx
+msgid "Screens"
 msgstr ""
 
 #: src/interface/channels/ChannelHeader.tsx
