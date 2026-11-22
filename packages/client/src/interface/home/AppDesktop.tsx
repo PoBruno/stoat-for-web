@@ -1,29 +1,43 @@
+import { Show } from "solid-js";
+
 import { Trans } from "@lingui/solid/macro";
 
 import { useLinhaDeAtualizacao } from "@revolt/app/interface/desktop/linhaDeAtualizacao";
 import { CategoryButton, Symbol } from "@revolt/ui";
 
 /**
- * Versão do app desktop e estado da atualização, na Home.
+ * Aviso de atualização do app desktop, na Home.
  *
- * No navegador o atalho é "Baixar aplicativo"; dentro do app isso não faz
- * sentido, e o que interessa é saber se está em dia (o app se atualiza
- * sozinho desde a v1.9.0). Clicar procura agora ou instala a versão pronta.
+ * Só aparece quando há versão nova de verdade: baixando ou pronta para
+ * instalar. O app já procura sozinho (ao abrir, a cada 30 min e ao acordar o
+ * PC, ver for-desktop/src/native/atualizacao.ts), então um card fixo de
+ * "clique para procurar" só servia para responder "você já está na versão
+ * mais recente". Procurar à mão continua na bandeja e em Configurações >
+ * Desktop.
  */
 export function AppDesktop() {
   const { estado, status, acao } = useLinhaDeAtualizacao();
 
+  const fase = () => estado().fase;
+
   return (
-    <CategoryButton
-      onClick={acao}
-      description={status()}
-      icon={
-        <Symbol size={22}>
-          {estado().fase === "pronta" ? "download" : "desktop_windows"}
-        </Symbol>
-      }
-    >
-      <Trans>Stoat for Desktop</Trans> v{window.native.versions.desktop()}
-    </CategoryButton>
+    <Show when={fase() === "baixando" || fase() === "pronta"}>
+      <CategoryButton
+        onClick={acao}
+        description={status()}
+        icon={
+          <Symbol size={22}>
+            {fase() === "pronta" ? "download" : "downloading"}
+          </Symbol>
+        }
+      >
+        <Show
+          when={fase() === "pronta"}
+          fallback={<Trans>Downloading an update</Trans>}
+        >
+          <Trans>Update ready</Trans>
+        </Show>
+      </CategoryButton>
+    </Show>
   );
 }
