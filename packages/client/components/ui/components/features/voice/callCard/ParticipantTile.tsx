@@ -9,7 +9,7 @@ import {
   VideoTrack,
 } from "solid-livekit-components";
 
-import { useLingui } from "@lingui/solid/macro";
+import { Trans, useLingui } from "@lingui/solid/macro";
 import { Track } from "livekit-client";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
@@ -20,6 +20,7 @@ import { useModals } from "@revolt/modal";
 import { useVoice } from "@revolt/rtc";
 import { CamadaAnotacao } from "@revolt/rtc/CamadaAnotacao";
 import {
+  type OrigemDaAnotacao,
   abrirPopout,
   fecharPopout,
   popoutDisponivel,
@@ -120,6 +121,11 @@ export function ParticipantTile(props: TileProps) {
 
   const isVideo = () => !isVideoMuted();
   const isScreenShare = () => track.source === Track.Source.ScreenShare;
+  /** Se esta tela esta aberta numa janela propria */
+  const destacada = () => {
+    const s = track.publication?.trackSid;
+    return !!s && temPopout(s);
+  };
   const isSpeaking = useIsSpeaking(participant);
 
   return (
@@ -191,12 +197,51 @@ export function ParticipantTile(props: TileProps) {
             aoDesarmar={() => setArmado(false)}
           />
         </Show>
+        <Show when={isScreenShare() && destacada()}>
+          {/*
+            Capa, e nao desmontar o <video>: o `VideoTrack` com
+            `manageSubscription` cancela a inscricao da faixa quando o
+            elemento deixa de estar visivel na tela, e a janela destacada
+            usa essa mesma faixa — ela ficaria preta.
+          */}
+          <CapaDestacada>
+            <Symbol size={28}>open_in_new</Symbol>
+            <span>
+              <Trans>Watching in a separate window</Trans>
+            </span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                const s = track.publication?.trackSid;
+                if (s) fecharPopout(s);
+              }}
+            >
+              <Trans>Bring back here</Trans>
+            </button>
+          </CapaDestacada>
+        </Show>
         <Overlay showOnHover={isScreenShare()}>
           <OverlayInner>
             <OverflowingText>{user().username}</OverflowingText>
             <Row gap="md">
               <Show when={isScreenShare()}>
-                <BotaoDestacar track={track} nome={user().username} />
+                <BotaoDestacar
+                  track={track}
+                  nome={user().username}
+                  origem={{
+                    anotacao: () => voice.anotacao(),
+                    dono: participant.identity,
+                    minha: !!user().user?.self,
+                    podePublicar: () => voice.podePublicarAnotacao(),
+                  }}
+                  aoAbrir={() => {
+                    // A tela foi para a janela propria: some do palco daqui
+                    // para nao assistir a mesma coisa duas vezes.
+                    setArmado(false);
+                    if (voice.isPinned(track)) voice.togglePin(track);
+                  }}
+                />
               </Show>
               <Show when={podeDesenhar()}>
                 <BotaoDesenhar
@@ -255,6 +300,8 @@ export function ParticipantTile(props: TileProps) {
 function BotaoDestacar(props: {
   track: TrackReferenceOrPlaceholder;
   nome: string;
+  origem: OrigemDaAnotacao;
+  aoAbrir: () => void;
 }) {
   const { t } = useLingui();
 
@@ -274,7 +321,10 @@ function BotaoDestacar(props: {
           const s = sid();
           if (!s) return;
           if (aberta()) fecharPopout(s);
-          else abrirPopout(props.track, props.nome);
+          else {
+            abrirPopout(props.track, props.nome, props.origem);
+            if (temPopout(s)) props.aoAbrir();
+          }
         }}
         use:floating={{
           tooltip: {
@@ -585,6 +635,39 @@ const OverlayInner = styled("div", {
 
     _first: {
       flexGrow: 1,
+    },
+  },
+});
+
+/**
+ * Cobre o tile de uma tela que esta aberta em janela propria.
+ */
+const CapaDestacada = styled("div", {
+  base: {
+    gridArea: "1/1",
+    // Mesmo nivel do Overlay e antes dele no DOM: os controles do tile
+    // (nome, fechar a janela, audio) continuam por cima da capa.
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "var(--gap-sm)",
+    padding: "var(--gap-md)",
+    textAlign: "center",
+    background: "var(--md-sys-color-surface-container-lowest)",
+    color: "var(--md-sys-color-on-surface-variant)",
+    fontSize: "13px",
+
+    "& button": {
+      border: "none",
+      borderRadius: "var(--borderRadius-full)",
+      padding: "6px 14px",
+      cursor: "pointer",
+      background: "var(--md-sys-color-primary)",
+      color: "var(--md-sys-color-on-primary)",
+      fontWeight: 600,
     },
   },
 });

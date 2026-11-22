@@ -1,6 +1,8 @@
-import { createSignal } from "solid-js";
+import { createEffect, createRoot, createSignal } from "solid-js";
 
 import type { TrackReferenceOrPlaceholder } from "solid-livekit-components";
+
+import type { Anotacao, Traco } from "./anotacao";
 
 /**
  * Janelas destacadas — uma por tela compartilhada.
@@ -23,6 +25,115 @@ import type { TrackReferenceOrPlaceholder } from "solid-livekit-components";
  * existem no repo passam `noopener` -- e ele anula justamente o `opener` de
  * que este mecanismo depende.
  */
+
+/**
+ * O que a janela filha precisa da anotacao (laser) para desenhar.
+ *
+ * ## Por que nao passar o `Anotacao` direto
+ *
+ * O objeto ate atravessa (mesmo heap, como o `MediaStream`), mas os signals
+ * dele pertencem ao Solid da janela MAE. A filha carrega o proprio bundle,
+ * com outro runtime do Solid: ler `tique()` dentro de um `createEffect` da
+ * filha devolve o valor mas nao inscreve nada, e o desenho nunca acorda.
+ *
+ * Entao a mae observa os seus signals no proprio runtime (`inscrever`) e
+ * chama de volta uma funcao da filha, que atualiza signals locais. Os
+ * metodos de escrita (`comecar`, `continuar`...) sao chamadas simples e
+ * funcionam sem adaptador.
+ */
+export type PonteDeAnotacao = {
+  vivos(): Traco[];
+  opacidade(t: Traco): number;
+  comecar(u: number, v: number): void;
+  continuar(pontos: number[]): void;
+  terminar(): void;
+  enviarLote(): void;
+  /**
+   * Observa o estado e chama `cb` a cada mudanca (e uma vez ja de inicio).
+   * Devolve a funcao que cancela.
+   */
+  inscrever(cb: (estado: EstadoDaAnotacaoNoPopout) => void): () => void;
+};
+
+/** Estado da anotacao que a janela filha precisa para a interface. */
+export type EstadoDaAnotacaoNoPopout = {
+  /** Muda a cada traco novo ou crescido: acorda o desenho */
+  tique: number;
+  /** Se a anotacao da sala existe (ha chamada) */
+  ativa: boolean;
+  /** Se quem compartilha esta tela liberou o desenho para os outros */
+  liberado: boolean;
+  /** Se este usuario pode publicar (o servidor exige permissao de falar) */
+  podePublicar: boolean;
+};
+
+/** O que a janela mae sabe sobre a anotacao de uma tela destacada. */
+export type OrigemDaAnotacao = {
+  /** Anotacao da chamada atual */
+  anotacao: () => Anotacao | undefined;
+  /** Identidade LiveKit de quem compartilha esta tela */
+  dono: string;
+  /** Se a tela e minha (desenhar na propria tela nao faz sentido) */
+  minha: boolean;
+  /** Se posso publicar dados na sala */
+  podePublicar: () => boolean;
+};
+
+/** Origem da anotacao de cada janela, por sid da faixa. */
+const origens = new Map<string, OrigemDaAnotacao>();
+
+/** Inscricoes ativas por sid, para cancelar quando a janela some. */
+const inscricoes = new Map<string, Set<() => void>>();
+
+/** Cancela as inscricoes de uma janela. */
+function cancelarInscricoes(sid: string) {
+  for (const cancelar of inscricoes.get(sid) ?? []) cancelar();
+  inscricoes.delete(sid);
+}
+
+/** Monta a ponte de anotacao de uma tela, ou nada se nao houver origem. */
+function ponteDeAnotacao(sid: string): PonteDeAnotacao | undefined {
+  const origem = origens.get(sid);
+  if (!origem) return undefined;
+  const a = () => origem.anotacao();
+
+  return {
+    vivos: () => a()?.vivos() ?? [],
+    opacidade: (t) => a()?.opacidade(t) ?? 0,
+    comecar: (u, v) => a()?.comecar(u, v),
+    continuar: (pontos) => a()?.continuar(pontos),
+    terminar: () => a()?.terminar(),
+    enviarLote: () => a()?.enviarLote(),
+    inscrever(cb) {
+      const cancelar = createRoot((dispose) => {
+        createEffect(() => {
+          const anotacao = a();
+          const estado: EstadoDaAnotacaoNoPopout = {
+            tique: anotacao?.tique() ?? 0,
+            ativa: !!anotacao,
+            liberado:
+              !origem.minha && !!anotacao?.liberadoPor().includes(origem.dono),
+            podePublicar: origem.podePublicar(),
+          };
+          try {
+            cb(estado);
+          } catch {
+            // A filha fechou entre um tique e outro; o `encerrar` limpa.
+          }
+        });
+        return dispose;
+      });
+
+      const lista = inscricoes.get(sid) ?? new Set<() => void>();
+      inscricoes.set(sid, lista);
+      lista.add(cancelar);
+      return () => {
+        cancelar();
+        lista.delete(cancelar);
+      };
+    },
+  };
+}
 
 /** Streams entregues as janelas filhas, por sid da faixa. */
 const streams = new Map<string, MediaStream>();
@@ -69,6 +180,15 @@ function sincronizar() {
   setAbertos([...janelas.keys()]);
 }
 
+/** Apaga tudo o que a mae guardava sobre a janela de uma tela. */
+function esquecer(sid: string) {
+  cancelarInscricoes(sid);
+  janelas.delete(sid);
+  streams.delete(sid);
+  origens.delete(sid);
+  sincronizar();
+}
+
 /**
  * Instala a ponte que a janela filha usa para buscar seu stream.
  *
@@ -80,6 +200,7 @@ function instalarPonte() {
   const w = window as unknown as {
     __stoatPopout?: {
       pegar: (sid: string) => MediaStream | undefined;
+      anotacao: (sid: string) => PonteDeAnotacao | undefined;
       encerrar: (sid: string) => void;
     };
   };
@@ -87,12 +208,11 @@ function instalarPonte() {
 
   w.__stoatPopout = {
     pegar: (sid) => streams.get(sid),
+    anotacao: ponteDeAnotacao,
     // A filha avisa quando o usuario a fecha na mao, para o botao do tile
     // voltar ao normal sem depender de polling.
     encerrar: (sid) => {
-      janelas.delete(sid);
-      streams.delete(sid);
-      sincronizar();
+      esquecer(sid);
     },
   };
 }
@@ -108,10 +228,12 @@ function streamDaFaixa(faixa: TrackReferenceOrPlaceholder) {
  *
  * @param faixa Faixa de screenshare
  * @param titulo Nome de quem compartilha, para o titulo da janela
+ * @param origem De onde a janela tira a anotacao (laser), se houver
  */
 export function abrirPopout(
   faixa: TrackReferenceOrPlaceholder,
   titulo: string,
+  origem?: OrigemDaAnotacao,
 ) {
   const sid = faixa.publication?.trackSid;
   if (!sid) return;
@@ -128,6 +250,7 @@ export function abrirPopout(
 
   instalarPonte();
   streams.set(sid, stream);
+  if (origem) origens.set(sid, origem);
 
   const url = `${import.meta.env.BASE_URL}popout?sid=${encodeURIComponent(sid)}&titulo=${encodeURIComponent(titulo)}`;
   const janela = window.open(
@@ -139,6 +262,7 @@ export function abrirPopout(
   if (!janela) {
     // Bloqueado (pop-up blocker, ou o handler do Electron negando).
     streams.delete(sid);
+    origens.delete(sid);
     return;
   }
 
@@ -150,9 +274,7 @@ export function abrirPopout(
   const vigia = setInterval(() => {
     if (janela.closed) {
       clearInterval(vigia);
-      janelas.delete(sid);
-      streams.delete(sid);
-      sincronizar();
+      esquecer(sid);
     }
   }, 1000);
 }
@@ -161,9 +283,7 @@ export function abrirPopout(
 export function fecharPopout(sid: string) {
   const janela = janelas.get(sid);
   if (janela && !janela.closed) janela.close();
-  janelas.delete(sid);
-  streams.delete(sid);
-  sincronizar();
+  esquecer(sid);
 }
 
 /**

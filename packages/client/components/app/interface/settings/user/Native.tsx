@@ -5,11 +5,8 @@ import { Trans, useLingui } from "@lingui/solid/macro";
 import { CategoryButton, Checkbox, Column } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
-import {
-  type PonteDeAtualizacao,
-  ponteDeAtualizacao,
-  useAtualizacaoDoDesktop,
-} from "../../desktop/atualizacao";
+import { type PonteDeAtualizacao } from "../../desktop/atualizacao";
+import { useLinhaDeAtualizacao } from "../../desktop/linhaDeAtualizacao";
 
 declare type DesktopConfig = {
   firstLaunch: boolean;
@@ -102,34 +99,11 @@ export default function Native() {
   const { t } = useLingui();
   const [autostart, setAutostart] = createSignal(false);
   const [config, setConfig] = createSignal(window.desktopConfig.get());
-  const atualizacao = useAtualizacaoDoDesktop();
-
-  /** Linha de status da atualizacao, abaixo da versao */
-  function statusDaAtualizacao() {
-    const estado = atualizacao();
-    switch (estado.fase) {
-      case "procurando":
-        return t`Checking for updates…`;
-      case "baixando":
-        return t`Downloading version ${estado.versao} (${estado.progresso}%)`;
-      case "pronta":
-        return t`Version ${estado.versao} is ready. Click to restart and update.`;
-      case "erro":
-        return t`Could not check for updates. Click to try again.`;
-      case "ociosa":
-        return t`Updates install automatically. Click to check now.`;
-      default:
-        return t`This version does not update by itself. Download the latest from the Stoat website.`;
-    }
-  }
-
-  /** Clique na linha de atualizacao: instala se pronta, senao procura */
-  function acaoDaAtualizacao() {
-    const ponte = ponteDeAtualizacao();
-    if (!ponte) return;
-    if (atualizacao().fase === "pronta") void ponte.instalar();
-    else void ponte.procurar();
-  }
+  const {
+    estado: atualizacao,
+    status: statusDaAtualizacao,
+    acao: acaoDaAtualizacao,
+  } = useLinhaDeAtualizacao();
 
   function set(config: Partial<DesktopConfig>) {
     window.desktopConfig.set(config);

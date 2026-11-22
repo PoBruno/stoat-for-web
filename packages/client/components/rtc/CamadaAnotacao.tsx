@@ -1,7 +1,29 @@
 import { createEffect, onCleanup, onMount } from "solid-js";
 
-import { Anotacao, normalizarSobreVideo, paraPixelsDoVideo } from "./anotacao";
+import {
+  type Anotacao,
+  normalizarSobreVideo,
+  paraPixelsDoVideo,
+} from "./anotacao";
 import { desenharEtiqueta, desenharTraco } from "./traco";
+
+/**
+ * O que a camada usa da anotacao.
+ *
+ * Um recorte do `Anotacao`, e nao a classe: a janela destacada
+ * (`src/Popout.tsx`) desenha atraves de um adaptador, porque os signals da
+ * classe pertencem ao Solid da janela mae (ver `PonteDeAnotacao`).
+ */
+export type FonteDeAnotacao = Pick<
+  Anotacao,
+  | "vivos"
+  | "opacidade"
+  | "tique"
+  | "comecar"
+  | "continuar"
+  | "terminar"
+  | "enviarLote"
+>;
 
 /**
  * Canvas que fica sobre o <video> de um compartilhamento de tela.
@@ -18,7 +40,7 @@ import { desenharEtiqueta, desenharTraco } from "./traco";
  */
 export function CamadaAnotacao(props: {
   /** Estado de anotacao da sala */
-  anotacao: Anotacao;
+  anotacao: FonteDeAnotacao;
   /** Elemento de video sobre o qual desenhar */
   video: () => HTMLVideoElement | undefined;
   /** Se o ponteiro deve produzir tracos */

@@ -5,7 +5,7 @@ import { PublicChannelInvite } from "stoat.js";
 import { cva } from "styled-system/css";
 import { styled } from "styled-system/jsx";
 
-import { IS_DEV, podeCriarServidor, useClient } from "@revolt/client";
+import { IS_DEV, useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { useModals } from "@revolt/modal";
 import { useNavigate } from "@revolt/routing";
@@ -13,6 +13,8 @@ import { Button, CategoryButton, Header, main, Symbol } from "@revolt/ui";
 
 import { HeaderIcon } from "./common/CommonHeader";
 import { AmigosOnline } from "./home/AmigosOnline";
+import { AppDesktop } from "./home/AppDesktop";
+import { EmCallAgora } from "./home/EmCallAgora";
 import { Timeline } from "./home/Timeline";
 
 /**
@@ -92,6 +94,9 @@ const Atalhos = styled("div", {
   },
 });
 
+/** Rodando dentro do app desktop (Electron) */
+const isNative = !!window.native;
+
 /**
  * Home page
  */
@@ -105,9 +110,6 @@ export function HomePage() {
   const showLoungeButton = instance.isStoat;
   const isInLounge =
     client()!.servers.get("01F7ZSBSFHQ8TA81725KQCSDDP") !== undefined;
-
-  // A instância pode restringir a criação de servidores a alguns usuários.
-  const criarServidor = () => podeCriarServidor(client());
 
   return (
     <Base>
@@ -133,29 +135,8 @@ export function HomePage() {
           <Timeline />
           <Lateral>
             <AmigosOnline />
+            <EmCallAgora />
             <Atalhos>
-              <CategoryButton
-                onClick={() =>
-                  openModal({
-                    type: "create_group_or_server",
-                    client: client()!,
-                  })
-                }
-                description={
-                  <Trans>
-                    Invite all of your friends, some cool bots, and throw a big
-                    party.
-                  </Trans>
-                }
-                icon={<Symbol fill>add_circle</Symbol>}
-              >
-                <Show
-                  when={criarServidor()}
-                  fallback={<Trans>Create a group</Trans>}
-                >
-                  <Trans>Create a group or server</Trans>
-                </Show>
-              </CategoryButton>
               <Switch fallback={null}>
                 <Match when={showLoungeButton && isInLounge}>
                   <CategoryButton
@@ -243,35 +224,43 @@ export function HomePage() {
                       feedback.
                     </Trans>
                   }
-                  icon={<Symbol size={22} fill>rate_review</Symbol>}
+                  icon={
+                    <Symbol size={22} fill>
+                      rate_review
+                    </Symbol>
+                  }
                 >
                   <Trans>Give feedback on Stoat</Trans>
                 </CategoryButton>
               </Show>
-              <CategoryButton
-                onClick={() =>
-                  openModal({
-                    type: "settings",
-                    config: "user",
-                    context: { page: "download" },
-                  })
+              {/*
+                No navegador, o atalho para baixar o app; dentro do app, a
+                versão e a atualização. "Criar grupo" e "Abrir configurações"
+                saíram: o "+" da barra de servidores e a engrenagem já fazem
+                isso, e repetir aqui só tirava espaço do que importa.
+              */}
+              <Show
+                when={isNative}
+                fallback={
+                  <CategoryButton
+                    onClick={() =>
+                      openModal({
+                        type: "settings",
+                        config: "user",
+                        context: { page: "download" },
+                      })
+                    }
+                    description={
+                      <Trans>Instale o Stoat no seu computador.</Trans>
+                    }
+                    icon={<Symbol size={22}>install_desktop</Symbol>}
+                  >
+                    <Trans>Baixar aplicativo</Trans>
+                  </CategoryButton>
                 }
-                description={<Trans>Instale o Stoat no seu computador.</Trans>}
-                icon={<Symbol size={22}>install_desktop</Symbol>}
               >
-                <Trans>Baixar aplicativo</Trans>
-              </CategoryButton>
-              <CategoryButton
-                onClick={() => openModal({ type: "settings", config: "user" })}
-                description={
-                  <Trans>
-                    You can also click the gear icon in the bottom left.
-                  </Trans>
-                }
-                icon={<Symbol fill>settings</Symbol>}
-              >
-                <Trans>Open settings</Trans>
-              </CategoryButton>
+                <AppDesktop />
+              </Show>
             </Atalhos>
             {/*
               Página interna do próprio projeto, para testar componentes.

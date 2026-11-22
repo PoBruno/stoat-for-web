@@ -524,6 +524,10 @@ msgstr ""
 msgid "Annotations unavailable"
 msgstr ""
 
+#: src/interface/home/EmCallAgora.tsx
+msgid "AO VIVO"
+msgstr ""
+
 #: components/app/interface/settings/user/Sync.tsx
 #: components/app/interface/settings/UserSettings.tsx
 msgid "Appearance"
@@ -711,6 +715,10 @@ msgstr ""
 #: components/app/interface/channels/text/Message.tsx
 msgid "Bot"
 msgstr "Бот"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Bring back here"
+msgstr ""
 
 #: components/app/interface/settings/user/voice/VoiceProcessingOptions.tsx
 msgid "Browser"
@@ -947,7 +955,7 @@ msgstr "Проверяйте статус: ваш {0} может быть одо
 msgid "Check your email"
 msgstr "Проверьте почту! (Надеемся, она у вас не голубиная)"
 
-#: components/app/interface/settings/user/Native.tsx
+#: components/app/interface/desktop/linhaDeAtualizacao.tsx
 msgid "Checking for updates…"
 msgstr ""
 
@@ -1232,7 +1240,7 @@ msgstr "Скопировать ID пользователя"
 msgid "Copy webhook URL"
 msgstr "Скопировать URL вебхука"
 
-#: components/app/interface/settings/user/Native.tsx
+#: components/app/interface/desktop/linhaDeAtualizacao.tsx
 msgid "Could not check for updates. Click to try again."
 msgstr ""
 
@@ -1262,14 +1270,6 @@ msgstr "Создать"
 #: components/app/interface/settings/server/invites/ListServerInvites.tsx
 msgid "Create a channel before inviting others!"
 msgstr "Создайте канал для того, чтобы приглашать других!"
-
-#: src/interface/Home.tsx
-msgid "Create a group"
-msgstr "Создать группу"
-
-#: src/interface/Home.tsx
-msgid "Create a group or server"
-msgstr "Создать группу или сервер"
 
 #: components/modal/modals/CreateBot.tsx
 msgid "Create a new bot"
@@ -1677,9 +1677,9 @@ msgstr "Готово"
 msgid "Download for desktop"
 msgstr "Скачать на компьютер"
 
-#. placeholder {0}: estado.versao
-#. placeholder {1}: estado.progresso
-#: components/app/interface/settings/user/Native.tsx
+#. placeholder {0}: atual.versao
+#. placeholder {1}: atual.progresso
+#: components/app/interface/desktop/linhaDeAtualizacao.tsx
 msgid "Downloading version {0} ({1}%)"
 msgstr ""
 
@@ -1775,6 +1775,10 @@ msgstr "Изменено"
 #: components/modal/modals/PolicyChange.tsx
 msgid "Effective <0/> (<1/>)"
 msgstr "В силу с <0/> (<1/>)"
+
+#: src/interface/home/EmCallAgora.tsx
+msgid "Em call agora"
+msgstr ""
 
 #: components/app/interface/settings/user/Account.tsx
 #: components/auth/src/flows/Form.tsx
@@ -2285,10 +2289,6 @@ msgstr "Шрифт Интерфейса"
 #: src/interface/navigation/servers/UserMenu.tsx
 msgid "Invisible"
 msgstr "Невидимый"
-
-#: src/interface/Home.tsx
-msgid "Invite all of your friends, some cool bots, and throw a big party."
-msgstr "Пригласите всех своих друзей, крутых ботов, и устройте большую вечеринку."
 
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Invite Bot"
@@ -2913,6 +2913,10 @@ msgstr ""
 msgid "Nickname"
 msgstr "Никнейм"
 
+#: src/interface/home/EmCallAgora.tsx
+msgid "Ninguém em call."
+msgstr ""
+
 #: src/interface/home/AmigosOnline.tsx
 msgid "Ninguém online agora."
 msgstr ""
@@ -3096,10 +3100,6 @@ msgstr "Открыть файл"
 #: components/app/menus/ServerContextMenu.tsx
 msgid "Open server settings"
 msgstr "Открыть настройки сервера"
-
-#: src/interface/Home.tsx
-msgid "Open settings"
-msgstr "Открыть настройки"
 
 #: components/app/interface/settings/InstallInstructions.tsx
 msgid "Open this page in Chrome"
@@ -4048,6 +4048,7 @@ msgid "Stoat Developer"
 msgstr "Разработчик Stoat"
 
 #: components/app/interface/settings/user/Native.tsx
+#: src/interface/home/AppDesktop.tsx
 msgid "Stoat for Desktop"
 msgstr "Stoat для ПК"
 
@@ -4361,7 +4362,7 @@ msgstr "Это имя пользователя уже взято."
 msgid "This username is not allowed."
 msgstr "Это имя пользователя запрещено."
 
-#: components/app/interface/settings/user/Native.tsx
+#: components/app/interface/desktop/linhaDeAtualizacao.tsx
 msgid "This version does not update by itself. Download the latest from the Stoat website."
 msgstr ""
 
@@ -4570,7 +4571,7 @@ msgstr "Пока я не включю снова"
 msgid "Updates"
 msgstr ""
 
-#: components/app/interface/settings/user/Native.tsx
+#: components/app/interface/desktop/linhaDeAtualizacao.tsx
 msgid "Updates install automatically. Click to check now."
 msgstr ""
 
@@ -4702,10 +4703,10 @@ msgstr "Подтверждён"
 msgid "Verifying your account…"
 msgstr "Проверка вашего аккаунта…"
 
-#. placeholder {0}: estado.versao
+#. placeholder {0}: atual.versao
 #. placeholder {0}: versaoPronta()
+#: components/app/interface/desktop/linhaDeAtualizacao.tsx
 #: components/app/interface/desktop/Titlebar.tsx
-#: components/app/interface/settings/user/Native.tsx
 msgid "Version {0} is ready. Click to restart and update."
 msgstr ""
 
@@ -4788,6 +4789,10 @@ msgstr "Громкость"
 #: components/app/interface/settings/user/profile/UserProfileEditor.tsx
 msgid "Want to change username?"
 msgstr "Хотите поменять имя пользователя?"
+
+#: components/ui/components/features/voice/callCard/ParticipantTile.tsx
+msgid "Watching in a separate window"
+msgstr ""
 
 #: src/AndroidNag.tsx
 msgid "We are working hard on optimising our web app for mobile."
@@ -4912,10 +4917,6 @@ msgstr "Вы забанены на этом сервере."
 #: components/ui/components/features/messaging/composition/MessageBox.tsx
 msgid "You are timed out and can't send messages right now."
 msgstr "У вас тайм-аут. Самое время сделать перерыв от чата."
-
-#: src/interface/Home.tsx
-msgid "You can also click the gear icon in the bottom left."
-msgstr "Вы также можете нажать на иконку шестерёнки внизу слева."
 
 #: components/modal/modals/DeleteChannel.tsx
 msgid "You can re-open it later, but it will disappear on both sides."
