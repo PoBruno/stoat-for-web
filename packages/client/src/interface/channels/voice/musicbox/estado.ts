@@ -73,6 +73,33 @@ export function duracaoOuAoVivo(segundos: number | null): string {
   return segundos && segundos > 0 ? duracaoLegivel(segundos) : "ao vivo";
 }
 
+/** Mesmo reconhecimento do agente (musicbox-agent/src/provedores.ts). */
+const RE_LINK_YOUTUBE =
+  /^(https?:\/\/)?(www\.|m\.|music\.)?(youtube\.com|youtu\.be|youtube-nocookie\.com)\//i;
+
+/** Teto de faixas por pedido; o servidor nao aceita mais que isso. */
+export const TETO_DA_PLAYLIST = 200;
+
+/** Teto do Mix no agente: ele e infinito. */
+export const TETO_DO_MIX = 50;
+
+/**
+ * O que a pessoa colou ou digitou.
+ *
+ * Link vai direto para a fila, como num bot de Discord: quem cola uma
+ * playlist quer ouvir a playlist, nao escolher faixa por faixa. Texto vira
+ * busca, porque ai sim ha o que escolher.
+ */
+export function tipoDeEntrada(
+  texto: string,
+): "busca" | "video" | "playlist" | "mix" {
+  const limpo = texto.trim();
+  if (!RE_LINK_YOUTUBE.test(limpo)) return "busca";
+  const lista = /[?&]list=([^&#]+)/.exec(limpo)?.[1];
+  if (!lista) return "video";
+  return /^RD/i.test(lista) ? "mix" : "playlist";
+}
+
 /** Quanto falta para a fila acabar, contando a faixa atual. */
 export function duracaoDaFila(estado: EstadoMusicBox): number {
   const restante = estado.current?.duration_s

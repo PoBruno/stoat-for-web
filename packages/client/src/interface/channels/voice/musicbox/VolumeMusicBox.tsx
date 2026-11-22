@@ -1,6 +1,6 @@
 import { Show, createSignal, onCleanup, onMount } from "solid-js";
 
-import { Trans, useLingui } from "@lingui/solid/macro";
+import { Trans } from "@lingui/solid/macro";
 import { styled } from "styled-system/jsx";
 
 import { useClient } from "@revolt/client";
@@ -31,7 +31,6 @@ export function VolumeMusicBox(props: { channelId: string }) {
   const client = useClient();
   const instance = useInstance();
   const voice = useVoice();
-  const { t } = useLingui();
 
   const [identidade, setIdentidade] = createSignal<string>();
   // Sem isto o fallback "nao configurado" aparecia enquanto o fetch rodava.

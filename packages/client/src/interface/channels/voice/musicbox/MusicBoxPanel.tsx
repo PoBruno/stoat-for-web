@@ -1,86 +1,106 @@
-import {
-  type JSX,
-  For,
-  Show,
-  createSignal,
-  onCleanup,
-  onMount,
-} from "solid-js";
+import { For, Match, Show, Switch, createSignal } from "solid-js";
 
-import { Symbol } from "@revolt/ui";
 import { styled } from "styled-system/jsx";
 
-import { useClient } from "@revolt/client";
-import { useInstance } from "@revolt/instance";
 import { useState } from "@revolt/state";
+import { CircularProgress } from "@revolt/ui";
 import { Button, IconButton, Slider, Text } from "@revolt/ui/components/design";
+import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
+import { useConfirmacao } from "./Controles";
 import {
   type ClienteMusicBox,
   type Faixa,
-  criarCliente,
+  TETO_DA_PLAYLIST,
+  TETO_DO_MIX,
   duracaoDaFila,
   duracaoLegivel,
   duracaoOuAoVivo,
+  tipoDeEntrada,
 } from "./estado";
+import { usarMusicBox } from "./loja";
+
+/** O que aconteceu com o ultimo link colado. */
+type Retorno =
+  | { tipo: "ok"; texto: string; detalhe?: string }
+  | { tipo: "vazio"; texto: string; detalhe?: string };
 
 /**
  * Painel do MusicBox, mostrado durante a chamada.
  *
- * Sem abas. A busca fica sempre no topo, pronta para receber o que se digita;
- * os resultados tomam o lugar da fila enquanto existirem e saem quando se
- * limpa a busca. Abas obrigavam a trocar de contexto para uma acao que e a
- * mais frequente do painel — botar musica.
+ * Duas colunas: **Adicionar** (busca) e **Fila**. Antes a busca tomava o
+ * lugar da fila enquanto havia resultado, e para ver o que vinha a seguir era
+ * preciso apagar a pesquisa. Agora as duas ficam lado a lado, como no
+ * Spotify; em largura de celular, uma sobre a outra, e a fila nunca some.
+ *
+ * Os controles (tocar, pular, repetir...) ficam na barra de baixo da
+ * chamada, no MiniPlayer, e nao aqui.
+ *
+ * Link do YouTube vai direto para a fila. Playlist entra inteira, Mix entra
+ * com as primeiras 50, video entra sozinho. Texto vira busca, e ai se
+ * escolhe faixa por faixa.
  */
 export function MusicBoxPanel(props: {
   channelId: string;
   onClose: () => void;
 }) {
-  const client = useClient();
-  const instance = useInstance();
-
-  const mb = criarCliente(
-    instance.apiUrl,
-    () => client().authenticationHeader,
-    () => props.channelId,
-  );
+  // O canal e fixo por instancia: quem troca de canal remonta (<Show keyed>).
+  // eslint-disable-next-line solid/reactivity
+  const mb = usarMusicBox(props.channelId);
 
   const [termo, setTermo] = createSignal("");
   const [resultados, setResultados] = createSignal<Faixa[]>([]);
-  const [buscando, setBuscando] = createSignal(false);
+  const [buscando, setBuscando] = createSignal<
+    false | ReturnType<typeof tipoDeEntrada>
+  >(false);
   const [aviso, setAviso] = createSignal<string>();
+  const [retorno, setRetorno] = createSignal<Retorno>();
   const [adicionadas, setAdicionadas] = createSignal<Set<string>>(
     new Set<string>(),
   );
 
-  /** Ha uma busca em andamento ou com resultado na tela. */
-  const emBusca = () => buscando() || resultados().length > 0 || !!aviso();
-
-  const ehPlaylist = () => /[?&]list=/.test(termo());
-
-  onMount(() => {
-    void mb.recarregar();
-
-    // Sondagem enquanto o painel esta aberto. Um evento pelo WebSocket seria
-    // melhor e e o destino disto, mas custa uma variante nova atravessando
-    // backend, SDK e cliente.
-    const relogio = setInterval(() => void mb.recarregar(), 2000);
-    onCleanup(() => clearInterval(relogio));
-  });
-
-  async function buscar(e?: Event) {
+  async function enviar(e?: Event) {
     e?.preventDefault();
-    if (!termo().trim()) return;
+    const texto = termo().trim();
+    if (!texto || buscando()) return;
 
-    setBuscando(true);
+    const tipo = tipoDeEntrada(texto);
+    setBuscando(tipo);
     setAviso(undefined);
-    setAdicionadas(new Set<string>());
+    setRetorno(undefined);
     try {
-      // Playlist pede a lista inteira; busca por nome nao. Cem resultados
-      // para "radiohead" e uma parede de texto onde bastavam alguns.
-      const achadas = await mb.buscar(termo(), ehPlaylist() ? 200 : 15);
-      setResultados(achadas);
-      if (!achadas.length) setAviso("Nada encontrado para isso.");
+      if (tipo === "busca") {
+        // Cem resultados para "radiohead" e uma parede de texto onde
+        // bastavam alguns.
+        const achadas = await mb.buscar(texto, 15);
+        setAdicionadas(new Set<string>());
+        setResultados(achadas);
+        if (!achadas.length) setAviso("Nada encontrado para isso.");
+        return;
+      }
+
+      const faixas = await mb.buscar(
+        texto,
+        tipo === "video" ? 1 : TETO_DA_PLAYLIST,
+      );
+      if (!faixas.length) {
+        setRetorno(
+          tipo === "video"
+            ? { tipo: "vazio", texto: "Esse vídeo não está disponível." }
+            : {
+                tipo: "vazio",
+                texto: "Essa playlist está vazia, é privada ou não existe.",
+                detalhe:
+                  "“Curtidos” e “Assistir mais tarde” são da sua conta e não podem ser lidos. Copie as músicas para uma playlist pública ou não listada.",
+              },
+        );
+        return;
+      }
+      if (!(await mb.adicionar(faixas))) return;
+
+      setTermo("");
+      setResultados([]);
+      setRetorno(resumoDoLink(tipo, faixas));
     } catch (falha) {
       setResultados([]);
       setAviso(falha instanceof Error ? falha.message : String(falha));
@@ -93,53 +113,34 @@ export function MusicBoxPanel(props: {
     setTermo("");
     setResultados([]);
     setAviso(undefined);
+    setRetorno(undefined);
   }
 
   /**
-   * Adiciona sem apagar a busca.
-   *
-   * Limpar a lista a cada faixa obrigava a repetir a mesma pesquisa para pegar
-   * a segunda musica do mesmo album. O que ja entrou fica marcado — sem isso
-   * nao da para saber o que ja foi.
+   * Adiciona sem apagar a busca: para pegar a segunda musica do mesmo album
+   * nao e preciso pesquisar de novo. O que ja entrou fica marcado.
    */
-  async function adicionar(faixas: Faixa[]) {
+  async function adicionar(faixa: Faixa) {
     // So marca "Na fila" se o servidor aceitou; a recusa aparece no aviso.
-    if (!(await mb.adicionar(faixas))) return;
-    setAdicionadas((antes) => {
-      const agora = new Set(antes);
-      for (const f of faixas) agora.add(f.id);
-      return agora;
-    });
+    if (!(await mb.adicionar([faixa]))) return;
+    setAdicionadas((antes) => new Set(antes).add(faixa.id));
   }
 
   return (
     <Painel>
-      <AgoraTocando mb={mb} onClose={props.onClose} />
+      <Cabecalho>
+        <Symbol>queue_music</Symbol>
+        <Text class="title" size="small">
+          MusicBox
+        </Text>
+        <Espaco />
+        <VolumeDaMusica mb={mb} />
+        <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
+          <Symbol>close</Symbol>
+        </IconButton>
+      </Cabecalho>
 
-      <BarraDeBusca onSubmit={buscar}>
-        <Lupa>
-          <Symbol>search</Symbol>
-        </Lupa>
-        <Campo
-          value={termo()}
-          placeholder="Buscar música, colar link de vídeo ou playlist…"
-          onInput={(e: InputEvent) =>
-            setTermo((e.currentTarget as HTMLInputElement).value)
-          }
-          onKeyDown={(e: KeyboardEvent) => {
-            // Escape limpa e devolve a fila, sem tirar o foco do campo.
-            if (e.key === "Escape") limparBusca();
-          }}
-        />
-        <Show when={termo()}>
-          <IconButton onPress={limparBusca} aria-label="Limpar busca">
-            <Symbol>close</Symbol>
-          </IconButton>
-        </Show>
-      </BarraDeBusca>
-
-      {/* Antes o erro era gravado e ninguem lia: sem agente ou sem
-          permissao, todo botao parecia simplesmente nao fazer nada. */}
+      {/* Sem agente ou sem permissao, todo botao pareceria nao fazer nada. */}
       <Show when={mb.erro()}>
         <AvisoDeErro role="alert">
           <Symbol size={18}>error</Symbol>
@@ -154,194 +155,205 @@ export function MusicBoxPanel(props: {
         </AvisoDeErro>
       </Show>
 
-      <Corpo>
-        <Show when={emBusca()} fallback={<Fila mb={mb} />}>
-          <Resultados
-            resultados={resultados()}
-            buscando={buscando()}
-            playlist={ehPlaylist()}
-            aviso={aviso()}
-            adicionadas={adicionadas()}
-            onAdicionar={adicionar}
-          />
-        </Show>
-      </Corpo>
+      <Colunas>
+        <Coluna data-coluna="busca" aria-label="Adicionar músicas">
+          <BarraDeBusca onSubmit={enviar}>
+            <Icone>
+              <Show
+                when={tipoDeEntrada(termo()) === "busca"}
+                fallback={<Symbol>link</Symbol>}
+              >
+                <Symbol>search</Symbol>
+              </Show>
+            </Icone>
+            <Campo
+              value={termo()}
+              placeholder="Buscar ou colar link do YouTube (vídeo ou playlist)"
+              aria-label="Buscar música ou colar link do YouTube"
+              onInput={(e: InputEvent) =>
+                setTermo((e.currentTarget as HTMLInputElement).value)
+              }
+              onKeyDown={(e: KeyboardEvent) => {
+                if (e.key === "Escape") limparBusca();
+              }}
+            />
+            <Show when={termo()}>
+              <IconButton
+                size="xs"
+                onPress={limparBusca}
+                aria-label="Limpar busca"
+              >
+                <Symbol size={18}>close</Symbol>
+              </IconButton>
+            </Show>
+            <Show when={termo().trim() && tipoDeEntrada(termo()) !== "busca"}>
+              <Button
+                size="sm"
+                isDisabled={!!buscando()}
+                onPress={() => void enviar()}
+              >
+                {tipoDeEntrada(termo()) === "video"
+                  ? "Adicionar"
+                  : "Adicionar tudo"}
+              </Button>
+            </Show>
+          </BarraDeBusca>
+
+          <Rolagem>
+            <Switch fallback={<Dicas />}>
+              <Match when={buscando()}>
+                {(tipo) => (
+                  <Vazio>
+                    <CircularProgress />
+                    <Text class="label">
+                      {tipo() === "playlist"
+                        ? "Abrindo a playlist…"
+                        : tipo() === "mix"
+                          ? "Abrindo o Mix…"
+                          : tipo() === "video"
+                            ? "Abrindo o vídeo…"
+                            : "Buscando…"}
+                    </Text>
+                  </Vazio>
+                )}
+              </Match>
+              <Match when={aviso()}>
+                {(mensagem) => (
+                  <Vazio>
+                    <Text class="label">{mensagem()}</Text>
+                  </Vazio>
+                )}
+              </Match>
+              <Match when={resultados().length}>
+                <For each={resultados()}>
+                  {(faixa) => (
+                    <Item>
+                      <Miniatura capa={faixa.cover_url} />
+                      <Identificacao>
+                        <Text class="body">{faixa.title}</Text>
+                        <Text class="label">
+                          {faixa.author ?? "desconhecido"}
+                        </Text>
+                      </Identificacao>
+                      <Duracao>{duracaoOuAoVivo(faixa.duration_s)}</Duracao>
+                      <Show
+                        when={adicionadas().has(faixa.id)}
+                        fallback={
+                          <IconButton
+                            size="sm"
+                            variant="tonal"
+                            onPress={() => void adicionar(faixa)}
+                            aria-label="Adicionar à fila"
+                            use:floating={{
+                              tooltip: {
+                                placement: "top",
+                                content: "Adicionar à fila",
+                              },
+                            }}
+                          >
+                            <Symbol>add</Symbol>
+                          </IconButton>
+                        }
+                      >
+                        <JaNaFila
+                          aria-label="Na fila"
+                          use:floating={{
+                            tooltip: { placement: "top", content: "Na fila" },
+                          }}
+                        >
+                          <Symbol>check</Symbol>
+                        </JaNaFila>
+                      </Show>
+                    </Item>
+                  )}
+                </For>
+              </Match>
+              <Match when={retorno()}>
+                {(r) => (
+                  <Retornado data-tipo={r().tipo} role="status">
+                    <Symbol size={28}>
+                      {r().tipo === "ok" ? "playlist_add_check" : "block"}
+                    </Symbol>
+                    <Text class="body">{r().texto}</Text>
+                    <Show when={r().detalhe}>
+                      <Text class="label">{r().detalhe}</Text>
+                    </Show>
+                  </Retornado>
+                )}
+              </Match>
+            </Switch>
+          </Rolagem>
+        </Coluna>
+
+        <Coluna data-coluna="fila" aria-label="Fila">
+          <Fila mb={mb} />
+        </Coluna>
+      </Colunas>
     </Painel>
   );
 }
 
-/** Capa, titulo, progresso, controles e volume. */
-function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
-  const atual = () => props.mb.estado().current;
-  const confirmarParar = useConfirmacao();
-  const duracao = () => atual()?.duration_s ?? 0;
-
-  function girarRepeticao() {
-    const agora = props.mb.estado().repeat;
-    void props.mb.ajustar({
-      repeat: agora === "off" ? "all" : agora === "all" ? "one" : "off",
-    });
+/** Frase do que entrou na fila depois de colar um link. */
+function resumoDoLink(
+  tipo: ReturnType<typeof tipoDeEntrada>,
+  faixas: Faixa[],
+): Retorno {
+  if (tipo === "video") {
+    return { tipo: "ok", texto: `Na fila: ${faixas[0].title}` };
   }
+  const n = faixas.length;
+  const musicas = n === 1 ? "1 música" : `${n} músicas`;
+  if (tipo === "mix") {
+    return {
+      tipo: "ok",
+      texto: `${musicas} do Mix na fila`,
+      detalhe:
+        n >= TETO_DO_MIX
+          ? `O Mix do YouTube não tem fim; entram as primeiras ${TETO_DO_MIX}.`
+          : undefined,
+    };
+  }
+  return {
+    tipo: "ok",
+    texto: `${musicas} da playlist na fila`,
+    detalhe:
+      n >= TETO_DA_PLAYLIST
+        ? `A playlist é maior: entraram as primeiras ${TETO_DA_PLAYLIST}.`
+        : "Vídeos privados ou removidos ficam de fora.",
+  };
+}
 
+/** O que mostrar na coluna de busca antes de buscar. */
+function Dicas() {
   return (
-    <Topo>
-      <LinhaDoTopo>
-        <Capa>
-          <Show
-            when={atual()?.cover_url}
-            fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}
-          >
-            {(capa) => <img src={capa()} alt="" />}
-          </Show>
-        </Capa>
-
-        <Identificacao>
-          <TituloAtual>
-            <Text class="body">{atual()?.title ?? "Nada tocando"}</Text>
-          </TituloAtual>
-          <Text class="label">
-            {atual()?.author ?? "Busque algo acima para começar"}
-          </Text>
-        </Identificacao>
-
-        <VolumeDaMusica mb={props.mb} />
-
-        <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
-          <Symbol>close</Symbol>
-        </IconButton>
-      </LinhaDoTopo>
-
-      <Progresso>
-        {/* Barra so de exibicao: o servidor nao tem rota de busca (seek).
-            O Slider parecia arrastavel e voltava sozinho no proximo poll. */}
-        <BarraDeProgresso
-          role="progressbar"
-          aria-label="Progresso da faixa"
-          aria-valuemin={0}
-          aria-valuemax={Math.max(1, duracao())}
-          aria-valuenow={props.mb.estado().position_s}
-        >
-          <div
-            style={{
-              width: `${
-                duracao() > 0
-                  ? Math.min(
-                      100,
-                      (props.mb.estado().position_s / duracao()) * 100,
-                    )
-                  : 0
-              }%`,
-            }}
-          />
-        </BarraDeProgresso>
-        <LinhaDeTempo>
-          <Text class="label">
-            {duracaoLegivel(props.mb.estado().position_s)}
-          </Text>
-          <Text class="label">
-            {atual() ? duracaoOuAoVivo(duracao()) : "--:--"}
-          </Text>
-        </LinhaDeTempo>
-      </Progresso>
-
-      <Controles>
-        <IconButton
-          onPress={() =>
-            void props.mb.ajustar({ shuffle: !props.mb.estado().shuffle })
-          }
-          variant={props.mb.estado().shuffle ? "tonal" : "standard"}
-          aria-label="Ordem aleatória"
-        >
-          <Symbol>shuffle</Symbol>
-        </IconButton>
-
-        <IconButton
-          // A fila e de todos no canal: parar e limpar pede um segundo
-          // clique, com o botao em vermelho avisando.
-          // eslint-disable-next-line solid/reactivity -- a acao roda no clique
-          onPress={() => confirmarParar.pedir(() => void props.mb.parar())}
-          isDisabled={!atual()}
-          variant={confirmarParar.armado() ? "tonal" : "standard"}
-          aria-label={
-            confirmarParar.armado()
-              ? "Clique de novo para parar e limpar a fila de todos"
-              : "Parar e limpar a fila"
-          }
-          use:floating={{
-            tooltip: {
-              placement: "top",
-              content: confirmarParar.armado()
-                ? "Clique de novo para confirmar"
-                : "Parar e limpar a fila",
-            },
-          }}
-        >
-          <Symbol
-            style={
-              confirmarParar.armado()
-                ? { color: "var(--md-sys-color-error)" }
-                : undefined
-            }
-          >
-            stop
-          </Symbol>
-        </IconButton>
-
-        <BotaoTocar
-          onPress={() => void props.mb.alternar()}
-          isDisabled={!atual()}
-          aria-label={props.mb.estado().playing ? "Pausar" : "Tocar"}
-        >
-          <Show
-            when={props.mb.estado().playing}
-            fallback={<Symbol>play_arrow</Symbol>}
-          >
-            <Symbol>pause</Symbol>
-          </Show>
-        </BotaoTocar>
-
-        <IconButton
-          onPress={() => void props.mb.proxima()}
-          isDisabled={!props.mb.estado().queue.length}
-          aria-label="Próxima"
-        >
-          <Symbol>skip_next</Symbol>
-        </IconButton>
-
-        <IconButton
-          onPress={girarRepeticao}
-          variant={props.mb.estado().repeat === "off" ? "standard" : "tonal"}
-          aria-label={
-            props.mb.estado().repeat === "off"
-              ? "Repetição desligada"
-              : props.mb.estado().repeat === "all"
-                ? "Repetindo a fila"
-                : "Repetindo a faixa"
-          }
-        >
-          <Show
-            when={props.mb.estado().repeat === "one"}
-            fallback={<Symbol>repeat</Symbol>}
-          >
-            <Symbol>repeat_one</Symbol>
-          </Show>
-        </IconButton>
-      </Controles>
-    </Topo>
+    <ListaDeDicas>
+      <li>
+        <Symbol size={20}>search</Symbol>
+        <span>
+          <b>Busque pelo nome</b> e escolha as faixas com <b>+</b>.
+        </span>
+      </li>
+      <li>
+        <Symbol size={20}>playlist_play</Symbol>
+        <span>
+          <b>Cole o link de uma playlist</b> e ela entra inteira na fila.
+        </span>
+      </li>
+      <li>
+        <Symbol size={20}>smart_display</Symbol>
+        <span>
+          <b>Cole o link de um vídeo</b> para tocar só ele.
+        </span>
+      </li>
+    </ListaDeDicas>
   );
 }
 
 /**
  * Volume da musica, por ouvinte.
  *
- * Fica aqui e nao so no menu de contexto porque e um controle que se procura
- * enquanto a musica toca: escondido atras de clique direito, ninguem acha.
- *
- * Usa `change` e nao `input`. `input` dispara tambem quando o deslizante se
- * inicializa, antes de receber o valor que passamos, e aquele primeiro
- * disparo carrega o minimo — so abrir o painel baixava o volume sozinho, o
- * que parece defeito do audio e nao uma escrita perdida. `change` acontece
- * quando alguem solta o cursor, que e exatamente a intencao que interessa.
+ * O audio do MusicBox chega como faixa de um participante, entao o volume e
+ * o do participante: quem acha alto abaixa so para si.
  */
 function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
   const state = useState();
@@ -357,6 +369,7 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
       {(id) => (
         <Volume>
           <IconButton
+            size="sm"
             onPress={() =>
               state.voice.setUserVolume(id(), volume() > 0 ? 0 : 1)
             }
@@ -385,169 +398,145 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
   );
 }
 
-/** Resultados da busca. */
-function Resultados(props: {
-  resultados: Faixa[];
-  buscando: boolean;
-  playlist: boolean;
-  aviso?: string;
-  adicionadas: Set<string>;
-  onAdicionar: (faixas: Faixa[]) => Promise<void>;
-}) {
+/** Tocando agora + o que vem a seguir. */
+function Fila(props: { mb: ClienteMusicBox }) {
+  const confirmarLimpar = useConfirmacao();
+  const estado = () => props.mb.estado();
+  const atual = () => estado().current;
+  const duracao = () => atual()?.duration_s ?? 0;
+
   return (
     <>
-      <Show when={props.buscando}>
-        <Vazio>
-          <Text class="label">
-            {props.playlist
-              ? "Abrindo a playlist — pode demorar…"
-              : "Buscando…"}
-          </Text>
-        </Vazio>
-      </Show>
-
-      <Show when={props.aviso}>
-        {(mensagem) => (
+      <Show
+        when={atual()}
+        fallback={
           <Vazio>
-            <Text class="label">{mensagem()}</Text>
+            <Symbol size={32} style={{ opacity: 0.4 }}>
+              queue_music
+            </Symbol>
+            <Text class="label">Nada tocando. Adicione algo ao lado.</Text>
           </Vazio>
+        }
+      >
+        {(faixa) => (
+          <TocandoAgora>
+            <Capa>
+              <Show
+                when={faixa().cover_url}
+                fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}
+              >
+                {(capa) => <img src={capa()} alt="" />}
+              </Show>
+            </Capa>
+            <Identificacao>
+              <Rotulo>{estado().playing ? "Tocando agora" : "Pausado"}</Rotulo>
+              <Text class="body">
+                <b>{faixa().title}</b>
+              </Text>
+              <Text class="label">{faixa().author ?? "desconhecido"}</Text>
+              {/* So exibicao: o servidor nao tem rota de busca (seek). */}
+              <BarraDeProgresso
+                role="progressbar"
+                aria-label="Progresso da faixa"
+                aria-valuemin={0}
+                aria-valuemax={Math.max(1, duracao())}
+                aria-valuenow={estado().position_s}
+              >
+                <div
+                  style={{
+                    width: `${
+                      duracao() > 0
+                        ? Math.min(100, (estado().position_s / duracao()) * 100)
+                        : 0
+                    }%`,
+                  }}
+                />
+              </BarraDeProgresso>
+              <LinhaDeTempo>
+                <span>{duracaoLegivel(estado().position_s)}</span>
+                <span>{duracaoOuAoVivo(duracao())}</span>
+              </LinhaDeTempo>
+            </Identificacao>
+          </TocandoAgora>
         )}
       </Show>
 
-      <Show when={props.resultados.length > 1}>
+      <Show when={atual()}>
         <Resumo>
-          <Text class="label">{props.resultados.length} resultados</Text>
-          <Button
-            variant="tonal"
-            onPress={() => void props.onAdicionar(props.resultados)}
-          >
-            Adicionar todas
-          </Button>
+          <Text class="label">
+            <b>A seguir</b>
+            <Show when={estado().queue.length}>
+              {" · "}
+              {estado().queue.length}{" "}
+              {estado().queue.length === 1 ? "faixa" : "faixas"} ·{" "}
+              {duracaoLegivel(duracaoDaFila(estado()))}
+            </Show>
+          </Text>
+          <Show when={estado().queue.length}>
+            <Button
+              size="sm"
+              variant="text"
+              onPress={() =>
+                // eslint-disable-next-line solid/reactivity -- a acao roda no clique
+                confirmarLimpar.pedir(() => void props.mb.limpar())
+              }
+            >
+              {confirmarLimpar.armado() ? "Confirmar limpeza?" : "Limpar"}
+            </Button>
+          </Show>
         </Resumo>
       </Show>
 
-      <For each={props.resultados}>
-        {(faixa) => (
-          <Item>
-            <Miniatura capa={faixa.cover_url} />
-            <Identificacao>
-              <Text class="body">{faixa.title}</Text>
-              <Text class="label">{faixa.author ?? "desconhecido"}</Text>
-            </Identificacao>
-            <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
-            <Button
-              variant={props.adicionadas.has(faixa.id) ? "text" : "tonal"}
-              onPress={() => void props.onAdicionar([faixa])}
+      <Rolagem>
+        <Show when={atual() && !estado().queue.length}>
+          <Vazio>
+            <Text class="label">
+              Depois desta, acaba. Adicione mais ao lado.
+            </Text>
+          </Vazio>
+        </Show>
+        <For each={estado().queue}>
+          {(faixa, indice) => (
+            <Item
+              onDblClick={() => void props.mb.tocarDaFila(indice())}
+              title="Clique duas vezes para tocar agora"
             >
-              {props.adicionadas.has(faixa.id) ? "Na fila" : "Adicionar"}
-            </Button>
-          </Item>
-        )}
-      </For>
+              <Posicao>
+                <Text class="label">{indice() + 1}</Text>
+              </Posicao>
+              <Miniatura capa={faixa.cover_url} />
+              <Identificacao>
+                <Text class="body">{faixa.title}</Text>
+                <Text class="label">{faixa.author ?? "desconhecido"}</Text>
+              </Identificacao>
+              <Duracao>{duracaoOuAoVivo(faixa.duration_s)}</Duracao>
+              <AcoesDoItem>
+                <IconButton
+                  size="sm"
+                  onPress={() => void props.mb.tocarDaFila(indice())}
+                  aria-label="Tocar agora"
+                  use:floating={{
+                    tooltip: { placement: "top", content: "Tocar agora" },
+                  }}
+                >
+                  <Symbol>play_arrow</Symbol>
+                </IconButton>
+                <IconButton
+                  size="sm"
+                  onPress={() => void props.mb.remover(indice())}
+                  aria-label="Tirar da fila"
+                  use:floating={{
+                    tooltip: { placement: "top", content: "Tirar da fila" },
+                  }}
+                >
+                  <Symbol>close</Symbol>
+                </IconButton>
+              </AcoesDoItem>
+            </Item>
+          )}
+        </For>
+      </Rolagem>
     </>
-  );
-}
-
-/** A fila da chamada. */
-function Fila(props: { mb: ClienteMusicBox }) {
-  const confirmarLimpar = useConfirmacao();
-
-  return (
-    <Show
-      when={props.mb.estado().queue.length}
-      fallback={
-        <Vazio>
-          <Text class="label">
-            A fila está vazia. Busque algo no campo acima.
-          </Text>
-        </Vazio>
-      }
-    >
-      <Resumo>
-        <Text class="label">
-          {props.mb.estado().queue.length}{" "}
-          {props.mb.estado().queue.length === 1 ? "faixa" : "faixas"} —{" "}
-          {duracaoLegivel(duracaoDaFila(props.mb.estado()))} restantes
-        </Text>
-        <Button
-          variant="text"
-          // eslint-disable-next-line solid/reactivity -- a acao roda no clique
-          onPress={() => confirmarLimpar.pedir(() => void props.mb.limpar())}
-        >
-          {confirmarLimpar.armado() ? "Confirmar limpeza?" : "Limpar"}
-        </Button>
-      </Resumo>
-
-      <For each={props.mb.estado().queue}>
-        {(faixa, indice) => (
-          <Item>
-            <Posicao>
-              <Text class="label">{indice() + 1}</Text>
-            </Posicao>
-
-            <Miniatura capa={faixa.cover_url} />
-
-            <Identificacao
-              onClick={() => void props.mb.tocarDaFila(indice())}
-              title="Tocar agora"
-              style={{ cursor: "pointer" }}
-            >
-              <Text class="body">{faixa.title}</Text>
-              <Text class="label">{faixa.author ?? "desconhecido"}</Text>
-            </Identificacao>
-
-            <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
-
-            <IconButton
-              onPress={() => void props.mb.tocarDaFila(indice())}
-              aria-label="Tocar agora"
-              use:floating={{
-                tooltip: { placement: "top", content: "Tocar agora" },
-              }}
-            >
-              <Symbol>play_arrow</Symbol>
-            </IconButton>
-
-            <IconButton
-              onPress={() => void props.mb.remover(indice())}
-              aria-label="Tirar da fila"
-              use:floating={{
-                tooltip: { placement: "top", content: "Tirar da fila" },
-              }}
-            >
-              <Symbol>delete</Symbol>
-            </IconButton>
-          </Item>
-        )}
-      </For>
-    </Show>
-  );
-}
-
-/**
- * Botao de tocar, em destaque.
- *
- * Nao usa `styled(IconButton)`: aquilo resolve o componente na hora em que o
- * modulo carrega, e este modulo e alcancado a partir da propria biblioteca de
- * UI — o resultado era tela em branco com um erro que nomeia o botao, nao o
- * ciclo. Um recipiente que estiliza por dentro adia isso para a renderizacao.
- */
-function BotaoTocar(props: {
-  onPress: () => void;
-  isDisabled?: boolean;
-  "aria-label"?: string;
-  children: JSX.Element;
-}) {
-  return (
-    <Destaque>
-      <IconButton
-        onPress={props.onPress}
-        isDisabled={props.isDisabled}
-        aria-label={props["aria-label"]}
-      >
-        {props.children}
-      </IconButton>
-    </Destaque>
   );
 }
 
@@ -571,44 +560,82 @@ function Miniatura(props: { capa: string | null }) {
 }
 
 /**
- * O painel nao pinta fundo proprio.
- *
- * Ele e a unica coisa na area da chamada, e uma superficie sobre a outra
- * criava uma moldura visivel que competia com o tema. Herdar o fundo do
- * cartao e o que faz os dois virarem uma peca so.
+ * O painel nao pinta fundo proprio: herda o do cartao da chamada, e os dois
+ * viram uma peca so. `containerType` deixa as colunas reagirem a largura do
+ * PAINEL, e nao da janela: com a lista de membros aberta, a janela e larga e
+ * o painel nao.
  */
 const Painel = styled("div", {
   base: {
     height: "100%",
     display: "flex",
     flexDirection: "column",
+    gap: "var(--gap-sm)",
     minHeight: 0,
     color: "var(--md-sys-color-on-surface)",
+    containerType: "inline-size",
   },
 });
 
-const Topo = styled("div", {
+const Cabecalho = styled("div", {
   base: {
     display: "flex",
-    flexDirection: "column",
+    alignItems: "center",
     gap: "var(--gap-sm)",
-    padding: "var(--gap-md) var(--gap-md) var(--gap-sm)",
+    padding: "var(--gap-xs) var(--gap-xs) 0 var(--gap-md)",
     flexShrink: 0,
   },
 });
 
-const LinhaDoTopo = styled("div", {
+const Espaco = styled("div", { base: { flex: 1 } });
+
+/**
+ * Lado a lado quando cabe; uma sobre a outra quando nao. Empilhado, a busca
+ * fica com no maximo metade da altura: a fila continua a vista mesmo com 15
+ * resultados na tela.
+ */
+const Colunas = styled("div", {
   base: {
-    display: "flex",
-    alignItems: "center",
+    flex: 1,
+    minHeight: 0,
+    display: "grid",
+    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
     gap: "var(--gap-md)",
+    padding: "0 var(--gap-md) var(--gap-md)",
+
+    "@container (max-width: 640px)": {
+      gridTemplateColumns: "minmax(0, 1fr)",
+      // A busca cresce com o conteudo ate 45% da altura; o resto e da fila.
+      gridTemplateRows: "fit-content(45%) minmax(0, 1fr)",
+    },
+  },
+});
+
+const Coluna = styled("section", {
+  base: {
+    minHeight: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-sm)",
+    padding: "var(--gap-sm)",
+    borderRadius: "var(--borderRadius-lg)",
+    background: "var(--md-sys-color-surface-container-low)",
+  },
+});
+
+/** A parte que rola, dentro de cada coluna. */
+const Rolagem = styled("div", {
+  base: {
+    flex: 1,
+    minHeight: 0,
+    overflowY: "auto",
   },
 });
 
 const Capa = styled("div", {
   base: {
-    width: "56px",
-    height: "56px",
+    width: "72px",
+    height: "72px",
     flexShrink: 0,
     display: "grid",
     placeItems: "center",
@@ -642,72 +669,65 @@ const Identificacao = styled("div", {
   },
 });
 
-/** Volume fica a direita do que toca, onde se procura por ele. */
+const TocandoAgora = styled("div", {
+  base: {
+    display: "flex",
+    gap: "var(--gap-md)",
+    alignItems: "center",
+    padding: "var(--gap-sm)",
+    borderRadius: "var(--borderRadius-md)",
+    background: "var(--md-sys-color-surface-container)",
+    flexShrink: 0,
+  },
+});
+
+const Rotulo = styled("span", {
+  base: {
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    color: "var(--md-sys-color-primary)",
+  },
+});
+
 const Volume = styled("div", {
   base: {
     display: "flex",
     alignItems: "center",
     gap: "var(--gap-xs)",
     flexShrink: 0,
-    width: "170px",
+    width: "160px",
 
     "& mdui-slider": { flexGrow: 1, minWidth: 0 },
+
+    // Estreito: so o botao de mudo. O deslizante empurrava o "fechar" para
+    // fora do painel.
+    "@container (max-width: 480px)": {
+      width: "auto",
+      "& mdui-slider": { display: "none" },
+    },
   },
-});
-
-const Progresso = styled("div", {
-  base: { display: "flex", flexDirection: "column" },
-});
-
-const TituloAtual = styled("div", {
-  base: { fontWeight: 600 },
 });
 
 const LinhaDeTempo = styled("div", {
-  base: { display: "flex", justifyContent: "space-between" },
-});
-
-const Controles = styled("div", {
   base: {
     display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: "var(--gap-sm)",
+    justifyContent: "space-between",
+    fontSize: "11px",
+    color: "var(--md-sys-color-on-surface-variant)",
   },
 });
 
-const Destaque = styled("div", {
-  base: {
-    display: "contents",
-    "& button": {
-      background: "var(--md-sys-color-primary)",
-      color: "var(--md-sys-color-on-primary)",
-    },
-    "& button:hover": { background: "var(--md-sys-color-primary)" },
-
-    // O ícone precisa ser dito explicitamente, senão não acompanha.
-    //
-    // Uma regra geral pinta todo `svg` com a cor de frente da superfície, e
-    // ela vence a herança do `color` acima. Num botão preenchido com a cor de
-    // destaque isso deixava um ícone claro sobre fundo claro — o botão de
-    // tocar sumia, e era justamente o único que precisava ser achado de
-    // primeira.
-    "& button svg": {
-      fill: "currentColor",
-    },
-  },
-});
-
-/** A busca vive no topo do corpo, sempre pronta. */
 const BarraDeBusca = styled("form", {
   base: {
     display: "flex",
     alignItems: "center",
-    gap: "var(--gap-sm)",
-    margin: "0 var(--gap-md) var(--gap-sm)",
-    padding: "0 var(--gap-md)",
+    gap: "var(--gap-xs)",
+    padding: "0 var(--gap-xs) 0 var(--gap-md)",
     borderRadius: "var(--borderRadius-full)",
     background: "var(--md-sys-color-surface-container-highest)",
+    flexShrink: 0,
 
     "&:focus-within": {
       outline: "2px solid var(--md-sys-color-primary)",
@@ -715,7 +735,7 @@ const BarraDeBusca = styled("form", {
   },
 });
 
-const Lupa = styled("div", {
+const Icone = styled("div", {
   base: {
     display: "grid",
     placeItems: "center",
@@ -728,26 +748,12 @@ const Campo = styled("input", {
   base: {
     flexGrow: 1,
     minWidth: 0,
-    padding: "var(--gap-md) 0",
+    padding: "10px 0",
     border: "none",
     background: "transparent",
     color: "var(--md-sys-color-on-surface)",
-    fontSize: "0.95rem",
+    fontSize: "0.9rem",
     "&:focus": { outline: "none" },
-  },
-});
-
-/**
- * A parte que rola. `minHeight: 0` de novo pela mesma razao: sem isso o filho
- * de flex cresce com o conteudo e a rolagem vai parar no painel inteiro,
- * levando junto os controles que deveriam ficar fixos.
- */
-const Corpo = styled("div", {
-  base: {
-    flexGrow: 1,
-    minHeight: 0,
-    overflowY: "auto",
-    padding: "0 var(--gap-md) var(--gap-md)",
   },
 });
 
@@ -756,7 +762,9 @@ const Resumo = styled("div", {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingBottom: "var(--gap-sm)",
+    minHeight: "32px",
+    padding: "0 var(--gap-xs)",
+    flexShrink: 0,
   },
 });
 
@@ -765,50 +773,99 @@ const Item = styled("div", {
     display: "flex",
     alignItems: "center",
     gap: "var(--gap-sm)",
-    padding: "var(--gap-sm)",
+    padding: "6px var(--gap-sm)",
     borderRadius: "var(--borderRadius-md)",
     "&:hover": { background: "var(--md-sys-color-surface-container)" },
   },
 });
 
+/** Botoes do item da fila: aparecem no hover, para a lista ficar limpa. */
+const AcoesDoItem = styled("div", {
+  base: {
+    display: "flex",
+    flexShrink: 0,
+    opacity: 0.35,
+    transition: "opacity .15s",
+    "*:hover > &": { opacity: 1 },
+    "&:focus-within": { opacity: 1 },
+  },
+});
+
+const JaNaFila = styled("div", {
+  base: {
+    width: "32px",
+    height: "32px",
+    display: "grid",
+    placeItems: "center",
+    flexShrink: 0,
+    color: "var(--md-sys-color-primary)",
+  },
+});
+
 const Posicao = styled("div", {
-  base: { width: "1.5rem", textAlign: "center", flexShrink: 0 },
+  base: {
+    width: "1.5rem",
+    textAlign: "center",
+    flexShrink: 0,
+    "@container (max-width: 480px)": { display: "none" },
+  },
+});
+
+/** Duracao do item; sai primeiro quando falta espaco, o titulo importa mais. */
+const Duracao = styled("span", {
+  base: {
+    flexShrink: 0,
+    fontSize: "12px",
+    color: "var(--md-sys-color-on-surface-variant)",
+    "@container (max-width: 480px)": { display: "none" },
+  },
 });
 
 const Vazio = styled("div", {
   base: {
-    display: "grid",
-    placeItems: "center",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
     padding: "var(--gap-lg)",
     textAlign: "center",
   },
 });
 
-/**
- * Confirmacao em dois cliques: o primeiro arma por 3 s, o segundo executa.
- *
- * Para acoes que mexem no que e de todos (a fila do canal) e nao tem
- * desfazer. Um modal seria pesado demais para um botao de player.
- */
-function useConfirmacao() {
-  const [armado, setArmado] = createSignal(false);
-  let prazo: ReturnType<typeof setTimeout> | undefined;
-  onCleanup(() => clearTimeout(prazo));
+const Retornado = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "var(--gap-xs)",
+    padding: "var(--gap-lg) var(--gap-md)",
+    textAlign: "center",
+    color: "var(--md-sys-color-primary)",
 
-  return {
-    armado,
-    pedir(acao: () => void) {
-      clearTimeout(prazo);
-      if (armado()) {
-        setArmado(false);
-        acao();
-        return;
-      }
-      setArmado(true);
-      prazo = setTimeout(() => setArmado(false), 3000);
+    "& > span": { color: "var(--md-sys-color-on-surface)" },
+    '&[data-tipo="vazio"]': { color: "var(--md-sys-color-error)" },
+  },
+});
+
+const ListaDeDicas = styled("ul", {
+  base: {
+    listStyle: "none",
+    margin: 0,
+    padding: "var(--gap-sm)",
+    display: "flex",
+    flexDirection: "column",
+    gap: "var(--gap-md)",
+    fontSize: "13px",
+    color: "var(--md-sys-color-on-surface-variant)",
+
+    "& li": {
+      display: "flex",
+      gap: "var(--gap-sm)",
+      alignItems: "center",
     },
-  };
-}
+    "& b": { color: "var(--md-sys-color-on-surface)" },
+  },
+});
 
 const AvisoDeErro = styled("div", {
   base: {
@@ -821,6 +878,7 @@ const AvisoDeErro = styled("div", {
     background: "var(--md-sys-color-error-container)",
     color: "var(--md-sys-color-on-error-container)",
     fontSize: "13px",
+    flexShrink: 0,
 
     "& > span": { flex: 1 },
   },
@@ -832,7 +890,8 @@ const BarraDeProgresso = styled("div", {
     borderRadius: "var(--borderRadius-full)",
     background: "var(--md-sys-color-surface-container-highest)",
     overflow: "hidden",
-    marginBlock: "var(--gap-sm)",
+    marginTop: "var(--gap-sm)",
+    flexShrink: 0,
 
     "& > div": {
       height: "100%",

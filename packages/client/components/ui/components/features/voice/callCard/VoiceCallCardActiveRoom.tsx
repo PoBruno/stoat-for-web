@@ -22,6 +22,7 @@ import { IconButton } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 import { scrollableStyles } from "@revolt/ui/directives";
 
+import { MiniPlayer } from "../../../../../../src/interface/channels/voice/musicbox/MiniPlayer";
 import { MusicBoxPanel } from "../../../../../../src/interface/channels/voice/musicbox/MusicBoxPanel";
 import { VolumeMusicBox } from "../../../../../../src/interface/channels/voice/musicbox/VolumeMusicBox";
 import { SoundboardPanel } from "../../../../../../src/interface/channels/voice/SoundboardPanel";
@@ -73,6 +74,7 @@ export function VoiceCallCardActiveRoom() {
         <VoiceCallCardActions size="sm" />
         <VoiceCallControlHolder left overflow>
           <VoiceCallCardStatus />
+          <PlayerDaChamada />
         </VoiceCallControlHolder>
       </VoiceCallControls>
     </View>
@@ -107,14 +109,43 @@ function SoundboardEmbutido() {
 function MusicBoxEmbutido() {
   const voice = useVoice();
   const state = useState();
-  const canal = () => voice.channel();
 
   return (
-    <Show when={canal()}>
-      {(c) => (
+    // `keyed`: o estado do MusicBox e por canal; trocar de canal remonta.
+    <Show when={voice.channel()?.id} keyed>
+      {(id) => (
         <MusicBoxPanel
-          channelId={c().id}
+          channelId={id}
           onClose={() => (state.voice.callView = "people")}
+        />
+      )}
+    </Show>
+  );
+}
+
+/**
+ * Player da musica na barra de baixo, quando ha algo tocando.
+ *
+ * So para quem pode mexer na musica: sem a permissao os botoes so
+ * devolveriam erro.
+ */
+function PlayerDaChamada() {
+  const voice = useVoice();
+  const state = useState();
+
+  return (
+    <Show
+      when={
+        voice.musicboxPermission &&
+        voice.channel()?.isVoice &&
+        voice.channel()?.id
+      }
+      keyed
+    >
+      {(id) => (
+        <MiniPlayer
+          channelId={id}
+          onAbrir={() => (state.voice.callView = "musicbox")}
         />
       )}
     </Show>
