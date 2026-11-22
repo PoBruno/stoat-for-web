@@ -1,4 +1,6 @@
 import { createSignal, Match, Show, Switch } from "solid-js";
+
+import { useLingui } from "@lingui/solid/macro";
 import { Motion, Presence } from "solid-motionone";
 
 import { css } from "styled-system/css";
@@ -11,6 +13,8 @@ import { Button, Ripple, Symbol, typography } from "@revolt/ui";
 import Wordmark from "../../../../public/assets/web/wordmark.svg?component-solid";
 import { pendingUpdate } from "../../../../src/serviceWorkerInterface";
 
+import { ponteDeAtualizacao, useAtualizacaoDoDesktop } from "./atualizacao";
+
 const isMacOS = navigator.platform.startsWith("Mac");
 const isNative = !!window.native;
 
@@ -22,6 +26,14 @@ export function Titlebar() {
     (isNative && window.desktopConfig.get()?.windowState?.isMaximised) ?? false,
   );
   const { lifecycle } = useClientLifecycle();
+  const { t } = useLingui();
+  // Atualizacao do app desktop baixada e esperando reinicio: seta verde,
+  // como a do Discord (for-desktop/src/native/atualizacao.ts).
+  const atualizacao = useAtualizacaoDoDesktop();
+  const versaoPronta = () => {
+    const estado = atualizacao();
+    return estado.fase === "pronta" ? estado.versao : undefined;
+  };
 
   function isDisconnected() {
     return [
@@ -127,6 +139,17 @@ export function Titlebar() {
                 </div>
               </Show>
             </DragHandle>
+            <Show when={versaoPronta()}>
+              <Action
+                style={{ color: "#3ba55d" }}
+                title={t`Version ${versaoPronta()} is ready. Click to restart and update.`}
+                aria-label={t`Restart and update`}
+                onClick={() => void ponteDeAtualizacao()?.instalar()}
+              >
+                <Ripple />
+                <Symbol size={20}>download</Symbol>
+              </Action>
+            </Show>
             <Show when={isNative && !isMacOS}>
               <Action onClick={window.native.minimise}>
                 <Ripple />

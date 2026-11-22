@@ -966,6 +966,10 @@ msgstr "Torna spesso a controllare se la tua {0} è stata approvata!"
 msgid "Check your email"
 msgstr "Controlla la tua email"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Checking for updates…"
+msgstr ""
+
 #: components/ui/components/utils/files/FileInput.tsx
 msgid "Choose a file"
 msgstr ""
@@ -1250,6 +1254,10 @@ msgstr "Copia ID dell'utente"
 #: components/app/interface/settings/channel/webhooks/ViewWebhook.tsx
 msgid "Copy webhook URL"
 msgstr "Copia URL del webhook"
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Could not check for updates. Click to try again."
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "Could not find what you requested."
@@ -1708,6 +1716,12 @@ msgstr "Fatto"
 #, fuzzy
 msgid "Download for desktop"
 msgstr "Scarica per il desktop"
+
+#. placeholder {0}: estado.versao
+#. placeholder {1}: estado.progresso
+#: components/app/interface/settings/user/Native.tsx
+msgid "Downloading version {0} ({1}%)"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/ParticipantTile.tsx
 msgid "Draw on this screen"
@@ -3625,6 +3639,10 @@ msgstr "Resetta Token"
 msgid "Responsibly disclosed security issues"
 msgstr "Problemi di sicurezza comunicati responsabilmente"
 
+#: components/app/interface/desktop/Titlebar.tsx
+msgid "Restart and update"
+msgstr ""
+
 #: components/app/menus/DraftMessageContextMenu.tsx
 msgid "Retry sending"
 msgstr "Riprova l'invio"
@@ -4421,6 +4439,10 @@ msgstr "Questo nome utente è già in uso."
 msgid "This username is not allowed."
 msgstr "Questo nome utente non è consentito."
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "This version does not update by itself. Download the latest from the Stoat website."
+msgstr ""
+
 #: components/modal/modals/ResetBotToken.tsx
 msgid "This will invalidate the current token and stop any existing instances of the bot from running."
 msgstr "Questa azione renderà invalido il token corrente e fermerà ogni istanza esistente connessa ad esso."
@@ -4629,6 +4651,14 @@ msgstr "Pubblicità indesiderata o spam"
 msgid "Until I turn it back on"
 msgstr "Finché non lo riattivo"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates"
+msgstr ""
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates install automatically. Click to check now."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Upload Files"
 msgstr "Caricare file"
@@ -4756,6 +4786,13 @@ msgstr "Verificato"
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Verifying your account…"
 msgstr "Verificando il tuo account…"
+
+#. placeholder {0}: estado.versao
+#. placeholder {0}: versaoPronta()
+#: components/app/interface/desktop/Titlebar.tsx
+#: components/app/interface/settings/user/Native.tsx
+msgid "Version {0} is ready. Click to restart and update."
+msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
 #: components/app/interface/settings/UserSettings.tsx

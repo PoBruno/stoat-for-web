@@ -947,6 +947,10 @@ msgstr "{0}unuzun onaylanıp onaylanmadığını görmek için sık sık kontrol
 msgid "Check your email"
 msgstr "E-postanızı kontrol edin"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Checking for updates…"
+msgstr ""
+
 #: components/ui/components/utils/files/FileInput.tsx
 msgid "Choose a file"
 msgstr ""
@@ -1227,6 +1231,10 @@ msgstr "Kullanıcı ID'sini kopyala"
 #: components/app/interface/settings/channel/webhooks/ViewWebhook.tsx
 msgid "Copy webhook URL"
 msgstr "Webhook URL'sini kopyala"
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Could not check for updates. Click to try again."
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "Could not find what you requested."
@@ -1668,6 +1676,12 @@ msgstr "Bitti"
 #: components/auth/src/AppUpsell.tsx
 msgid "Download for desktop"
 msgstr "Masaüstü için indir"
+
+#. placeholder {0}: estado.versao
+#. placeholder {1}: estado.progresso
+#: components/app/interface/settings/user/Native.tsx
+msgid "Downloading version {0} ({1}%)"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/ParticipantTile.tsx
 msgid "Draw on this screen"
@@ -3559,6 +3573,10 @@ msgstr "Token'i Sıfırla"
 msgid "Responsibly disclosed security issues"
 msgstr "Sorumlu bir şekilde bildirilen güvenlik sorunları"
 
+#: components/app/interface/desktop/Titlebar.tsx
+msgid "Restart and update"
+msgstr ""
+
 #: components/app/menus/DraftMessageContextMenu.tsx
 msgid "Retry sending"
 msgstr "Tekrar göndermeyi dene"
@@ -4343,6 +4361,10 @@ msgstr "Bu kullanıcı adı çoktan alınmış."
 msgid "This username is not allowed."
 msgstr "Bu kullanıcı adına izin verilmiyor."
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "This version does not update by itself. Download the latest from the Stoat website."
+msgstr ""
+
 #: components/modal/modals/ResetBotToken.tsx
 msgid "This will invalidate the current token and stop any existing instances of the bot from running."
 msgstr "Bu, mevcut tokeni geçersiz kılacak ve botun çalışan tüm örneklerini durduracaktır."
@@ -4544,6 +4566,14 @@ msgstr "İstenmeyen reklam veya spam"
 msgid "Until I turn it back on"
 msgstr "Ben tekrar açana kadar"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates"
+msgstr ""
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates install automatically. Click to check now."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Upload Files"
 msgstr "Dosya Yükleme"
@@ -4671,6 +4701,13 @@ msgstr "Doğrulandı"
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Verifying your account…"
 msgstr "Hesabınız doğrulanıyor…"
+
+#. placeholder {0}: estado.versao
+#. placeholder {0}: versaoPronta()
+#: components/app/interface/desktop/Titlebar.tsx
+#: components/app/interface/settings/user/Native.tsx
+msgid "Version {0} is ready. Click to restart and update."
+msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
 #: components/app/interface/settings/UserSettings.tsx

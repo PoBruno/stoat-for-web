@@ -947,6 +947,10 @@ msgstr ""
 msgid "Check your email"
 msgstr ""
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Checking for updates…"
+msgstr ""
+
 #: components/ui/components/utils/files/FileInput.tsx
 msgid "Choose a file"
 msgstr ""
@@ -1227,6 +1231,10 @@ msgstr "Kopioi käyttäjän tunniste"
 #: components/app/interface/settings/channel/webhooks/ViewWebhook.tsx
 msgid "Copy webhook URL"
 msgstr "Kopioi webhookin URL"
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Could not check for updates. Click to try again."
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "Could not find what you requested."
@@ -1667,6 +1675,12 @@ msgstr "Valmis"
 
 #: components/auth/src/AppUpsell.tsx
 msgid "Download for desktop"
+msgstr ""
+
+#. placeholder {0}: estado.versao
+#. placeholder {1}: estado.progresso
+#: components/app/interface/settings/user/Native.tsx
+msgid "Downloading version {0} ({1}%)"
 msgstr ""
 
 #: components/ui/components/features/voice/callCard/ParticipantTile.tsx
@@ -3559,6 +3573,10 @@ msgstr "Nollaa todennustunnus"
 msgid "Responsibly disclosed security issues"
 msgstr "Vastuullisesti paljastetut tietoturvaongelmat"
 
+#: components/app/interface/desktop/Titlebar.tsx
+msgid "Restart and update"
+msgstr ""
+
 #: components/app/menus/DraftMessageContextMenu.tsx
 msgid "Retry sending"
 msgstr "Yritä lähettämistä uudelleen"
@@ -4343,6 +4361,10 @@ msgstr "Tämä käyttäjänimi on jo käytössä."
 msgid "This username is not allowed."
 msgstr "Tämä käyttäjänimi ei ole sallittu."
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "This version does not update by itself. Download the latest from the Stoat website."
+msgstr ""
+
 #: components/modal/modals/ResetBotToken.tsx
 msgid "This will invalidate the current token and stop any existing instances of the bot from running."
 msgstr "Tämä mitätöi botin nykyisen tokenin ja pysäyttää kaikki olemassa olevat instanssit."
@@ -4544,6 +4566,14 @@ msgstr "Ei-toivottu mainonta tai roskaposti"
 msgid "Until I turn it back on"
 msgstr "Kunnes laitan sen takaisin päälle"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates"
+msgstr ""
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates install automatically. Click to check now."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Upload Files"
 msgstr "Tiedostojen lähettäminen"
@@ -4671,6 +4701,13 @@ msgstr "Vahvistettu"
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Verifying your account…"
 msgstr "Vahvistetaan tiliäsi…"
+
+#. placeholder {0}: estado.versao
+#. placeholder {0}: versaoPronta()
+#: components/app/interface/desktop/Titlebar.tsx
+#: components/app/interface/settings/user/Native.tsx
+msgid "Version {0} is ready. Click to restart and update."
+msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
 #: components/app/interface/settings/UserSettings.tsx

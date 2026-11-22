@@ -5,6 +5,12 @@ import { Trans, useLingui } from "@lingui/solid/macro";
 import { CategoryButton, Checkbox, Column } from "@revolt/ui";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
+import {
+  type PonteDeAtualizacao,
+  ponteDeAtualizacao,
+  useAtualizacaoDoDesktop,
+} from "../../desktop/atualizacao";
+
 declare type DesktopConfig = {
   firstLaunch: boolean;
   customFrame: boolean;
@@ -73,6 +79,11 @@ declare global {
       ): void;
       /** Liga ou desliga a moldura de aviso na borda da tela */
       anotacaoMoldura?(ligada: boolean): void;
+      /**
+       * Atualizacao automatica. Opcional: so existe a partir do desktop
+       * v1.9.0; versoes anteriores precisam ser atualizadas na mao.
+       */
+      atualizacao?: PonteDeAtualizacao;
     };
 
     desktopConfig: {
@@ -91,6 +102,34 @@ export default function Native() {
   const { t } = useLingui();
   const [autostart, setAutostart] = createSignal(false);
   const [config, setConfig] = createSignal(window.desktopConfig.get());
+  const atualizacao = useAtualizacaoDoDesktop();
+
+  /** Linha de status da atualizacao, abaixo da versao */
+  function statusDaAtualizacao() {
+    const estado = atualizacao();
+    switch (estado.fase) {
+      case "procurando":
+        return t`Checking for updates…`;
+      case "baixando":
+        return t`Downloading version ${estado.versao} (${estado.progresso}%)`;
+      case "pronta":
+        return t`Version ${estado.versao} is ready. Click to restart and update.`;
+      case "erro":
+        return t`Could not check for updates. Click to try again.`;
+      case "ociosa":
+        return t`Updates install automatically. Click to check now.`;
+      default:
+        return t`This version does not update by itself. Download the latest from the Stoat website.`;
+    }
+  }
+
+  /** Clique na linha de atualizacao: instala se pronta, senao procura */
+  function acaoDaAtualizacao() {
+    const ponte = ponteDeAtualizacao();
+    if (!ponte) return;
+    if (atualizacao().fase === "pronta") void ponte.instalar();
+    else void ponte.procurar();
+  }
 
   function set(config: Partial<DesktopConfig>) {
     window.desktopConfig.set(config);
@@ -202,6 +241,17 @@ export default function Native() {
           }
         >
           <Trans>Stoat for Desktop</Trans>
+        </CategoryButton>
+        <CategoryButton
+          icon={
+            <Symbol>
+              {atualizacao().fase === "pronta" ? "download" : "update"}
+            </Symbol>
+          }
+          onClick={acaoDaAtualizacao}
+          description={statusDaAtualizacao()}
+        >
+          <Trans>Updates</Trans>
         </CategoryButton>
       </CategoryButton.Group>
     </Column>

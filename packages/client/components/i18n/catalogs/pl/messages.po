@@ -947,6 +947,10 @@ msgstr ""
 msgid "Check your email"
 msgstr ""
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Checking for updates…"
+msgstr ""
+
 #: components/ui/components/utils/files/FileInput.tsx
 msgid "Choose a file"
 msgstr ""
@@ -1227,6 +1231,10 @@ msgstr "Skopiuj ID użytkownika"
 #: components/app/interface/settings/channel/webhooks/ViewWebhook.tsx
 msgid "Copy webhook URL"
 msgstr "Skopiuj URL webhooka"
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Could not check for updates. Click to try again."
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "Could not find what you requested."
@@ -1667,6 +1675,12 @@ msgstr "Gotowe"
 
 #: components/auth/src/AppUpsell.tsx
 msgid "Download for desktop"
+msgstr ""
+
+#. placeholder {0}: estado.versao
+#. placeholder {1}: estado.progresso
+#: components/app/interface/settings/user/Native.tsx
+msgid "Downloading version {0} ({1}%)"
 msgstr ""
 
 #: components/ui/components/features/voice/callCard/ParticipantTile.tsx
@@ -3559,6 +3573,10 @@ msgstr "Zresetuj Token"
 msgid "Responsibly disclosed security issues"
 msgstr "Odpowiedzialnie ujawnił problemy bezpieczeństwa"
 
+#: components/app/interface/desktop/Titlebar.tsx
+msgid "Restart and update"
+msgstr ""
+
 #: components/app/menus/DraftMessageContextMenu.tsx
 msgid "Retry sending"
 msgstr "Wyślij ponownie"
@@ -4343,6 +4361,10 @@ msgstr "Ta nazwa użytkownika jest już zajęta."
 msgid "This username is not allowed."
 msgstr "Ta nazwa użytkownika nie jest dozwolona."
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "This version does not update by itself. Download the latest from the Stoat website."
+msgstr ""
+
 #: components/modal/modals/ResetBotToken.tsx
 msgid "This will invalidate the current token and stop any existing instances of the bot from running."
 msgstr "Spowoduje to unieważnienie bieżącego tokena i zatrzymanie wszystkich działających instancji bota."
@@ -4544,6 +4566,14 @@ msgstr "Niechciana reklama lub spam"
 msgid "Until I turn it back on"
 msgstr "Dopóki nie włączę z powrotem"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates"
+msgstr ""
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates install automatically. Click to check now."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Upload Files"
 msgstr "Wysyłanie plików"
@@ -4671,6 +4701,13 @@ msgstr "Zweryfikowany"
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Verifying your account…"
 msgstr "Weryfikowanie konta…"
+
+#. placeholder {0}: estado.versao
+#. placeholder {0}: versaoPronta()
+#: components/app/interface/desktop/Titlebar.tsx
+#: components/app/interface/settings/user/Native.tsx
+msgid "Version {0} is ready. Click to restart and update."
+msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
 #: components/app/interface/settings/UserSettings.tsx

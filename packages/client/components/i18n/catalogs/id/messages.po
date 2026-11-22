@@ -947,6 +947,10 @@ msgstr "Periksa kembali sesering mungkin untuk melihat apakah {0} Anda telah dis
 msgid "Check your email"
 msgstr "Periksa email Anda"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Checking for updates…"
+msgstr ""
+
 #: components/ui/components/utils/files/FileInput.tsx
 msgid "Choose a file"
 msgstr ""
@@ -1227,6 +1231,10 @@ msgstr "Salin ID pengguna"
 #: components/app/interface/settings/channel/webhooks/ViewWebhook.tsx
 msgid "Copy webhook URL"
 msgstr "Salin URL webhook"
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Could not check for updates. Click to try again."
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "Could not find what you requested."
@@ -1668,6 +1676,12 @@ msgstr "Selesai"
 #: components/auth/src/AppUpsell.tsx
 msgid "Download for desktop"
 msgstr "Unduh untuk desktop"
+
+#. placeholder {0}: estado.versao
+#. placeholder {1}: estado.progresso
+#: components/app/interface/settings/user/Native.tsx
+msgid "Downloading version {0} ({1}%)"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/ParticipantTile.tsx
 msgid "Draw on this screen"
@@ -3559,6 +3573,10 @@ msgstr "Atur Ulang Token"
 msgid "Responsibly disclosed security issues"
 msgstr "Masalah keamanan diungkapkan secara bertanggung jawab"
 
+#: components/app/interface/desktop/Titlebar.tsx
+msgid "Restart and update"
+msgstr ""
+
 #: components/app/menus/DraftMessageContextMenu.tsx
 msgid "Retry sending"
 msgstr "Coba kirim lagi"
@@ -4343,6 +4361,10 @@ msgstr "Nama pengguna ini sudah diambil."
 msgid "This username is not allowed."
 msgstr "Nama pengguna ini tidak diizinkan."
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "This version does not update by itself. Download the latest from the Stoat website."
+msgstr ""
+
 #: components/modal/modals/ResetBotToken.tsx
 msgid "This will invalidate the current token and stop any existing instances of the bot from running."
 msgstr "Ini akan membatalkan token yang sedang valid dan menghentikan semua instansi dari bot yang sedang berjalan."
@@ -4544,6 +4566,14 @@ msgstr "Iklan yang tidak diminta atau spam"
 msgid "Until I turn it back on"
 msgstr "Hingga saya menghidupkannya lagi"
 
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates"
+msgstr ""
+
+#: components/app/interface/settings/user/Native.tsx
+msgid "Updates install automatically. Click to check now."
+msgstr ""
+
 #: components/app/interface/settings/channel/permissions/ChannelPermissionsEditor.tsx
 msgid "Upload Files"
 msgstr "Unggah Berkas"
@@ -4671,6 +4701,13 @@ msgstr "Terverifikasi"
 #: components/auth/src/flows/FlowVerify.tsx
 msgid "Verifying your account…"
 msgstr "Memverifikasi akun kamu…"
+
+#. placeholder {0}: estado.versao
+#. placeholder {0}: versaoPronta()
+#: components/app/interface/desktop/Titlebar.tsx
+#: components/app/interface/settings/user/Native.tsx
+msgid "Version {0} is ready. Click to restart and update."
+msgstr ""
 
 #: components/app/interface/settings/user/Native.tsx
 #: components/app/interface/settings/UserSettings.tsx
