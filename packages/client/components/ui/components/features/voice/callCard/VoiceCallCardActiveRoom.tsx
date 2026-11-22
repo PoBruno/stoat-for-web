@@ -197,9 +197,11 @@ function VoiceCallSoundboardToggle() {
       use:floating={{
         tooltip: {
           placement: "top",
-          content: voice.soundboardPermission
-            ? t`Soundboard`
-            : t`Missing permission`,
+          content: !voice.channel()?.server
+            ? t`The soundboard is only available in servers`
+            : voice.soundboardPermission
+              ? t`Soundboard`
+              : t`Missing permission`,
         },
       }}
     >
@@ -301,11 +303,19 @@ function VoiceCallPeopleToggle() {
 
 function VoiceCallFullscreen() {
   const voice = useVoice();
+  const { t } = useLingui();
   return (
     <IconButton
       size="sm"
       variant={"standard"}
       onPress={() => voice.toggleFullscreen()}
+      aria-label={voice.fullscreen() ? t`Exit fullscreen` : t`Fullscreen`}
+      use:floating={{
+        tooltip: {
+          placement: "top",
+          content: voice.fullscreen() ? t`Exit fullscreen` : t`Fullscreen`,
+        },
+      }}
     >
       <Show when={voice.fullscreen()} fallback={<Symbol>fullscreen</Symbol>}>
         <Symbol>fullscreen_exit</Symbol>
@@ -573,12 +583,13 @@ function Participants() {
               use:floating={{
                 tooltip: {
                   placement: "top",
+                  // Diz o que o clique FAZ, nao o estado atual.
                   content:
                     state.voice.callFilmstrip === "bottom"
-                      ? t`Others: bottom`
+                      ? t`Move others to the side`
                       : state.voice.callFilmstrip === "side"
-                        ? t`Others: side`
-                        : t`Others: hidden`,
+                        ? t`Hide others`
+                        : t`Show others at the bottom`,
                 },
               }}
             >

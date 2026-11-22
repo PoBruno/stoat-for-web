@@ -17,6 +17,8 @@ export const DEFAULT_SEQUENCES: Record<KeybindAction, (string | RegExp)[]> = {
   [KeybindAction.CLOSE_FLOATING]: ["Escape"],
   [KeybindAction.CLOSE_SIDEBAR]: ["Escape"],
   [KeybindAction.QUICK_SWITCH]: ["Control", "k"],
+  [KeybindAction.VOICE_TOGGLE_MUTE]: ["Control", "Shift", "m"],
+  [KeybindAction.VOICE_TOGGLE_DEAFEN]: ["Control", "Shift", "d"],
 };
 
 /**
@@ -46,4 +48,6 @@ export const DEFAULT_MAC_SEQUENCES: Record<KeybindAction, (string | RegExp)[]> =
     [KeybindAction.CLOSE_FLOATING]: ["Escape"],
     [KeybindAction.CLOSE_SIDEBAR]: ["Escape"],
     [KeybindAction.QUICK_SWITCH]: ["Meta" /* Command */, "k"],
+    [KeybindAction.VOICE_TOGGLE_MUTE]: ["Meta", "Shift", "m"],
+    [KeybindAction.VOICE_TOGGLE_DEAFEN]: ["Meta", "Shift", "d"],
   };

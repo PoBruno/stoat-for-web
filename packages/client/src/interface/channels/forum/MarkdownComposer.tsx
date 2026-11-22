@@ -208,7 +208,8 @@ const HiddenInput = styled("input", {
  *
  * The editor itself is the app's CodeMirror one, so highlighting and
  * autocomplete match the message box. `onComplete` is deliberately not passed:
- * in a forum, Enter is a new line, not submit.
+ * in a forum, Enter is a new line, not submit. Ctrl/Cmd+Enter calls
+ * `onSubmit`, like GitHub and the Discord forum.
  */
 export function MarkdownComposer(props: {
   value: string;
@@ -219,6 +220,8 @@ export function MarkdownComposer(props: {
   onRejected?: (names: string[]) => void;
   /** Rendered in a bar inside the frame, e.g. Cancel / Comment */
   actions?: JSX.Element;
+  /** Ctrl/Cmd+Enter */
+  onSubmit?: () => void;
 }) {
   const { t } = useLingui();
   const client = useClient();
@@ -444,7 +447,25 @@ export function MarkdownComposer(props: {
         </Toolbar>
       </Show>
 
-      <Pane hidden={previewing()}>
+      <Pane
+        hidden={previewing()}
+        // Captura: o CodeMirror trata Mod-Enter (linha em branco) antes de
+        // o evento borbulhar ate aqui.
+        on:keydown={{
+          capture: true,
+          handleEvent: (e: KeyboardEvent) => {
+            if (
+              e.key === "Enter" &&
+              (e.ctrlKey || e.metaKey) &&
+              props.onSubmit
+            ) {
+              e.preventDefault();
+              e.stopPropagation();
+              props.onSubmit();
+            }
+          },
+        }}
+      >
         <TextEditor2
           autoFocus={props.autoFocus}
           placeholder={props.placeholder}

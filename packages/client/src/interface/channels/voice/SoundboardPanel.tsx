@@ -12,7 +12,6 @@ import { Plural, Trans, useLingui } from "@lingui/solid/macro";
 import { Server, Sound } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
-
 import { useClient } from "@revolt/client";
 import { useModals } from "@revolt/modal";
 import { useVoice } from "@revolt/rtc";
@@ -115,6 +114,15 @@ export function SoundboardPanel(props: {
     }
   });
 
+  /** Clique no som: toca, ou para se ele ja esta tocando. */
+  function alternar(som: Sound) {
+    if (!voice.canPlaySound) return;
+    if (tocando() === som.id) {
+      voice.stopSound();
+      setTocando(undefined);
+    } else tocar(som);
+  }
+
   function tocar(som: Sound) {
     setTocando(som.id);
     voice
@@ -194,7 +202,14 @@ export function SoundboardPanel(props: {
           <input
             value={busca()}
             placeholder={t`Search sounds`}
+            aria-label={t`Search sounds`}
             onInput={(e) => setBusca(e.currentTarget.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape" && busca()) {
+                e.stopPropagation();
+                setBusca("");
+              }
+            }}
           />
         </Campo>
         <Row gap="sm" align>
@@ -204,6 +219,7 @@ export function SoundboardPanel(props: {
           <Symbol size={18}>volume_up</Symbol>
           <input
             type="range"
+            aria-label={t`Soundboard volume`}
             min="0"
             max="100"
             value={Math.round(state.voice.soundboardVolume * 100)}
@@ -243,6 +259,7 @@ export function SoundboardPanel(props: {
         </Row>
         <Row gap="xs" align>
           <select
+            aria-label={t`Sort sounds`}
             value={ordem()}
             onChange={(e) => setOrdem(e.currentTarget.value as Ordem)}
           >
@@ -293,7 +310,16 @@ export function SoundboardPanel(props: {
           <Grade lista={lista()}>
             <For each={visiveis()}>
               {(som) => (
-                <Cartao>
+                <Cartao
+                  // O cartao inteiro toca, como no Discord; os botoes de
+                  // dentro (favoritar, menu) fazem so o que dizem.
+                  data-tocando={tocando() === som.id ? "1" : undefined}
+                  data-desabilitado={!voice.canPlaySound ? "1" : undefined}
+                  onClick={(e) => {
+                    if ((e.target as HTMLElement).closest("button")) return;
+                    alternar(som);
+                  }}
+                >
                   <Row gap="sm" align>
                     <Symbol size={22}>music_note</Symbol>
                     <Dados>
@@ -306,19 +332,42 @@ export function SoundboardPanel(props: {
                             {formatarDuracao(som.duration!)}
                           </Text>
                         </Show>
-                        <Show when={state.voice.isFavouriteSound(som.id)}>
-                          <Symbol size={12}>star</Symbol>
-                        </Show>
                       </Row>
                     </Dados>
                   </Row>
                   <Row gap="xs" align>
+                    <Estrela
+                      type="button"
+                      data-estrela
+                      data-ligada={
+                        state.voice.isFavouriteSound(som.id) ? "1" : undefined
+                      }
+                      aria-pressed={state.voice.isFavouriteSound(som.id)}
+                      aria-label={
+                        state.voice.isFavouriteSound(som.id)
+                          ? t`Remove from favourites`
+                          : t`Add to favourites`
+                      }
+                      title={
+                        state.voice.isFavouriteSound(som.id)
+                          ? t`Remove from favourites`
+                          : t`Add to favourites`
+                      }
+                      onClick={() => state.voice.toggleFavouriteSound(som.id)}
+                    >
+                      <Symbol
+                        size={16}
+                        fill={state.voice.isFavouriteSound(som.id)}
+                      >
+                        star
+                      </Symbol>
+                    </Estrela>
                     <IconButton
                       size="xs"
                       variant={tocando() === som.id ? "filled" : "tonal"}
-                      aria-label={t`Play`}
+                      aria-label={tocando() === som.id ? t`Stop` : t`Play`}
                       isDisabled={!voice.canPlaySound}
-                      onPress={() => tocar(som)}
+                      onPress={() => alternar(som)}
                     >
                       <Symbol size={18}>
                         {tocando() === som.id ? "stop" : "play_arrow"}
@@ -333,7 +382,7 @@ export function SoundboardPanel(props: {
                         contextMenu: () => (
                           <ContextMenu>
                             <ContextMenuButton
-                              icon={<Symbol size={16}>edit</Symbol>}
+                              icon={<Symbol size={16}>star</Symbol>}
                               onClick={() =>
                                 state.voice.toggleFavouriteSound(som.id)
                               }
@@ -549,8 +598,49 @@ const Cartao = styled("div", {
     // Altura de duas linhas: nome em cima, duracao embaixo.
     minHeight: "52px",
 
+    cursor: "pointer",
+    userSelect: "none",
+    transition: "background .15s, outline-color .15s",
+    outline: "2px solid transparent",
+    outlineOffset: "-2px",
+
     _hover: {
       background: "var(--md-sys-color-surface-container-high)",
+    },
+
+    // Tocando agora: contorno na cor de destaque, como o Discord.
+    "&[data-tocando]": {
+      outlineColor: "var(--md-sys-color-primary)",
+    },
+    "&[data-desabilitado]": {
+      cursor: "not-allowed",
+      opacity: 0.6,
+    },
+
+    // A estrela vazia so aparece no hover; ligada fica sempre visivel.
+    "&:hover button[data-estrela]": { opacity: 1 },
+  },
+});
+
+/** Favoritar direto no cartao (antes so pelo menu "..."). */
+const Estrela = styled("button", {
+  base: {
+    display: "grid",
+    placeItems: "center",
+    width: "28px",
+    height: "28px",
+    border: "none",
+    borderRadius: "var(--borderRadius-full)",
+    background: "none",
+    cursor: "pointer",
+    color: "var(--md-sys-color-on-surface-variant)",
+    opacity: 0,
+    transition: "opacity .15s",
+
+    "&:focus-visible": { opacity: 1 },
+    "&[data-ligada]": {
+      opacity: 1,
+      color: "#f0b232",
     },
   },
 });

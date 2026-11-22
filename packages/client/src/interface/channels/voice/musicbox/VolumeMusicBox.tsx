@@ -34,6 +34,8 @@ export function VolumeMusicBox(props: { channelId: string }) {
   const { t } = useLingui();
 
   const [identidade, setIdentidade] = createSignal<string>();
+  // Sem isto o fallback "nao configurado" aparecia enquanto o fetch rodava.
+  const [carregando, setCarregando] = createSignal(true);
 
   onMount(() => {
     let vivo = true;
@@ -51,6 +53,8 @@ export function VolumeMusicBox(props: { channelId: string }) {
       } catch {
         // Sem identidade o controle nao aparece; e melhor que um deslizante
         // que nao faz nada.
+      } finally {
+        if (vivo) setCarregando(false);
       }
     })();
 
@@ -79,7 +83,9 @@ export function VolumeMusicBox(props: { channelId: string }) {
         when={identidade()}
         fallback={
           <Text class="label" size="small">
-            <Trans>MusicBox is not set up on this server.</Trans>
+            <Show when={!carregando()} fallback={<Trans>Loading…</Trans>}>
+              <Trans>MusicBox is not set up on this server.</Trans>
+            </Show>
           </Text>
         }
       >

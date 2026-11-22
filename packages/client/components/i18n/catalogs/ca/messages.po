@@ -778,6 +778,7 @@ msgstr "No es pot obtenir la sol·licitut del status \"descobreix\" ara mateix"
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/BanMember.tsx
 #: components/modal/modals/BanNonMember.tsx
+#: components/modal/modals/Confirmar.tsx
 #: components/modal/modals/CropProcess.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
@@ -1477,6 +1478,7 @@ msgid "Degraded Performance"
 msgstr "Rendiment degradat"
 
 #: components/app/interface/settings/server/sounds/SoundList.tsx
+#: components/modal/modals/Confirmar.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
 #: components/modal/modals/DeleteChannel.tsx
@@ -1564,6 +1566,14 @@ msgstr "Eliminar Servidor"
 
 #: components/auth/src/flows/FlowLogin.tsx
 msgid "Delete session"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Delete this comment?"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Delete this post?"
 msgstr ""
 
 #: components/modal/modals/DeleteEmoji.tsx
@@ -1898,6 +1908,10 @@ msgstr ""
 msgid "Everyone"
 msgstr "Tothom"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Exit fullscreen"
+msgstr ""
+
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "Expand"
 msgstr ""
@@ -2052,6 +2066,10 @@ msgstr "de· "
 msgid "Fruit Salad"
 msgstr "Tot de fruita"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Fullscreen"
+msgstr ""
+
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Generate a new token if it gets lost or compromised"
 msgstr "Genera un nou token si es perd o es veu compromès"
@@ -2182,6 +2200,10 @@ msgstr "Ha ajudat a traduir Stoat"
 
 #: components/modal/modals/CreateInvite.tsx
 msgid "Here is your invite code:"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Hide others"
 msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
@@ -2515,6 +2537,10 @@ msgstr ""
 msgid "Loading sounds."
 msgstr ""
 
+#: src/interface/channels/voice/musicbox/VolumeMusicBox.tsx
+msgid "Loading…"
+msgstr ""
+
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "Lock"
 msgstr ""
@@ -2731,6 +2757,7 @@ msgstr "Minimitzar a la safata"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Missing permission"
 msgstr "Permís no concedit"
 
@@ -2762,6 +2789,10 @@ msgstr "Moure els membres"
 msgid "Move members between voice channels"
 msgstr "Permet moure els membres entre canals de veu"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Move others to the side"
+msgstr ""
+
 #: components/i18n/errors.tsx
 msgid "Multi-factor authentication is already enabled for this account."
 msgstr "L’autenticació de múltiples factors ja està activada per a aquest compte."
@@ -2769,6 +2800,10 @@ msgstr "L’autenticació de múltiples factors ja està activada per a aquest c
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
 msgid "MusicBox"
+msgstr ""
+
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "MusicBox (right-click: volume)"
 msgstr ""
 
 #: src/interface/channels/voice/musicbox/VolumeMusicBox.tsx
@@ -3112,18 +3147,6 @@ msgstr ""
 #: components/modal/modals/ReportContent.tsx
 msgid "Other"
 msgstr "Altre"
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: bottom"
-msgstr ""
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: hidden"
-msgstr ""
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: side"
-msgstr ""
 
 #: src/interface/Friends.tsx
 msgid "Outgoing"
@@ -3506,6 +3529,10 @@ msgstr "Canviar el nom de la sessió"
 msgid "Rep Stoat using Discord rich presence."
 msgstr "Representa l'Stoat utilitzant la funció \"Rich Presence\" de Discord."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Replies to it stay, but the comment itself is gone for good."
+msgstr ""
+
 #: components/app/menus/MessageContextMenu.tsx
 #: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
@@ -3585,6 +3612,7 @@ msgid "Retry sending"
 msgstr "Torna a intentar l'enviament"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Return to voice channel"
 msgstr "Tornar al canal de veu"
 
@@ -3907,6 +3935,10 @@ msgid "Show corrections and suggestions as you type."
 msgstr "Mostra correccions i suggeriments a mesura que escrius."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show others at the bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 msgid "Show people without video"
 msgstr ""
 
@@ -3976,6 +4008,10 @@ msgid "Something went wrong! {error}"
 msgstr "Hi ha hagut un problema! {error}"
 
 #: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Sort sounds"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Sound actions"
 msgstr ""
 
@@ -3990,6 +4026,11 @@ msgstr ""
 msgid "Soundboard"
 msgstr ""
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard (right-click: volume)"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Soundboard volume"
 msgstr ""
@@ -4074,6 +4115,10 @@ msgstr "Stoat funciona millor com a aplicació"
 #: components/auth/src/AppUpsell.tsx
 msgid "Stoat, right on <0>your desktop.</0>"
 msgstr "Stoat, just a <0> del teu escriptori.</0>"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Stop"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Stop camera"
@@ -4230,12 +4275,20 @@ msgstr ""
 msgid "The password is too short."
 msgstr ""
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "The post and all of its comments will be deleted. There's no going back."
+msgstr ""
+
 #: components/i18n/errors.tsx
 msgid "The server has been removed from discover by moderators, the user must contact support."
 msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "The server is already on discover, the user must contact support to have it removed."
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "The soundboard is only available in servers"
 msgstr ""
 
 #: components/i18n/errors.tsx

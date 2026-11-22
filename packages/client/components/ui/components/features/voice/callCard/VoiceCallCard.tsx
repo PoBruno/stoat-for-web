@@ -205,6 +205,13 @@ export function VoiceCallCardContext(props: { children: JSX.Element }) {
 const Float = styled("div", {
   base: {
     position: "fixed",
+    // Ancora no canto: a posicao real vem do `transform` calculado acima.
+    // Sem top/left o fixed cai na posicao estatica, logo ABAIXO do app (a
+    // raiz ocupa 100vh), e o card inteiro fica fora da tela -- a pagina do
+    // canal de voz aparecia em branco. Veio do upstream e se perdeu no merge
+    // da 0.17.
+    top: 0,
+    left: 0,
     zIndex: 10,
     pointerEvents: "none",
     transition: "all .3s cubic-bezier(1, 0, 0, 1)",

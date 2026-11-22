@@ -4,7 +4,6 @@ import { Plural, Trans, useLingui } from "@lingui/solid/macro";
 import { Channel, ForumPost, User } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
-
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { Markdown } from "@revolt/markdown";
@@ -249,7 +248,7 @@ export function ForumPostView(props: {
   onBack: () => void;
 }) {
   const { t } = useLingui();
-  const { showError } = useModals();
+  const { showError, openModal } = useModals();
   const client = useClient();
   const instance = useInstance();
   const [editing, setEditing] = createSignal(false);
@@ -669,15 +668,21 @@ export function ForumPostView(props: {
                                 <ContextMenuButton
                                   icon={<Symbol size={16}>delete</Symbol>}
                                   destructive
+                                  // Apaga o post com todos os comentarios e
+                                  // sem desfazer: pede confirmacao antes.
                                   onClick={() =>
-                                    settle(
-                                      loaded()
-                                        .delete()
-                                        // Runs after the request; onBack is a
-                                        // plain callback prop.
-                                        // eslint-disable-next-line solid/reactivity
-                                        .then(() => props.onBack()),
-                                    )
+                                    openModal({
+                                      type: "confirmar",
+                                      titulo: t`Delete this post?`,
+                                      texto: t`The post and all of its comments will be deleted. There's no going back.`,
+                                      acao: () =>
+                                        loaded()
+                                          .delete()
+                                          // Runs after the request; onBack is a
+                                          // plain callback prop.
+                                          // eslint-disable-next-line solid/reactivity
+                                          .then(() => props.onBack()),
+                                    })
                                   }
                                 >
                                   <Trans>Delete</Trans>

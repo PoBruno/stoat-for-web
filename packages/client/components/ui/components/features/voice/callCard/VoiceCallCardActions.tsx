@@ -134,11 +134,13 @@ export function VoiceCallCardActions(props: { size: "xs" | "sm" }) {
         }}
         isDisabled={!limits().video}
       >
+        {/* O icone mostra a ACAO, como o resto da barra: compartilhando,
+            oferece parar. Antes estava invertido. */}
         <Show
-          when={!limits().video || voice.screenshare()}
-          fallback={<Symbol>stop_screen_share</Symbol>}
+          when={limits().video && voice.screenshare()}
+          fallback={<Symbol>screen_share</Symbol>}
         >
-          <Symbol>screen_share</Symbol>
+          <Symbol>stop_screen_share</Symbol>
         </Show>
       </IconButton>
       {/*

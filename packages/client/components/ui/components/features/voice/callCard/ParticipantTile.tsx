@@ -147,6 +147,12 @@ export function ParticipantTile(props: TileProps) {
           if (armado()) return;
           voice.togglePin(track);
         }}
+        // Duplo clique = tela cheia, como em player de video. Os dois
+        // cliques do duplo alternam o pin duas vezes e voltam ao mesmo.
+        onDblClick={() => {
+          if (armado()) return;
+          voice.toggleFullscreen();
+        }}
         use:floating={{
           // TODO: Conflicts with focusing, maybe only show if clicking name itself
           //   userCard: {
@@ -337,7 +343,11 @@ function BotaoDestacar(props: {
         style={{
           background: "none",
           border: "none",
-          padding: "0",
+          padding: "4px",
+          "min-width": "28px",
+          "min-height": "28px",
+          "justify-content": "center",
+          "border-radius": "var(--borderRadius-full)",
           cursor: "pointer",
           display: "flex",
           "align-items": "center",
@@ -393,7 +403,11 @@ function BotaoDesenhar(props: {
       style={{
         background: "none",
         border: "none",
-        padding: "0",
+        padding: "4px",
+        "min-width": "28px",
+        "min-height": "28px",
+        "justify-content": "center",
+        "border-radius": "var(--borderRadius-full)",
         cursor: "pointer",
         display: "flex",
         "align-items": "center",
@@ -432,6 +446,13 @@ function ScreenShareAudioButton(props: {
       type="button"
       class={audioButton()}
       disabled={noAudio() || props.self}
+      aria-label={
+        noAudio()
+          ? t`No audio shared`
+          : mutedByUs()
+            ? t`Unmute screen audio`
+            : t`Mute screen audio`
+      }
       onClick={(e) => {
         // never let this reach the tile's pin handler
         e.stopPropagation();
@@ -465,7 +486,11 @@ const audioButton = cva({
   base: {
     display: "grid",
     placeItems: "center",
-    padding: "2px",
+    // Alvo de 28px: com 18px e padding 2px o botao era dificil de acertar
+    // por cima de um video em movimento.
+    padding: "4px",
+    minWidth: "28px",
+    minHeight: "28px",
     border: "none",
     borderRadius: "var(--borderRadius-full)",
     background: "transparent",

@@ -65,6 +65,16 @@ export enum KeybindAction {
    * Quick Switch
    */
   QUICK_SWITCH = "quick_switch",
+
+  /**
+   * Mute / unmute the microphone in a call (Discord: Ctrl+Shift+M)
+   */
+  VOICE_TOGGLE_MUTE = "voice_toggle_mute",
+
+  /**
+   * Deafen / undeafen in a call (Discord: Ctrl+Shift+D)
+   */
+  VOICE_TOGGLE_DEAFEN = "voice_toggle_deafen",
 }
 
 /**
@@ -87,6 +97,8 @@ export const ACTION_PRIORITY: KeybindAction[] = [
   KeybindAction.NAVIGATION_CHANNEL_DOWN,
 
   // ... all others
+  KeybindAction.VOICE_TOGGLE_MUTE,
+  KeybindAction.VOICE_TOGGLE_DEAFEN,
   KeybindAction.QUICK_SWITCH,
   KeybindAction.CHAT_FOCUS_COMPOSITION,
 ];

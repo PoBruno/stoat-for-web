@@ -180,6 +180,14 @@ export type Modals =
       texto: JSX.Element;
     }
   | {
+      type: "confirmar";
+      titulo: JSX.Element;
+      texto: JSX.Element;
+      /** Texto do botao de confirmar; padrao "Delete" */
+      rotulo?: JSX.Element;
+      acao: () => Promise<unknown>;
+    }
+  | {
       type: "error2";
       error: unknown;
     }

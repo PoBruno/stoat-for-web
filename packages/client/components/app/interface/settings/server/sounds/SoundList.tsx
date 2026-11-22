@@ -1,5 +1,14 @@
 import { createFormControl, createFormGroup } from "solid-forms";
-import { For, Match, Show, Switch, createMemo, createResource } from "solid-js";
+import {
+  For,
+  Match,
+  Show,
+  Switch,
+  createEffect,
+  createMemo,
+  createResource,
+  on,
+} from "solid-js";
 
 import { Trans, useLingui } from "@lingui/solid/macro";
 import { Server } from "stoat.js";
@@ -84,6 +93,32 @@ export function SoundList(props: { server: Server }) {
     { disabled: isDisabled() },
   );
 
+  // O `disabled` acima e lido uma vez so: sem isto o formulario nao travava
+  // ao bater o limite, nem destravava depois de excluir um som.
+  createEffect(
+    on(isDisabled, (travado) => editGroup.markDisabled(travado), {
+      defer: true,
+    }),
+  );
+
+  // Escolheu o arquivo e o nome esta vazio: sugere o nome do arquivo, sem a
+  // extensao e no limite de 32 caracteres. Quase sempre e o nome que a
+  // pessoa digitaria.
+  createEffect(
+    on(
+      () => editGroup.controls.file.value,
+      (valor) => {
+        const arquivo = Array.isArray(valor) ? valor[0] : undefined;
+        if (!arquivo || editGroup.controls.name.value) return;
+        const nome = arquivo.name
+          .replace(/\.[^.]+$/, "")
+          .replace(/[_-]+/g, " ");
+        editGroup.controls.name.setValue(nome.trim().slice(0, 32));
+      },
+      { defer: true },
+    ),
+  );
+
   async function onSubmit() {
     const arquivo = (editGroup.controls.file.value as File[])[0];
 
@@ -96,11 +131,15 @@ export function SoundList(props: { server: Server }) {
     body.append("file", arquivo);
 
     const [key, value] = client().authenticationHeader;
-    const data: { id: string } = await fetch(`${instance.mediaUrl}/sounds`, {
+    const res = await fetch(`${instance.mediaUrl}/sounds`, {
       method: "POST",
       body,
       headers: { [key]: value },
-    }).then((res) => res.json());
+    });
+    // Arquivo grande demais ou de tipo recusado: lanca o erro do servidor
+    // para a mensagem dizer o motivo, em vez de `createSound(undefined)`.
+    if (!res.ok) throw await res.json().catch(() => ({ type: "UnknownError" }));
+    const data: { id: string } = await res.json();
 
     await props.server.createSound(data.id, {
       name: editGroup.controls.name.value,

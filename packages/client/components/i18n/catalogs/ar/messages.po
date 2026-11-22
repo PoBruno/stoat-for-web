@@ -778,6 +778,7 @@ msgstr "لا يمكن الحصول على حالة طلب الاكتشاف حا�
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/BanMember.tsx
 #: components/modal/modals/BanNonMember.tsx
+#: components/modal/modals/Confirmar.tsx
 #: components/modal/modals/CropProcess.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
@@ -1477,6 +1478,7 @@ msgid "Degraded Performance"
 msgstr "أداء منخفض"
 
 #: components/app/interface/settings/server/sounds/SoundList.tsx
+#: components/modal/modals/Confirmar.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
 #: components/modal/modals/DeleteChannel.tsx
@@ -1564,6 +1566,14 @@ msgstr "حذف الخادم"
 
 #: components/auth/src/flows/FlowLogin.tsx
 msgid "Delete session"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Delete this comment?"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Delete this post?"
 msgstr ""
 
 #: components/modal/modals/DeleteEmoji.tsx
@@ -1898,6 +1908,10 @@ msgstr ""
 msgid "Everyone"
 msgstr "الجميع"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Exit fullscreen"
+msgstr ""
+
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "Expand"
 msgstr ""
@@ -2052,6 +2066,10 @@ msgstr "من "
 msgid "Fruit Salad"
 msgstr "سلطة فاكهة"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Fullscreen"
+msgstr ""
+
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Generate a new token if it gets lost or compromised"
 msgstr "إنشاء رمز جديد في حالة الضياع أو السرقة"
@@ -2182,6 +2200,10 @@ msgstr "قام بالمساعدة في ترجمة Stoat"
 
 #: components/modal/modals/CreateInvite.tsx
 msgid "Here is your invite code:"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Hide others"
 msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
@@ -2515,6 +2537,10 @@ msgstr ""
 msgid "Loading sounds."
 msgstr ""
 
+#: src/interface/channels/voice/musicbox/VolumeMusicBox.tsx
+msgid "Loading…"
+msgstr ""
+
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "Lock"
 msgstr ""
@@ -2731,6 +2757,7 @@ msgstr "تصغير البرنامج"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Missing permission"
 msgstr "صلاحية غير موجودة"
 
@@ -2762,6 +2789,10 @@ msgstr "تحريك الأعضاء"
 msgid "Move members between voice channels"
 msgstr "نقل الاعضاء بين القنوات الصوتية"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Move others to the side"
+msgstr ""
+
 #: components/i18n/errors.tsx
 msgid "Multi-factor authentication is already enabled for this account."
 msgstr "المصادقة المتعددة العوامل مفعلة مسبقا."
@@ -2769,6 +2800,10 @@ msgstr "المصادقة المتعددة العوامل مفعلة مسبقا."
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
 msgid "MusicBox"
+msgstr ""
+
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "MusicBox (right-click: volume)"
 msgstr ""
 
 #: src/interface/channels/voice/musicbox/VolumeMusicBox.tsx
@@ -3112,18 +3147,6 @@ msgstr ""
 #: components/modal/modals/ReportContent.tsx
 msgid "Other"
 msgstr "اخرى"
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: bottom"
-msgstr ""
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: hidden"
-msgstr ""
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: side"
-msgstr ""
 
 #: src/interface/Friends.tsx
 msgid "Outgoing"
@@ -3504,6 +3527,10 @@ msgstr "اعادة تسمية الجلسة"
 msgid "Rep Stoat using Discord rich presence."
 msgstr "عرض Stoat في الحالة الشخصية في تطبيق Discord."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Replies to it stay, but the comment itself is gone for good."
+msgstr ""
+
 #: components/app/menus/MessageContextMenu.tsx
 #: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
@@ -3582,6 +3609,7 @@ msgid "Retry sending"
 msgstr "اعادة محاولة الارسال"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Return to voice channel"
 msgstr "العودة إلى القناة الصوتية"
 
@@ -3904,6 +3932,10 @@ msgid "Show corrections and suggestions as you type."
 msgstr "عرض التصحيحات والاقتراحات أثناء الكتابة."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show others at the bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 msgid "Show people without video"
 msgstr ""
 
@@ -3973,6 +4005,10 @@ msgid "Something went wrong! {error}"
 msgstr "حدث خطأ ما! {error}"
 
 #: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Sort sounds"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Sound actions"
 msgstr ""
 
@@ -3987,6 +4023,11 @@ msgstr ""
 msgid "Soundboard"
 msgstr ""
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard (right-click: volume)"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Soundboard volume"
 msgstr ""
@@ -4071,6 +4112,10 @@ msgstr "يعمل Stoat بشكل أفضل كتطبيق"
 #: components/auth/src/AppUpsell.tsx
 msgid "Stoat, right on <0>your desktop.</0>"
 msgstr "Stoat، مباشرةً على <0>سطح مكتبك.</0>"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Stop"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Stop camera"
@@ -4227,6 +4272,10 @@ msgstr "تمت إزالة العنصر من قِبَل المشرفين، وعل
 msgid "The password is too short."
 msgstr "كلمة المرور أقصر من الحد الادنى."
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "The post and all of its comments will be deleted. There's no going back."
+msgstr ""
+
 #: components/i18n/errors.tsx
 msgid "The server has been removed from discover by moderators, the user must contact support."
 msgstr "تمت إزالة الخادم من قسم \"الاكتشاف\" (Discover) بواسطة المشرفين، ويجب على المستخدم التواصل مع فريق الدعم."
@@ -4234,6 +4283,10 @@ msgstr "تمت إزالة الخادم من قسم \"الاكتشاف\" (Discove
 #: components/i18n/errors.tsx
 msgid "The server is already on discover, the user must contact support to have it removed."
 msgstr "الخادم مدرج بالفعل في قائمة \"الاكتشاف\" (Discover)، ويجب على المستخدم التواصل مع الدعم لإزالته."
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "The soundboard is only available in servers"
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "The web socket was unable to connect to the backend."

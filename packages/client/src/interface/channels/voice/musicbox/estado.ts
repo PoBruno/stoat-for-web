@@ -7,6 +7,7 @@
  * Agora o dono do estado é o canal, e esta tela só mostra e pede.
  */
 import { createSignal } from "solid-js";
+import { createStore, reconcile } from "solid-js/store";
 
 /** De onde o audio sai. Hoje so ha uma; o campo existe para nao doer depois. */
 export type Fonte = "youtube";
@@ -95,7 +96,15 @@ export function criarCliente(
   cabecalho: () => [string, string],
   channelId: () => string,
 ) {
-  const [estado, setEstado] = createSignal<EstadoMusicBox>(ESTADO_VAZIO);
+  // Store reconciliado por `id`, e nao signal: o poll de 2 s devolve objetos
+  // novos, e com signal o <For> da fila remontava todas as linhas a cada
+  // poll (hover piscando, foco do teclado perdido).
+  const [loja, setLoja] = createStore<EstadoMusicBox>(
+    structuredClone(ESTADO_VAZIO),
+  );
+  const estado = () => loja;
+  const setEstado = (novo: EstadoMusicBox) =>
+    setLoja(reconcile(novo, { key: "id", merge: false }));
   const [erro, setErro] = createSignal<string>();
 
   async function chamar(
@@ -118,22 +127,37 @@ export function criarCliente(
     const corpo = await resposta.json().catch(() => null);
     if (corpo?.type === "FeatureDisabled") {
       return corpo.feature === "musicbox:agent"
-        ? "Nenhum agente de musica esta conectado agora."
-        : "O MusicBox nao esta configurado neste servidor.";
+        ? "Nenhum agente de música está conectado agora."
+        : "O MusicBox não está configurado neste servidor.";
     }
-    if (resposta.status === 403) return "Voce nao tem permissao para isso.";
-    return `A operacao falhou (${resposta.status}).`;
+    if (resposta.status === 403) return "Você não tem permissão para isso.";
+    return `A operação falhou (${resposta.status}).`;
   }
 
-  /** Aplica uma acao que devolve o estado novo. */
-  async function agir(caminho: string, opcoes: RequestInit = {}) {
+  /**
+   * Aplica uma acao que devolve o estado novo.
+   *
+   * Devolve se deu certo: quem chama precisa saber, senao uma faixa que o
+   * servidor recusou aparecia como "Na fila". Falha de rede vira mensagem
+   * em vez de promessa rejeitada sem ninguem tratar.
+   */
+  async function agir(
+    caminho: string,
+    opcoes: RequestInit = {},
+  ): Promise<boolean> {
     setErro(undefined);
-    const resposta = await chamar(caminho, opcoes);
-    if (!resposta.ok) {
-      setErro(await explicar(resposta));
-      return;
+    try {
+      const resposta = await chamar(caminho, opcoes);
+      if (!resposta.ok) {
+        setErro(await explicar(resposta));
+        return false;
+      }
+      setEstado((await resposta.json()) as EstadoMusicBox);
+      return true;
+    } catch {
+      setErro("Sem conexão com o servidor. Tente de novo.");
+      return false;
     }
-    setEstado((await resposta.json()) as EstadoMusicBox);
   }
 
   return {
@@ -142,8 +166,9 @@ export function criarCliente(
     setErro,
 
     async recarregar() {
-      const resposta = await chamar("/queue");
-      if (resposta.ok) setEstado((await resposta.json()) as EstadoMusicBox);
+      // Poll de fundo: falha de rede aqui so espera o proximo.
+      const resposta = await chamar("/queue").catch(() => undefined);
+      if (resposta?.ok) setEstado((await resposta.json()) as EstadoMusicBox);
     },
 
     async buscar(termo: string, limite: number): Promise<Faixa[]> {
@@ -156,7 +181,10 @@ export function criarCliente(
     },
 
     adicionar: (faixas: Faixa[]) =>
-      agir("/queue", { method: "POST", body: JSON.stringify({ tracks: faixas }) }),
+      agir("/queue", {
+        method: "POST",
+        body: JSON.stringify({ tracks: faixas }),
+      }),
 
     remover: (indice: number) => agir(`/queue/${indice}`, { method: "DELETE" }),
     limpar: () => agir("/queue", { method: "DELETE" }),
@@ -167,7 +195,17 @@ export function criarCliente(
 
     async parar() {
       setErro(undefined);
-      await chamar("/stop", { method: "POST" });
+      const resposta = await chamar("/stop", { method: "POST" }).catch(
+        () => undefined,
+      );
+      if (!resposta?.ok) {
+        setErro(
+          resposta
+            ? await explicar(resposta)
+            : "Sem conexão com o servidor. Tente de novo.",
+        );
+        return;
+      }
       setEstado(ESTADO_VAZIO);
     },
 

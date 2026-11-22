@@ -12,6 +12,7 @@ import { BanNonMemberModal } from "./modals/BanNonMember";
 import { ChangelogModal } from "./modals/Changelog";
 import { ChannelInfoModal } from "./modals/ChannelInfo";
 import { ChannelToggleMatureModal } from "./modals/ChannelToggleMature";
+import { ConfirmarModal } from "./modals/Confirmar";
 import { CreateBotModal } from "./modals/CreateBot";
 import { CreateCategoryModal } from "./modals/CreateCategory";
 import { CreateChannelModal } from "./modals/CreateChannel";
@@ -156,6 +157,8 @@ export function RenderModal(props: ActiveModal & { onClose: () => void }) {
       return <EmojiPreviewModal {...modalProps} />;
     case "aviso":
       return <AvisoModal {...modalProps} />;
+    case "confirmar":
+      return <ConfirmarModal {...modalProps} />;
     case "error2":
       return <Error2Modal {...modalProps} />;
     case "image_viewer":

@@ -10,7 +10,6 @@ import { Trans, useLingui } from "@lingui/solid/macro";
 import { ForumComment, ForumPost, User } from "stoat.js";
 import { styled } from "styled-system/jsx";
 
-
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { Markdown } from "@revolt/markdown";
@@ -176,10 +175,15 @@ function Box(props: {
     maxCount: () => instance.limits().message_attachments,
   });
 
+  /** Se um envio esta em andamento (upload + post) */
+  const [enviando, setEnviando] = createSignal(false);
+
   /** Submit whatever is typed, if anything */
   async function send() {
     const body = draft().trim();
-    if (!body) return;
+    // Sem a trava, dois cliques durante o upload postavam duas vezes.
+    if (!body || enviando()) return;
+    setEnviando(true);
 
     try {
       const ids = await attachments.upload(client(), instance.mediaUrl);
@@ -188,6 +192,8 @@ function Box(props: {
       setDraft("");
     } catch (error) {
       showError(error);
+    } finally {
+      setEnviando(false);
     }
   }
 
@@ -196,6 +202,7 @@ function Box(props: {
       <MarkdownComposer
         value={draft()}
         onChange={setDraft}
+        onSubmit={() => void send()}
         placeholder={props.label}
         autoFocus={props.autoFocus}
         attachments={attachments}
@@ -210,7 +217,12 @@ function Box(props: {
                 <Trans>Cancel</Trans>
               </Button>
             </Show>
-            <Button size="xs" variant="filled" onPress={send}>
+            <Button
+              size="xs"
+              variant="filled"
+              onPress={send}
+              isDisabled={enviando() || !draft().trim()}
+            >
               {props.action}
             </Button>
           </>
@@ -225,7 +237,7 @@ function Box(props: {
  */
 function CommentNode(props: { node: Node; onChange: () => void }) {
   const { t } = useLingui();
-  const { showError } = useModals();
+  const { showError, openModal } = useModals();
   const [replying, setReplying] = createSignal(false);
   const [editing, setEditing] = createSignal(false);
 
@@ -355,7 +367,14 @@ function CommentNode(props: { node: Node; onChange: () => void }) {
                       <ContextMenuButton
                         icon={<Symbol size={16}>delete</Symbol>}
                         destructive
-                        onClick={() => settle(props.node.comment.delete())}
+                        onClick={() =>
+                          openModal({
+                            type: "confirmar",
+                            titulo: t`Delete this comment?`,
+                            texto: t`Replies to it stay, but the comment itself is gone for good.`,
+                            acao: () => settle(props.node.comment.delete()),
+                          })
+                        }
                       >
                         <Trans>Delete</Trans>
                       </ContextMenuButton>

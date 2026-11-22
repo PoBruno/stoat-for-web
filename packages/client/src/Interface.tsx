@@ -23,6 +23,7 @@ import {
   useBeforeLeave,
   useLocation,
 } from "@revolt/routing";
+import { useVoice } from "@revolt/rtc";
 import { useState } from "@revolt/state";
 import { LAYOUT_SECTIONS } from "@revolt/state/stores/Layout";
 import { LoadingScreen } from "@revolt/ui";
@@ -36,6 +37,7 @@ import { Sidebar } from "./interface/Sidebar";
  */
 const Interface = (props: { children: JSX.Element }) => {
   const state = useState();
+  const voice = useVoice();
   const client = useClient();
   const { openModal, modals, remove } = useModals();
   const { isLoggedIn, isSwapping, lifecycle } = useClientLifecycle();
@@ -120,6 +122,21 @@ const Interface = (props: { children: JSX.Element }) => {
                 ) {
                   openModal({ type: "quick_switch" });
                 }
+              }}
+            />
+            {/* Mudo / surdo de qualquer tela, como no Discord. So agem
+                com chamada ativa; fora dela nao fazem nada. */}
+            <Keybind
+              keybind={KeybindAction.VOICE_TOGGLE_MUTE}
+              onPressed={() => {
+                if (voice.channel() && voice.speakingPermission)
+                  void voice.toggleMute();
+              }}
+            />
+            <Keybind
+              keybind={KeybindAction.VOICE_TOGGLE_DEAFEN}
+              onPressed={() => {
+                if (voice.channel()) void voice.toggleDeafen();
               }}
             />
             <Layout

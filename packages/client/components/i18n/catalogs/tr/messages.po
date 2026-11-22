@@ -778,6 +778,7 @@ msgstr "Keşfet isteğinin durumunu alamıyoruz"
 #: components/modal/modals/AddBot.tsx
 #: components/modal/modals/BanMember.tsx
 #: components/modal/modals/BanNonMember.tsx
+#: components/modal/modals/Confirmar.tsx
 #: components/modal/modals/CropProcess.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
@@ -1477,6 +1478,7 @@ msgid "Degraded Performance"
 msgstr "Performans Düşüşü"
 
 #: components/app/interface/settings/server/sounds/SoundList.tsx
+#: components/modal/modals/Confirmar.tsx
 #: components/modal/modals/DeleteBot.tsx
 #: components/modal/modals/DeleteCategory.tsx
 #: components/modal/modals/DeleteChannel.tsx
@@ -1564,6 +1566,14 @@ msgstr "Sunucuyu Sil"
 
 #: components/auth/src/flows/FlowLogin.tsx
 msgid "Delete session"
+msgstr ""
+
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Delete this comment?"
+msgstr ""
+
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "Delete this post?"
 msgstr ""
 
 #: components/modal/modals/DeleteEmoji.tsx
@@ -1898,6 +1908,10 @@ msgstr ""
 msgid "Everyone"
 msgstr "Herkes"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Exit fullscreen"
+msgstr ""
+
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "Expand"
 msgstr ""
@@ -2052,6 +2066,10 @@ msgstr "itibaren "
 msgid "Fruit Salad"
 msgstr "Meyve Salatası"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Fullscreen"
+msgstr ""
+
 #: components/app/interface/settings/user/bots/ViewBot.tsx
 msgid "Generate a new token if it gets lost or compromised"
 msgstr "Kaybolması veya başkasının eline geçmesi durumunda yeni bir token oluştur"
@@ -2182,6 +2200,10 @@ msgstr "Stoat'ın çevirilmesinde yardımcı oldu"
 
 #: components/modal/modals/CreateInvite.tsx
 msgid "Here is your invite code:"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Hide others"
 msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
@@ -2515,6 +2537,10 @@ msgstr ""
 msgid "Loading sounds."
 msgstr ""
 
+#: src/interface/channels/voice/musicbox/VolumeMusicBox.tsx
+msgid "Loading…"
+msgstr ""
+
 #: src/interface/channels/forum/ForumPostView.tsx
 msgid "Lock"
 msgstr ""
@@ -2731,6 +2757,7 @@ msgstr "Simge Durumuna Küçült"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Missing permission"
 msgstr "Kayıp İzinler"
 
@@ -2762,6 +2789,10 @@ msgstr "Üyeleri Taşıyabilme"
 msgid "Move members between voice channels"
 msgstr "Üyeleri sesli sohbetler arasında taşıyabilme"
 
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Move others to the side"
+msgstr ""
+
 #: components/i18n/errors.tsx
 msgid "Multi-factor authentication is already enabled for this account."
 msgstr "Çok aşamalı kimlik doğrulama bu hesapta çoktan aktifleştirildi."
@@ -2769,6 +2800,10 @@ msgstr "Çok aşamalı kimlik doğrulama bu hesapta çoktan aktifleştirildi."
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
 msgid "MusicBox"
+msgstr ""
+
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "MusicBox (right-click: volume)"
 msgstr ""
 
 #: src/interface/channels/voice/musicbox/VolumeMusicBox.tsx
@@ -3112,18 +3147,6 @@ msgstr ""
 #: components/modal/modals/ReportContent.tsx
 msgid "Other"
 msgstr "Diğer"
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: bottom"
-msgstr ""
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: hidden"
-msgstr ""
-
-#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
-msgid "Others: side"
-msgstr ""
 
 #: src/interface/Friends.tsx
 msgid "Outgoing"
@@ -3504,6 +3527,10 @@ msgstr "Oturumu Yeniden Adlandır"
 msgid "Rep Stoat using Discord rich presence."
 msgstr "Stoat'ı Discord rich presence kullanarak temsil et."
 
+#: src/interface/channels/forum/ForumThread.tsx
+msgid "Replies to it stay, but the comment itself is gone for good."
+msgstr ""
+
 #: components/app/menus/MessageContextMenu.tsx
 #: src/interface/channels/forum/ForumThread.tsx
 msgid "Reply"
@@ -3582,6 +3609,7 @@ msgid "Retry sending"
 msgstr "Tekrar göndermeyi dene"
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
+#: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Return to voice channel"
 msgstr "Sesli kanala geri dön"
 
@@ -3904,6 +3932,10 @@ msgid "Show corrections and suggestions as you type."
 msgstr "Yazarken düzeltme ve önermeleri göster."
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "Show others at the bottom"
+msgstr ""
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
 msgid "Show people without video"
 msgstr ""
 
@@ -3973,6 +4005,10 @@ msgid "Something went wrong! {error}"
 msgstr "Bir şeyler ters gitti! {error}"
 
 #: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Sort sounds"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
 msgid "Sound actions"
 msgstr ""
 
@@ -3987,6 +4023,11 @@ msgstr ""
 msgid "Soundboard"
 msgstr ""
 
+#: src/interface/navigation/channels/VoiceDock.tsx
+msgid "Soundboard (right-click: volume)"
+msgstr ""
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
 #: src/interface/navigation/channels/VoiceDock.tsx
 msgid "Soundboard volume"
 msgstr ""
@@ -4071,6 +4112,10 @@ msgstr "Stoat, bir uygulama olarak en iyi şekilde çalışır"
 #: components/auth/src/AppUpsell.tsx
 msgid "Stoat, right on <0>your desktop.</0>"
 msgstr "Stoat, tam da <0>masaüstünüzde.</0>"
+
+#: src/interface/channels/voice/SoundboardPanel.tsx
+msgid "Stop"
+msgstr ""
 
 #: components/ui/components/features/voice/callCard/VoiceCallCardActions.tsx
 msgid "Stop camera"
@@ -4227,6 +4272,10 @@ msgstr "Bu gönderi moderatörler tarafından kaldırılmıştır; bu nedenle bu
 msgid "The password is too short."
 msgstr "Şifre çok kısa."
 
+#: src/interface/channels/forum/ForumPostView.tsx
+msgid "The post and all of its comments will be deleted. There's no going back."
+msgstr ""
+
 #: components/i18n/errors.tsx
 msgid "The server has been removed from discover by moderators, the user must contact support."
 msgstr "Sunucu, moderatörler tarafından Keşfetten kaldırılmıştır; kullanıcının destek ekibiyle iletişime geçmesi gerekmektedir."
@@ -4234,6 +4283,10 @@ msgstr "Sunucu, moderatörler tarafından Keşfetten kaldırılmıştır; kullan
 #: components/i18n/errors.tsx
 msgid "The server is already on discover, the user must contact support to have it removed."
 msgstr "Sunucu halihazırda keşfet listesinde yer almaktadır; kullanıcının bu sunucunun listeden kaldırılması için destek ekibiyle iletişime geçmesi gerekmektedir."
+
+#: components/ui/components/features/voice/callCard/VoiceCallCardActiveRoom.tsx
+msgid "The soundboard is only available in servers"
+msgstr ""
 
 #: components/i18n/errors.tsx
 msgid "The web socket was unable to connect to the backend."

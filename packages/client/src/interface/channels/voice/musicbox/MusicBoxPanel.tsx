@@ -1,6 +1,6 @@
 import {
-  For,
   type JSX,
+  For,
   Show,
   createSignal,
   onCleanup,
@@ -10,17 +10,10 @@ import {
 import { Symbol } from "@revolt/ui";
 import { styled } from "styled-system/jsx";
 
-
 import { useClient } from "@revolt/client";
 import { useInstance } from "@revolt/instance";
 import { useState } from "@revolt/state";
-import {
-  Button,
-  IconButton,
-  Slider,
-  Text,
-} from "@revolt/ui/components/design";
-import { Row } from "@revolt/ui/components/layout";
+import { Button, IconButton, Slider, Text } from "@revolt/ui/components/design";
 
 import {
   type ClienteMusicBox,
@@ -39,7 +32,10 @@ import {
  * limpa a busca. Abas obrigavam a trocar de contexto para uma acao que e a
  * mais frequente do painel — botar musica.
  */
-export function MusicBoxPanel(props: { channelId: string; onClose: () => void }) {
+export function MusicBoxPanel(props: {
+  channelId: string;
+  onClose: () => void;
+}) {
   const client = useClient();
   const instance = useInstance();
 
@@ -107,7 +103,8 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
    * nao da para saber o que ja foi.
    */
   async function adicionar(faixas: Faixa[]) {
-    await mb.adicionar(faixas);
+    // So marca "Na fila" se o servidor aceitou; a recusa aparece no aviso.
+    if (!(await mb.adicionar(faixas))) return;
     setAdicionadas((antes) => {
       const agora = new Set(antes);
       for (const f of faixas) agora.add(f.id);
@@ -125,7 +122,7 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
         </Lupa>
         <Campo
           value={termo()}
-          placeholder="Buscar musica, colar link de video ou playlist…"
+          placeholder="Buscar música, colar link de vídeo ou playlist…"
           onInput={(e: InputEvent) =>
             setTermo((e.currentTarget as HTMLInputElement).value)
           }
@@ -140,6 +137,22 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
           </IconButton>
         </Show>
       </BarraDeBusca>
+
+      {/* Antes o erro era gravado e ninguem lia: sem agente ou sem
+          permissao, todo botao parecia simplesmente nao fazer nada. */}
+      <Show when={mb.erro()}>
+        <AvisoDeErro role="alert">
+          <Symbol size={18}>error</Symbol>
+          <span>{mb.erro()}</span>
+          <IconButton
+            size="xs"
+            onPress={() => mb.setErro(undefined)}
+            aria-label="Fechar aviso"
+          >
+            <Symbol size={16}>close</Symbol>
+          </IconButton>
+        </AvisoDeErro>
+      </Show>
 
       <Corpo>
         <Show when={emBusca()} fallback={<Fila mb={mb} />}>
@@ -160,6 +173,7 @@ export function MusicBoxPanel(props: { channelId: string; onClose: () => void })
 /** Capa, titulo, progresso, controles e volume. */
 function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
   const atual = () => props.mb.estado().current;
+  const confirmarParar = useConfirmacao();
   const duracao = () => atual()?.duration_s ?? 0;
 
   function girarRepeticao() {
@@ -186,7 +200,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
             <Text class="body">{atual()?.title ?? "Nada tocando"}</Text>
           </TituloAtual>
           <Text class="label">
-            {atual()?.author ?? "Busque algo acima para comecar"}
+            {atual()?.author ?? "Busque algo acima para começar"}
           </Text>
         </Identificacao>
 
@@ -198,12 +212,28 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
       </LinhaDoTopo>
 
       <Progresso>
-        <Slider
-          min={0}
-          max={Math.max(1, duracao())}
-          value={Math.min(props.mb.estado().position_s, Math.max(1, duracao()))}
-          labelFormatter={duracaoLegivel}
-        />
+        {/* Barra so de exibicao: o servidor nao tem rota de busca (seek).
+            O Slider parecia arrastavel e voltava sozinho no proximo poll. */}
+        <BarraDeProgresso
+          role="progressbar"
+          aria-label="Progresso da faixa"
+          aria-valuemin={0}
+          aria-valuemax={Math.max(1, duracao())}
+          aria-valuenow={props.mb.estado().position_s}
+        >
+          <div
+            style={{
+              width: `${
+                duracao() > 0
+                  ? Math.min(
+                      100,
+                      (props.mb.estado().position_s / duracao()) * 100,
+                    )
+                  : 0
+              }%`,
+            }}
+          />
+        </BarraDeProgresso>
         <LinhaDeTempo>
           <Text class="label">
             {duracaoLegivel(props.mb.estado().position_s)}
@@ -220,17 +250,41 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
             void props.mb.ajustar({ shuffle: !props.mb.estado().shuffle })
           }
           variant={props.mb.estado().shuffle ? "tonal" : "standard"}
-          aria-label="Ordem aleatoria"
+          aria-label="Ordem aleatória"
         >
           <Symbol>shuffle</Symbol>
         </IconButton>
 
         <IconButton
-          onPress={() => void props.mb.parar()}
+          // A fila e de todos no canal: parar e limpar pede um segundo
+          // clique, com o botao em vermelho avisando.
+          // eslint-disable-next-line solid/reactivity -- a acao roda no clique
+          onPress={() => confirmarParar.pedir(() => void props.mb.parar())}
           isDisabled={!atual()}
-          aria-label="Parar e limpar"
+          variant={confirmarParar.armado() ? "tonal" : "standard"}
+          aria-label={
+            confirmarParar.armado()
+              ? "Clique de novo para parar e limpar a fila de todos"
+              : "Parar e limpar a fila"
+          }
+          use:floating={{
+            tooltip: {
+              placement: "top",
+              content: confirmarParar.armado()
+                ? "Clique de novo para confirmar"
+                : "Parar e limpar a fila",
+            },
+          }}
         >
-          <Symbol>stop</Symbol>
+          <Symbol
+            style={
+              confirmarParar.armado()
+                ? { color: "var(--md-sys-color-error)" }
+                : undefined
+            }
+          >
+            stop
+          </Symbol>
         </IconButton>
 
         <BotaoTocar
@@ -238,7 +292,10 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
           isDisabled={!atual()}
           aria-label={props.mb.estado().playing ? "Pausar" : "Tocar"}
         >
-          <Show when={props.mb.estado().playing} fallback={<Symbol>play_arrow</Symbol>}>
+          <Show
+            when={props.mb.estado().playing}
+            fallback={<Symbol>play_arrow</Symbol>}
+          >
             <Symbol>pause</Symbol>
           </Show>
         </BotaoTocar>
@@ -246,7 +303,7 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
         <IconButton
           onPress={() => void props.mb.proxima()}
           isDisabled={!props.mb.estado().queue.length}
-          aria-label="Proxima"
+          aria-label="Próxima"
         >
           <Symbol>skip_next</Symbol>
         </IconButton>
@@ -254,7 +311,13 @@ function AgoraTocando(props: { mb: ClienteMusicBox; onClose: () => void }) {
         <IconButton
           onPress={girarRepeticao}
           variant={props.mb.estado().repeat === "off" ? "standard" : "tonal"}
-          aria-label={`Repeticao: ${props.mb.estado().repeat}`}
+          aria-label={
+            props.mb.estado().repeat === "off"
+              ? "Repetição desligada"
+              : props.mb.estado().repeat === "all"
+                ? "Repetindo a fila"
+                : "Repetindo a faixa"
+          }
         >
           <Show
             when={props.mb.estado().repeat === "one"}
@@ -297,7 +360,7 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
             onPress={() =>
               state.voice.setUserVolume(id(), volume() > 0 ? 0 : 1)
             }
-            aria-label={volume() > 0 ? "Silenciar a musica" : "Tirar do mudo"}
+            aria-label={volume() > 0 ? "Silenciar a música" : "Tirar do mudo"}
           >
             <Show when={volume() > 0} fallback={<Symbol>volume_off</Symbol>}>
               <Symbol>volume_up</Symbol>
@@ -308,8 +371,12 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
             max={2}
             step={0.05}
             value={volume()}
-            onInput={(e) => state.voice.setUserVolume(id(), e.currentTarget.value)}
-            onChange={(e) => state.voice.setUserVolume(id(), e.currentTarget.value)}
+            onInput={(e) =>
+              state.voice.setUserVolume(id(), e.currentTarget.value)
+            }
+            onChange={(e) =>
+              state.voice.setUserVolume(id(), e.currentTarget.value)
+            }
             labelFormatter={(v) => `${(v * 100).toFixed(0)}%`}
           />
         </Volume>
@@ -332,7 +399,9 @@ function Resultados(props: {
       <Show when={props.buscando}>
         <Vazio>
           <Text class="label">
-            {props.playlist ? "Abrindo a playlist — pode demorar…" : "Buscando…"}
+            {props.playlist
+              ? "Abrindo a playlist — pode demorar…"
+              : "Buscando…"}
           </Text>
         </Vazio>
       </Show>
@@ -381,13 +450,15 @@ function Resultados(props: {
 
 /** A fila da chamada. */
 function Fila(props: { mb: ClienteMusicBox }) {
+  const confirmarLimpar = useConfirmacao();
+
   return (
     <Show
       when={props.mb.estado().queue.length}
       fallback={
         <Vazio>
           <Text class="label">
-            A fila esta vazia. Busque algo no campo acima.
+            A fila está vazia. Busque algo no campo acima.
           </Text>
         </Vazio>
       }
@@ -398,8 +469,12 @@ function Fila(props: { mb: ClienteMusicBox }) {
           {props.mb.estado().queue.length === 1 ? "faixa" : "faixas"} —{" "}
           {duracaoLegivel(duracaoDaFila(props.mb.estado()))} restantes
         </Text>
-        <Button variant="text" onPress={() => void props.mb.limpar()}>
-          Limpar
+        <Button
+          variant="text"
+          // eslint-disable-next-line solid/reactivity -- a acao roda no clique
+          onPress={() => confirmarLimpar.pedir(() => void props.mb.limpar())}
+        >
+          {confirmarLimpar.armado() ? "Confirmar limpeza?" : "Limpar"}
         </Button>
       </Resumo>
 
@@ -412,7 +487,11 @@ function Fila(props: { mb: ClienteMusicBox }) {
 
             <Miniatura capa={faixa.cover_url} />
 
-            <Identificacao onClick={() => void props.mb.tocarDaFila(indice())}>
+            <Identificacao
+              onClick={() => void props.mb.tocarDaFila(indice())}
+              title="Tocar agora"
+              style={{ cursor: "pointer" }}
+            >
               <Text class="body">{faixa.title}</Text>
               <Text class="label">{faixa.author ?? "desconhecido"}</Text>
             </Identificacao>
@@ -420,8 +499,21 @@ function Fila(props: { mb: ClienteMusicBox }) {
             <Text class="label">{duracaoOuAoVivo(faixa.duration_s)}</Text>
 
             <IconButton
+              onPress={() => void props.mb.tocarDaFila(indice())}
+              aria-label="Tocar agora"
+              use:floating={{
+                tooltip: { placement: "top", content: "Tocar agora" },
+              }}
+            >
+              <Symbol>play_arrow</Symbol>
+            </IconButton>
+
+            <IconButton
               onPress={() => void props.mb.remover(indice())}
               aria-label="Tirar da fila"
+              use:floating={{
+                tooltip: { placement: "top", content: "Tirar da fila" },
+              }}
             >
               <Symbol>delete</Symbol>
             </IconButton>
@@ -468,7 +560,10 @@ function BotaoTocar(props: {
 function Miniatura(props: { capa: string | null }) {
   return (
     <MiniCapa>
-      <Show when={props.capa} fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}>
+      <Show
+        when={props.capa}
+        fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}
+      >
         {(capa) => <img src={capa()} alt="" loading="lazy" />}
       </Show>
     </MiniCapa>
@@ -686,5 +781,64 @@ const Vazio = styled("div", {
     placeItems: "center",
     padding: "var(--gap-lg)",
     textAlign: "center",
+  },
+});
+
+/**
+ * Confirmacao em dois cliques: o primeiro arma por 3 s, o segundo executa.
+ *
+ * Para acoes que mexem no que e de todos (a fila do canal) e nao tem
+ * desfazer. Um modal seria pesado demais para um botao de player.
+ */
+function useConfirmacao() {
+  const [armado, setArmado] = createSignal(false);
+  let prazo: ReturnType<typeof setTimeout> | undefined;
+  onCleanup(() => clearTimeout(prazo));
+
+  return {
+    armado,
+    pedir(acao: () => void) {
+      clearTimeout(prazo);
+      if (armado()) {
+        setArmado(false);
+        acao();
+        return;
+      }
+      setArmado(true);
+      prazo = setTimeout(() => setArmado(false), 3000);
+    },
+  };
+}
+
+const AvisoDeErro = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
+    margin: "0 var(--gap-md)",
+    padding: "var(--gap-xs) var(--gap-xs) var(--gap-xs) var(--gap-md)",
+    borderRadius: "var(--borderRadius-md)",
+    background: "var(--md-sys-color-error-container)",
+    color: "var(--md-sys-color-on-error-container)",
+    fontSize: "13px",
+
+    "& > span": { flex: 1 },
+  },
+});
+
+const BarraDeProgresso = styled("div", {
+  base: {
+    height: "4px",
+    borderRadius: "var(--borderRadius-full)",
+    background: "var(--md-sys-color-surface-container-highest)",
+    overflow: "hidden",
+    marginBlock: "var(--gap-sm)",
+
+    "& > div": {
+      height: "100%",
+      background: "var(--md-sys-color-primary)",
+      // Anda suave entre os polls de 2 s, em vez de pular.
+      transition: "width 2s linear",
+    },
   },
 });
