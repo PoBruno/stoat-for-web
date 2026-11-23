@@ -27,6 +27,9 @@ export function MiniPlayer(props: {
   const mb = usarMusicBox(props.channelId);
   const atual = () => mb.estado().current;
 
+  /** Pedida, mas o som ainda nao saiu: nao mostra progresso de mentira. */
+  const carregando = () => mb.estado().playing && !!mb.estado().loading;
+
   const progresso = () => {
     const duracao = atual()?.duration_s ?? 0;
     return duracao > 0
@@ -56,11 +59,18 @@ export function MiniPlayer(props: {
               >
                 {(capa) => <img src={capa()} alt="" />}
               </Show>
+              <Show when={carregando()}>
+                <Carregando aria-label="Carregando a música">
+                  <span />
+                </Carregando>
+              </Show>
             </Capa>
             <Textos>
               <span>{faixa().title}</span>
-              <Barra>
-                <div style={{ width: `${progresso()}%` }} />
+              <Barra data-carregando={carregando() ? "" : undefined}>
+                <div
+                  style={{ width: `${carregando() ? 100 : progresso()}%` }}
+                />
               </Barra>
             </Textos>
           </Abrir>
@@ -135,8 +145,31 @@ const Capa = styled("div", {
     background: "var(--md-sys-color-surface-container-highest)",
     transition: "opacity .2s",
 
+    position: "relative",
+
     "& img": { width: "100%", height: "100%", objectFit: "cover" },
     "&[data-pausado]": { opacity: 0.5 },
+  },
+});
+
+/** Roda girando por cima da capa enquanto a musica carrega. */
+const Carregando = styled("div", {
+  base: {
+    position: "absolute",
+    inset: 0,
+    display: "grid",
+    placeItems: "center",
+    background: "rgba(0, 0, 0, 0.55)",
+    color: "white",
+
+    "& span": {
+      width: "16px",
+      height: "16px",
+      borderRadius: "50%",
+      border: "2px solid currentColor",
+      borderTopColor: "transparent",
+      animation: "spin 0.8s linear infinite",
+    },
   },
 });
 
@@ -175,6 +208,12 @@ const Barra = styled("div", {
       height: "100%",
       background: "var(--md-sys-color-primary)",
       transition: "width 2s linear",
+    },
+
+    "&[data-carregando] > div": {
+      opacity: 0.35,
+      transition: "none",
+      animation: "pulse 1.4s ease-in-out infinite",
     },
   },
 });

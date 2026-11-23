@@ -29,6 +29,14 @@ export type EstadoMusicBox = {
   playing: boolean;
   current: Faixa | null;
   position_s: number;
+  /**
+   * A faixa foi pedida mas o som ainda nao saiu (o agente esta abrindo e
+   * baixando). Enquanto isso a posicao fica parada no servidor, e a tela
+   * mostra "carregando" em vez de um relogio correndo sem som.
+   *
+   * Opcional: servidor antigo nao manda, e ai vale como falso.
+   */
+  loading?: boolean;
   queue: Faixa[];
   repeat: Repeticao;
   shuffle: boolean;
@@ -45,6 +53,7 @@ export const ESTADO_VAZIO: EstadoMusicBox = {
   playing: false,
   current: null,
   position_s: 0,
+  loading: false,
   queue: [],
   repeat: "off",
   shuffle: false,

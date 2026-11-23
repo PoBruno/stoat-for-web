@@ -4,7 +4,7 @@ import { styled } from "styled-system/jsx";
 
 import { useState } from "@revolt/state";
 import { CircularProgress } from "@revolt/ui";
-import { Button, IconButton, Slider, Text } from "@revolt/ui/components/design";
+import { Button, IconButton, Slider } from "@revolt/ui/components/design";
 import { Symbol } from "@revolt/ui/components/utils/Symbol";
 
 import { useConfirmacao } from "./Controles";
@@ -30,17 +30,16 @@ type Retorno =
 /**
  * Painel do MusicBox, mostrado durante a chamada.
  *
- * Duas colunas: **Adicionar** (busca) e **Fila**. Antes a busca tomava o
- * lugar da fila enquanto havia resultado, e para ver o que vinha a seguir era
- * preciso apagar a pesquisa. Agora as duas ficam lado a lado, como no
- * Spotify; em largura de celular, uma sobre a outra, e a fila nunca some.
+ * Uma coluna so, como a tela de playlist do Spotify: a busca no topo, a
+ * faixa atual em destaque (capa grande, fundo tirado da capa) e a fila
+ * embaixo, em tabela. Antes eram duas colunas lado a lado, e metade da tela
+ * ficava com as dicas de busca paradas enquanto a fila se apertava na outra.
+ *
+ * Buscar por nome troca o corpo pelos resultados; "Voltar para a fila" (ou
+ * Esc) desfaz. Link vai direto para a fila sem sair da vista dela.
  *
  * Os controles (tocar, pular, repetir...) ficam na barra de baixo da
  * chamada, no MiniPlayer, e nao aqui.
- *
- * Link do YouTube vai direto para a fila. Playlist entra inteira, Mix entra
- * com as primeiras 50, video entra sozinho. Texto vira busca, e ai se
- * escolhe faixa por faixa.
  */
 export function MusicBoxPanel(props: {
   channelId: string;
@@ -51,6 +50,8 @@ export function MusicBoxPanel(props: {
   const mb = usarMusicBox(props.channelId);
 
   const [termo, setTermo] = createSignal("");
+  /** Termo da busca cujos resultados estao na tela; nulo = vendo a fila. */
+  const [buscado, setBuscado] = createSignal<string | null>(null);
   const [resultados, setResultados] = createSignal<Faixa[]>([]);
   const [buscando, setBuscando] = createSignal<false | TipoDeEntrada>(false);
   const [aviso, setAviso] = createSignal<string>();
@@ -70,6 +71,8 @@ export function MusicBoxPanel(props: {
     setRetorno(undefined);
     try {
       if (tipo === "busca") {
+        setBuscado(texto);
+        setResultados([]);
         // Cem resultados para "radiohead" e uma parede de texto onde
         // bastavam alguns.
         const achadas = await mb.buscar(texto, 15);
@@ -90,6 +93,7 @@ export function MusicBoxPanel(props: {
       if (!(await mb.adicionar(faixas))) return;
 
       setTermo("");
+      setBuscado(null);
       setResultados([]);
       setRetorno(resumoDoLink(tipo, faixas));
     } catch (falha) {
@@ -100,8 +104,10 @@ export function MusicBoxPanel(props: {
     }
   }
 
-  function limparBusca() {
+  /** Volta para a fila, apagando a busca. */
+  function voltarParaFila() {
     setTermo("");
+    setBuscado(null);
     setResultados([]);
     setAviso(undefined);
     setRetorno(undefined);
@@ -117,23 +123,74 @@ export function MusicBoxPanel(props: {
     setAdicionadas((antes) => new Set(antes).add(faixa.id));
   }
 
+  /** Abrindo um link: ele vai para a fila, entao a fila continua a vista. */
+  const abrindoLink = () => {
+    const tipo = buscando();
+    return tipo && tipo !== "busca" ? tipo : false;
+  };
+
   return (
     <Painel>
-      <Cabecalho>
-        <Symbol>queue_music</Symbol>
-        <Text class="title" size="small">
-          MusicBox
-        </Text>
-        <Espaco />
-        <VolumeDaMusica mb={mb} />
-        <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
-          <Symbol>close</Symbol>
-        </IconButton>
-      </Cabecalho>
+      <Topo>
+        <Marca>
+          <Symbol>queue_music</Symbol>
+          <span>MusicBox</span>
+        </Marca>
+
+        <BarraDeBusca onSubmit={enviar}>
+          <Icone>
+            <Show
+              when={tipoDeEntrada(termo()) === "busca"}
+              fallback={<Symbol>link</Symbol>}
+            >
+              <Symbol>search</Symbol>
+            </Show>
+          </Icone>
+          <Campo
+            value={termo()}
+            placeholder="Buscar, ou colar link do YouTube ou do Spotify"
+            aria-label="Buscar música ou colar link do YouTube ou do Spotify"
+            onInput={(e: InputEvent) =>
+              setTermo((e.currentTarget as HTMLInputElement).value)
+            }
+            onKeyDown={(e: KeyboardEvent) => {
+              if (e.key === "Escape") voltarParaFila();
+            }}
+          />
+          <Show when={termo()}>
+            <IconButton
+              size="xs"
+              onPress={voltarParaFila}
+              aria-label="Limpar busca"
+            >
+              <Symbol size={18}>close</Symbol>
+            </IconButton>
+          </Show>
+          <Show when={termo().trim() && tipoDeEntrada(termo()) !== "busca"}>
+            <Button
+              size="sm"
+              isDisabled={!!buscando()}
+              onPress={() => void enviar()}
+            >
+              {tipoDeEntrada(termo()) === "video" ||
+              tipoDeEntrada(termo()) === "spotify-musica"
+                ? "Adicionar"
+                : "Adicionar tudo"}
+            </Button>
+          </Show>
+        </BarraDeBusca>
+
+        <Direita>
+          <VolumeDaMusica mb={mb} />
+          <IconButton onPress={props.onClose} aria-label="Fechar o MusicBox">
+            <Symbol>close</Symbol>
+          </IconButton>
+        </Direita>
+      </Topo>
 
       {/* Sem agente ou sem permissao, todo botao pareceria nao fazer nada. */}
       <Show when={mb.erro()}>
-        <AvisoDeErro role="alert">
+        <Faixinha data-tipo="erro" role="alert">
           <Symbol size={18}>error</Symbol>
           <span>{mb.erro()}</span>
           <IconButton
@@ -143,136 +200,140 @@ export function MusicBoxPanel(props: {
           >
             <Symbol size={16}>close</Symbol>
           </IconButton>
-        </AvisoDeErro>
+        </Faixinha>
       </Show>
 
-      <Colunas>
-        <Coluna data-coluna="busca" aria-label="Adicionar músicas">
-          <BarraDeBusca onSubmit={enviar}>
-            <Icone>
-              <Show
-                when={tipoDeEntrada(termo()) === "busca"}
-                fallback={<Symbol>link</Symbol>}
-              >
-                <Symbol>search</Symbol>
-              </Show>
-            </Icone>
-            <Campo
-              value={termo()}
-              placeholder="Buscar, ou colar link do YouTube ou do Spotify"
-              aria-label="Buscar música ou colar link do YouTube ou do Spotify"
-              onInput={(e: InputEvent) =>
-                setTermo((e.currentTarget as HTMLInputElement).value)
-              }
-              onKeyDown={(e: KeyboardEvent) => {
-                if (e.key === "Escape") limparBusca();
-              }}
-            />
-            <Show when={termo()}>
-              <IconButton
-                size="xs"
-                onPress={limparBusca}
-                aria-label="Limpar busca"
-              >
-                <Symbol size={18}>close</Symbol>
-              </IconButton>
-            </Show>
-            <Show when={termo().trim() && tipoDeEntrada(termo()) !== "busca"}>
-              <Button
-                size="sm"
-                isDisabled={!!buscando()}
-                onPress={() => void enviar()}
-              >
-                {tipoDeEntrada(termo()) === "video" ||
-                tipoDeEntrada(termo()) === "spotify-musica"
-                  ? "Adicionar"
-                  : "Adicionar tudo"}
-              </Button>
-            </Show>
-          </BarraDeBusca>
+      <Corpo>
+        <Show
+          when={buscado()}
+          fallback={
+            <section aria-label="Fila">
+              <Switch>
+                <Match when={abrindoLink()}>
+                  {(tipo) => (
+                    <Faixinha role="status">
+                      <Girando />
+                      <span>{ABRINDO[tipo()]}</span>
+                    </Faixinha>
+                  )}
+                </Match>
+                <Match when={aviso()}>
+                  {(mensagem) => (
+                    <Faixinha data-tipo="erro" role="alert">
+                      <Symbol size={18}>error</Symbol>
+                      <span>{mensagem()}</span>
+                      <IconButton
+                        size="xs"
+                        onPress={() => setAviso(undefined)}
+                        aria-label="Fechar aviso"
+                      >
+                        <Symbol size={16}>close</Symbol>
+                      </IconButton>
+                    </Faixinha>
+                  )}
+                </Match>
+                <Match when={retorno()}>
+                  {(r) => (
+                    <Faixinha data-tipo={r().tipo} role="status">
+                      <Symbol size={18}>
+                        {r().tipo === "ok" ? "playlist_add_check" : "block"}
+                      </Symbol>
+                      <span>
+                        <b>{r().texto}</b>
+                        <Show when={r().detalhe}> {r().detalhe}</Show>
+                      </span>
+                      <IconButton
+                        size="xs"
+                        onPress={() => setRetorno(undefined)}
+                        aria-label="Fechar aviso"
+                      >
+                        <Symbol size={16}>close</Symbol>
+                      </IconButton>
+                    </Faixinha>
+                  )}
+                </Match>
+              </Switch>
 
-          <Rolagem>
-            <Switch fallback={<Dicas />}>
-              <Match when={buscando()}>
-                {(tipo) => (
+              <Fila mb={mb} />
+            </section>
+          }
+        >
+          {(oQue) => (
+            <section aria-label="Adicionar músicas">
+              <CabecalhoDaSecao>
+                <h3>
+                  Resultados para <q>{oQue()}</q>
+                </h3>
+                <Button size="sm" variant="text" onPress={voltarParaFila}>
+                  <Symbol size={18}>arrow_back</Symbol> Voltar para a fila
+                </Button>
+              </CabecalhoDaSecao>
+
+              <Switch>
+                <Match when={buscando() === "busca"}>
                   <Vazio>
                     <CircularProgress />
-                    <Text class="label">{ABRINDO[tipo()]}</Text>
+                    <span>{ABRINDO.busca}</span>
                   </Vazio>
-                )}
-              </Match>
-              <Match when={aviso()}>
-                {(mensagem) => (
-                  <Vazio>
-                    <Text class="label">{mensagem()}</Text>
-                  </Vazio>
-                )}
-              </Match>
-              <Match when={resultados().length}>
-                <For each={resultados()}>
-                  {(faixa) => (
-                    <Item>
-                      <Miniatura capa={faixa.cover_url} />
-                      <Identificacao>
-                        <Text class="body">{faixa.title}</Text>
-                        <Text class="label">
-                          {faixa.author ?? "desconhecido"}
-                        </Text>
-                      </Identificacao>
-                      <Duracao>{duracaoOuAoVivo(faixa.duration_s)}</Duracao>
-                      <Show
-                        when={adicionadas().has(faixa.id)}
-                        fallback={
-                          <IconButton
-                            size="sm"
-                            variant="tonal"
-                            onPress={() => void adicionar(faixa)}
-                            aria-label="Adicionar à fila"
-                            use:floating={{
-                              tooltip: {
-                                placement: "top",
-                                content: "Adicionar à fila",
-                              },
-                            }}
-                          >
-                            <Symbol>add</Symbol>
-                          </IconButton>
-                        }
-                      >
-                        <JaNaFila
-                          aria-label="Na fila"
-                          use:floating={{
-                            tooltip: { placement: "top", content: "Na fila" },
-                          }}
-                        >
-                          <Symbol>check</Symbol>
-                        </JaNaFila>
-                      </Show>
-                    </Item>
+                </Match>
+                <Match when={aviso()}>
+                  {(mensagem) => (
+                    <Vazio>
+                      <span>{mensagem()}</span>
+                    </Vazio>
                   )}
-                </For>
-              </Match>
-              <Match when={retorno()}>
-                {(r) => (
-                  <Retornado data-tipo={r().tipo} role="status">
-                    <Symbol size={28}>
-                      {r().tipo === "ok" ? "playlist_add_check" : "block"}
-                    </Symbol>
-                    <Text class="body">{r().texto}</Text>
-                    <Show when={r().detalhe}>
-                      <Text class="label">{r().detalhe}</Text>
-                    </Show>
-                  </Retornado>
-                )}
-              </Match>
-            </Switch>
-          </Rolagem>
-        </Coluna>
-
-        <Coluna data-coluna="fila" aria-label="Fila">
-          <Fila mb={mb} />
-        </Coluna>
-      </Colunas>
+                </Match>
+                <Match when={resultados().length}>
+                  <Tabela>
+                    <For each={resultados()}>
+                      {(faixa) => (
+                        <Linha>
+                          <Numero>
+                            <Symbol size={18}>music_note</Symbol>
+                          </Numero>
+                          <FaixaNaLinha faixa={faixa} />
+                          <Duracao>{duracaoOuAoVivo(faixa.duration_s)}</Duracao>
+                          <Show
+                            when={adicionadas().has(faixa.id)}
+                            fallback={
+                              <IconButton
+                                size="sm"
+                                variant="tonal"
+                                onPress={() => void adicionar(faixa)}
+                                aria-label="Adicionar à fila"
+                                use:floating={{
+                                  tooltip: {
+                                    placement: "top",
+                                    content: "Adicionar à fila",
+                                  },
+                                }}
+                              >
+                                <Symbol>add</Symbol>
+                              </IconButton>
+                            }
+                          >
+                            <JaNaFila
+                              aria-label="Na fila"
+                              use:floating={{
+                                tooltip: {
+                                  placement: "top",
+                                  content: "Na fila",
+                                },
+                              }}
+                            >
+                              <Symbol>check</Symbol>
+                            </JaNaFila>
+                          </Show>
+                        </Linha>
+                      )}
+                    </For>
+                  </Tabela>
+                </Match>
+              </Switch>
+            </section>
+          )}
+        </Show>
+      </Corpo>
     </Painel>
   );
 }
@@ -371,33 +432,33 @@ function resumoDoLink(tipo: TipoDeEntrada, faixas: Faixa[]): Retorno {
   };
 }
 
-/** O que mostrar na coluna de busca antes de buscar. */
+/** O que mostrar no lugar do destaque quando nada toca. */
 function Dicas() {
   return (
     <ListaDeDicas>
       <li>
-        <Symbol size={20}>search</Symbol>
+        <Symbol size={22}>search</Symbol>
         <span>
           <b>Busque pelo nome</b> e escolha as faixas com <b>+</b>.
         </span>
       </li>
       <li>
-        <Symbol size={20}>playlist_play</Symbol>
+        <Symbol size={22}>playlist_play</Symbol>
         <span>
           <b>Cole o link de uma playlist</b> e ela entra inteira na fila.
         </span>
       </li>
       <li>
-        <Symbol size={20}>smart_display</Symbol>
+        <Symbol size={22}>smart_display</Symbol>
         <span>
           <b>Cole o link de um vídeo</b> para tocar só ele.
         </span>
       </li>
       <li>
-        <Symbol size={20}>library_music</Symbol>
+        <Symbol size={22}>library_music</Symbol>
         <span>
           <b>Links do Spotify</b> também valem: música, álbum ou playlist
-          pública (até {TETO_DO_SPOTIFY}). O áudio toca pelo YouTube.
+          pública (até {TETO_DO_SPOTIFY}).
         </span>
       </li>
     </ListaDeDicas>
@@ -453,80 +514,39 @@ function VolumeDaMusica(props: { mb: ClienteMusicBox }) {
   );
 }
 
-/** Tocando agora + o que vem a seguir. */
+/** Tocando agora, em destaque, e a tabela do que vem a seguir. */
 function Fila(props: { mb: ClienteMusicBox }) {
   const confirmarLimpar = useConfirmacao();
   const estado = () => props.mb.estado();
   const atual = () => estado().current;
-  const duracao = () => atual()?.duration_s ?? 0;
 
   return (
     <>
       <Show
         when={atual()}
         fallback={
-          <Vazio>
-            <Symbol size={32} style={{ opacity: 0.4 }}>
-              queue_music
-            </Symbol>
-            <Text class="label">Nada tocando. Adicione algo ao lado.</Text>
-          </Vazio>
+          <SemNada>
+            <Symbol size={40}>queue_music</Symbol>
+            <h2>Nada tocando</h2>
+            <Dicas />
+          </SemNada>
         }
       >
-        {(faixa) => (
-          <TocandoAgora>
-            <Capa>
-              <Show
-                when={faixa().cover_url}
-                fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}
-              >
-                {(capa) => <img src={capa()} alt="" />}
-              </Show>
-            </Capa>
-            <Identificacao>
-              <Rotulo>{estado().playing ? "Tocando agora" : "Pausado"}</Rotulo>
-              <Text class="body">
-                <b>{faixa().title}</b>
-              </Text>
-              <Text class="label">{faixa().author ?? "desconhecido"}</Text>
-              {/* So exibicao: o servidor nao tem rota de busca (seek). */}
-              <BarraDeProgresso
-                role="progressbar"
-                aria-label="Progresso da faixa"
-                aria-valuemin={0}
-                aria-valuemax={Math.max(1, duracao())}
-                aria-valuenow={estado().position_s}
-              >
-                <div
-                  style={{
-                    width: `${
-                      duracao() > 0
-                        ? Math.min(100, (estado().position_s / duracao()) * 100)
-                        : 0
-                    }%`,
-                  }}
-                />
-              </BarraDeProgresso>
-              <LinhaDeTempo>
-                <span>{duracaoLegivel(estado().position_s)}</span>
-                <span>{duracaoOuAoVivo(duracao())}</span>
-              </LinhaDeTempo>
-            </Identificacao>
-          </TocandoAgora>
-        )}
+        {(faixa) => <Destaque faixa={faixa()} mb={props.mb} />}
       </Show>
 
       <Show when={atual()}>
-        <Resumo>
-          <Text class="label">
-            <b>A seguir</b>
+        <CabecalhoDaSecao>
+          <h3>
+            A seguir
             <Show when={estado().queue.length}>
-              {" · "}
-              {estado().queue.length}{" "}
-              {estado().queue.length === 1 ? "faixa" : "faixas"} ·{" "}
-              {duracaoLegivel(duracaoDaFila(estado()))}
+              <small>
+                {estado().queue.length}{" "}
+                {estado().queue.length === 1 ? "faixa" : "faixas"} ·{" "}
+                {duracaoLegivel(duracaoDaFila(estado()))}
+              </small>
             </Show>
-          </Text>
+          </h3>
           <Show when={estado().queue.length}>
             <Button
               size="sm"
@@ -539,59 +559,169 @@ function Fila(props: { mb: ClienteMusicBox }) {
               {confirmarLimpar.armado() ? "Confirmar limpeza?" : "Limpar"}
             </Button>
           </Show>
-        </Resumo>
-      </Show>
+        </CabecalhoDaSecao>
 
-      <Rolagem>
-        <Show when={atual() && !estado().queue.length}>
-          <Vazio>
-            <Text class="label">
-              Depois desta, acaba. Adicione mais ao lado.
-            </Text>
-          </Vazio>
+        <Show
+          when={estado().queue.length}
+          fallback={
+            <Vazio>
+              <span>Depois desta, acaba. Busque ou cole um link acima.</span>
+            </Vazio>
+          }
+        >
+          <Tabela>
+            <LinhaDeTitulos aria-hidden="true">
+              <span>#</span>
+              <span>Título</span>
+              <Symbol size={16}>schedule</Symbol>
+              <span />
+            </LinhaDeTitulos>
+            <For each={estado().queue}>
+              {(faixa, indice) => (
+                <Linha
+                  data-fila
+                  onDblClick={() => void props.mb.tocarDaFila(indice())}
+                  title="Clique duas vezes para tocar agora"
+                >
+                  {/* O numero vira o botao de tocar no hover, como no
+                      Spotify: um botao a menos parado em cada linha. */}
+                  <Numero>
+                    <span>{indice() + 1}</span>
+                    <IconButton
+                      size="sm"
+                      onPress={() => void props.mb.tocarDaFila(indice())}
+                      aria-label="Tocar agora"
+                      use:floating={{
+                        tooltip: { placement: "top", content: "Tocar agora" },
+                      }}
+                    >
+                      <Symbol>play_arrow</Symbol>
+                    </IconButton>
+                  </Numero>
+                  <FaixaNaLinha faixa={faixa} />
+                  <Duracao>{duracaoOuAoVivo(faixa.duration_s)}</Duracao>
+                  <AcaoNoHover>
+                    <IconButton
+                      size="sm"
+                      onPress={() => void props.mb.remover(indice())}
+                      aria-label="Tirar da fila"
+                      use:floating={{
+                        tooltip: { placement: "top", content: "Tirar da fila" },
+                      }}
+                    >
+                      <Symbol>close</Symbol>
+                    </IconButton>
+                  </AcaoNoHover>
+                </Linha>
+              )}
+            </For>
+          </Tabela>
         </Show>
-        <For each={estado().queue}>
-          {(faixa, indice) => (
-            <Item
-              onDblClick={() => void props.mb.tocarDaFila(indice())}
-              title="Clique duas vezes para tocar agora"
-            >
-              <Posicao>
-                <Text class="label">{indice() + 1}</Text>
-              </Posicao>
-              <Miniatura capa={faixa.cover_url} />
-              <Identificacao>
-                <Text class="body">{faixa.title}</Text>
-                <Text class="label">{faixa.author ?? "desconhecido"}</Text>
-              </Identificacao>
-              <Duracao>{duracaoOuAoVivo(faixa.duration_s)}</Duracao>
-              <AcoesDoItem>
-                <IconButton
-                  size="sm"
-                  onPress={() => void props.mb.tocarDaFila(indice())}
-                  aria-label="Tocar agora"
-                  use:floating={{
-                    tooltip: { placement: "top", content: "Tocar agora" },
-                  }}
-                >
-                  <Symbol>play_arrow</Symbol>
-                </IconButton>
-                <IconButton
-                  size="sm"
-                  onPress={() => void props.mb.remover(indice())}
-                  aria-label="Tirar da fila"
-                  use:floating={{
-                    tooltip: { placement: "top", content: "Tirar da fila" },
-                  }}
-                >
-                  <Symbol>close</Symbol>
-                </IconButton>
-              </AcoesDoItem>
-            </Item>
-          )}
-        </For>
-      </Rolagem>
+      </Show>
     </>
+  );
+}
+
+/**
+ * A faixa atual em destaque: capa grande e a propria capa, desfocada, como
+ * fundo. Igual ao topo de uma playlist no Spotify.
+ *
+ * Enquanto o agente prepara o audio (`loading`), o tempo nao corre: aparece
+ * "Preparando o áudio…" com a barra pulsando. Antes o relogio andava durante
+ * a carga e voltava a zero quando o som saia, e parecia tocar mudo.
+ */
+function Destaque(props: { faixa: Faixa; mb: ClienteMusicBox }) {
+  const estado = () => props.mb.estado();
+  const duracao = () => props.faixa.duration_s ?? 0;
+  const carregando = () => estado().playing && !!estado().loading;
+
+  return (
+    <Heroi
+      style={{
+        "--capa": props.faixa.cover_url
+          ? `url("${props.faixa.cover_url}")`
+          : "none",
+      }}
+    >
+      <CapaGrande>
+        <Show
+          when={props.faixa.cover_url}
+          fallback={<Symbol size={56}>music_note</Symbol>}
+        >
+          {(capa) => <img src={capa()} alt="" />}
+        </Show>
+      </CapaGrande>
+
+      <InfoDoHeroi>
+        <Rotulo data-estado={carregando() ? "carregando" : undefined}>
+          <Switch fallback="Pausado">
+            <Match when={carregando()}>
+              <Girando /> Carregando
+            </Match>
+            <Match when={estado().playing}>
+              <Equalizador aria-hidden="true">
+                <i />
+                <i />
+                <i />
+              </Equalizador>
+              Tocando agora
+            </Match>
+          </Switch>
+        </Rotulo>
+        <Titulo title={props.faixa.title}>{props.faixa.title}</Titulo>
+        <Artista>{props.faixa.author ?? "desconhecido"}</Artista>
+
+        <Show
+          when={!carregando()}
+          fallback={
+            <Progresso>
+              <span>–:––</span>
+              <Barra data-carregando role="progressbar" aria-busy="true">
+                <div />
+              </Barra>
+              <span>{duracaoOuAoVivo(duracao())}</span>
+              <Preparando>Preparando o áudio…</Preparando>
+            </Progresso>
+          }
+        >
+          {/* So exibicao: o servidor nao tem rota de busca (seek). */}
+          <Progresso>
+            <span>{duracaoLegivel(estado().position_s)}</span>
+            <Barra
+              role="progressbar"
+              aria-label="Progresso da faixa"
+              aria-valuemin={0}
+              aria-valuemax={Math.max(1, duracao())}
+              aria-valuenow={estado().position_s}
+            >
+              <div
+                style={{
+                  width: `${
+                    duracao() > 0
+                      ? Math.min(100, (estado().position_s / duracao()) * 100)
+                      : 0
+                  }%`,
+                }}
+              />
+            </Barra>
+            <span>{duracaoOuAoVivo(duracao())}</span>
+          </Progresso>
+        </Show>
+      </InfoDoHeroi>
+    </Heroi>
+  );
+}
+
+/** Capa pequena, titulo e artista: o miolo de toda linha de tabela. */
+function FaixaNaLinha(props: { faixa: Faixa }) {
+  return (
+    <Miolo>
+      <Miniatura capa={props.faixa.cover_url} />
+      <Textos>
+        <span>{props.faixa.title}</span>
+        <span>{props.faixa.author ?? "desconhecido"}</span>
+      </Textos>
+    </Miolo>
   );
 }
 
@@ -604,105 +734,408 @@ function Fila(props: { mb: ClienteMusicBox }) {
 function Miniatura(props: { capa: string | null }) {
   return (
     <MiniCapa>
-      <Show
-        when={props.capa}
-        fallback={<Symbol style={{ opacity: 0.4 }}>music_note</Symbol>}
-      >
+      <Show when={props.capa} fallback={<Symbol size={18}>music_note</Symbol>}>
         {(capa) => <img src={capa()} alt="" loading="lazy" />}
       </Show>
     </MiniCapa>
   );
 }
 
+/** Indicador de carga do tamanho do texto. */
+function Girando() {
+  return <Roda aria-hidden="true" />;
+}
+
 /**
- * O painel nao pinta fundo proprio: herda o do cartao da chamada, e os dois
- * viram uma peca so. `containerType` deixa as colunas reagirem a largura do
- * PAINEL, e nao da janela: com a lista de membros aberta, a janela e larga e
- * o painel nao.
+ * O painel nao pinta fundo proprio: herda o do cartao da chamada.
+ * `containerType` deixa o layout reagir a largura do PAINEL, e nao da
+ * janela: com a lista de membros aberta, a janela e larga e o painel nao.
  */
 const Painel = styled("div", {
   base: {
     height: "100%",
     display: "flex",
     flexDirection: "column",
-    gap: "var(--gap-sm)",
     minHeight: 0,
     color: "var(--md-sys-color-on-surface)",
     containerType: "inline-size",
   },
 });
 
-const Cabecalho = styled("div", {
+/** Marca, busca centralizada e, a direita, volume e fechar. */
+const Topo = styled("div", {
   base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "var(--gap-sm)",
-    padding: "var(--gap-xs) var(--gap-xs) 0 var(--gap-md)",
-    flexShrink: 0,
-  },
-});
-
-const Espaco = styled("div", { base: { flex: 1 } });
-
-/**
- * Lado a lado quando cabe; uma sobre a outra quando nao. Empilhado, a busca
- * fica com no maximo metade da altura: a fila continua a vista mesmo com 15
- * resultados na tela.
- */
-const Colunas = styled("div", {
-  base: {
-    flex: 1,
-    minHeight: 0,
     display: "grid",
-    gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)",
+    gridTemplateColumns: "1fr minmax(0, 560px) 1fr",
+    alignItems: "center",
     gap: "var(--gap-md)",
-    padding: "0 var(--gap-md) var(--gap-md)",
+    padding: "var(--gap-sm) var(--gap-sm) var(--gap-sm) var(--gap-lg)",
+    flexShrink: 0,
 
-    "@container (max-width: 640px)": {
-      gridTemplateColumns: "minmax(0, 1fr)",
-      // A busca cresce com o conteudo ate 45% da altura; o resto e da fila.
-      gridTemplateRows: "fit-content(45%) minmax(0, 1fr)",
+    "@container (max-width: 720px)": {
+      gridTemplateColumns: "minmax(0, 1fr) auto",
+      "& > :first-child": { display: "none" },
     },
   },
 });
 
-const Coluna = styled("section", {
+const Marca = styled("div", {
   base: {
-    minHeight: 0,
     display: "flex",
-    flexDirection: "column",
+    alignItems: "center",
     gap: "var(--gap-sm)",
-    padding: "var(--gap-sm)",
-    borderRadius: "var(--borderRadius-lg)",
-    background: "var(--md-sys-color-surface-container-low)",
+    fontWeight: 700,
+    fontSize: "15px",
+    color: "var(--md-sys-color-on-surface)",
   },
 });
 
-/** A parte que rola, dentro de cada coluna. */
-const Rolagem = styled("div", {
+const Direita = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: "var(--gap-xs)",
+  },
+});
+
+/** Tudo abaixo do topo rola junto, como uma pagina do Spotify. */
+const Corpo = styled("div", {
   base: {
     flex: 1,
     minHeight: 0,
     overflowY: "auto",
+    padding: "0 var(--gap-lg) var(--gap-lg)",
+
+    "@container (max-width: 480px)": {
+      padding: "0 var(--gap-sm) var(--gap-sm)",
+    },
   },
 });
 
-const Capa = styled("div", {
+/**
+ * O topo da faixa atual. A capa vira fundo (`--capa`), borrada e escurecida
+ * por um degrade ate a cor da superficie, para o texto continuar legivel
+ * com qualquer capa.
+ */
+const Heroi = styled("div", {
   base: {
-    width: "72px",
-    height: "72px",
+    position: "relative",
+    isolation: "isolate",
+    display: "flex",
+    alignItems: "flex-end",
+    gap: "var(--gap-lg)",
+    padding: "var(--gap-lg)",
+    marginBottom: "var(--gap-md)",
+    borderRadius: "var(--borderRadius-lg)",
+    overflow: "hidden",
+    background: "var(--md-sys-color-surface-container)",
+
+    _before: {
+      content: '""',
+      position: "absolute",
+      inset: "-40px",
+      zIndex: -2,
+      backgroundImage: "var(--capa)",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      filter: "blur(40px) saturate(1.4)",
+      opacity: 0.55,
+    },
+    _after: {
+      content: '""',
+      position: "absolute",
+      inset: 0,
+      zIndex: -1,
+      background:
+        "linear-gradient(180deg, transparent 0%, var(--md-sys-color-surface-container) 100%)",
+    },
+
+    "@container (max-width: 520px)": {
+      flexDirection: "column",
+      alignItems: "center",
+      textAlign: "center",
+      padding: "var(--gap-md)",
+    },
+  },
+});
+
+const CapaGrande = styled("div", {
+  base: {
+    width: "168px",
+    height: "168px",
     flexShrink: 0,
     display: "grid",
     placeItems: "center",
     borderRadius: "var(--borderRadius-md)",
-    background: "var(--md-sys-color-surface-container-highest)",
     overflow: "hidden",
+    background: "var(--md-sys-color-surface-container-highest)",
+    color: "var(--md-sys-color-on-surface-variant)",
+    boxShadow: "0 8px 24px rgba(0, 0, 0, 0.45)",
     "& img": { width: "100%", height: "100%", objectFit: "cover" },
+
+    "@container (max-width: 720px)": { width: "120px", height: "120px" },
   },
 });
 
-const MiniCapa = styled(Capa, {
-  base: { width: "36px", height: "36px" },
+const InfoDoHeroi = styled("div", {
+  base: {
+    flex: 1,
+    minWidth: 0,
+    width: "100%",
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+});
+
+const Rotulo = styled("span", {
+  base: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "6px",
+    fontSize: "11px",
+    fontWeight: 700,
+    letterSpacing: "0.06em",
+    textTransform: "uppercase",
+    color: "var(--md-sys-color-primary)",
+
+    '&[data-estado="carregando"]': {
+      color: "var(--md-sys-color-on-surface-variant)",
+    },
+    "@container (max-width: 520px)": { alignSelf: "center" },
+  },
+});
+
+/** Titulo grande, em ate duas linhas, como o nome de uma playlist. */
+const Titulo = styled("h2", {
+  base: {
+    margin: 0,
+    fontSize: "clamp(20px, 4cqi, 34px)",
+    lineHeight: 1.15,
+    fontWeight: 800,
+    color: "var(--md-sys-color-on-surface)",
+    lineClamp: 2,
+    wordBreak: "break-word",
+  },
+});
+
+const Artista = styled("span", {
+  base: {
+    fontSize: "14px",
+    color: "var(--md-sys-color-on-surface-variant)",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+  },
+});
+
+/** Tempo, barra e duracao numa linha, como o player do Spotify. */
+const Progresso = styled("div", {
+  base: {
+    display: "grid",
+    gridTemplateColumns: "auto minmax(0, 1fr) auto",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
+    marginTop: "var(--gap-md)",
+    fontSize: "12px",
+    fontVariantNumeric: "tabular-nums",
+    color: "var(--md-sys-color-on-surface-variant)",
+    maxWidth: "560px",
+  },
+});
+
+const Preparando = styled("span", {
+  base: {
+    gridColumn: "1 / -1",
+    fontSize: "12px",
+  },
+});
+
+const Barra = styled("div", {
+  base: {
+    height: "4px",
+    borderRadius: "var(--borderRadius-full)",
+    background:
+      "color-mix(in srgb, var(--md-sys-color-on-surface) 18%, transparent)",
+    overflow: "hidden",
+
+    "& > div": {
+      height: "100%",
+      borderRadius: "inherit",
+      background: "var(--md-sys-color-on-surface)",
+      // Anda suave entre os polls de 2 s, em vez de pular.
+      transition: "width 2s linear",
+    },
+
+    // Carregando: barra cheia, fraca, pulsando. Nao finge progresso.
+    "&[data-carregando] > div": {
+      width: "100%",
+      opacity: 0.35,
+      animation: "pulse 1.4s ease-in-out infinite",
+    },
+  },
+});
+
+/** Tres barrinhas que sobem e descem: esta saindo som. */
+const Equalizador = styled("span", {
+  base: {
+    display: "inline-flex",
+    alignItems: "flex-end",
+    gap: "2px",
+    height: "10px",
+
+    "& i": {
+      width: "3px",
+      height: "100%",
+      background: "currentColor",
+      borderRadius: "1px",
+      transformOrigin: "bottom",
+      animation: "musicboxEqualizador 0.9s ease-in-out infinite",
+    },
+    "& i:nth-child(2)": { animationDelay: "-0.3s" },
+    "& i:nth-child(3)": { animationDelay: "-0.6s" },
+  },
+});
+
+const Roda = styled("span", {
+  base: {
+    display: "inline-block",
+    width: "12px",
+    height: "12px",
+    flexShrink: 0,
+    borderRadius: "50%",
+    border: "2px solid currentColor",
+    borderTopColor: "transparent",
+    animation: "spin 0.8s linear infinite",
+  },
+});
+
+const SemNada = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "var(--gap-md)",
+    padding: "var(--gap-xl, 32px) var(--gap-md)",
+    color: "var(--md-sys-color-on-surface-variant)",
+
+    "& h2": {
+      margin: 0,
+      fontSize: "20px",
+      fontWeight: 700,
+      color: "var(--md-sys-color-on-surface)",
+    },
+  },
+});
+
+/** Titulo de secao ("A seguir", "Resultados para ...") com acao a direita. */
+const CabecalhoDaSecao = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "var(--gap-md)",
+    minHeight: "40px",
+    margin: "var(--gap-sm) 0 var(--gap-xs)",
+
+    "& h3": {
+      margin: 0,
+      display: "flex",
+      alignItems: "baseline",
+      gap: "var(--gap-sm)",
+      minWidth: 0,
+      fontSize: "18px",
+      fontWeight: 700,
+      color: "var(--md-sys-color-on-surface)",
+      overflow: "hidden",
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+    },
+    "& small": {
+      fontSize: "13px",
+      fontWeight: 400,
+      color: "var(--md-sys-color-on-surface-variant)",
+    },
+  },
+});
+
+const Tabela = styled("div", {
+  base: {
+    display: "flex",
+    flexDirection: "column",
+  },
+});
+
+/**
+ * Colunas fixas: numero, faixa, duracao, acao. Grade e nao flex para a
+ * duracao de todas as linhas ficar alinhada, como numa tabela de verdade.
+ */
+const Linha = styled("div", {
+  base: {
+    display: "grid",
+    gridTemplateColumns: "40px minmax(0, 1fr) 56px 40px",
+    alignItems: "center",
+    gap: "var(--gap-sm)",
+    minHeight: "56px",
+    padding: "0 var(--gap-xs)",
+    borderRadius: "var(--borderRadius-md)",
+
+    _hover: {
+      background:
+        "color-mix(in srgb, var(--md-sys-color-on-surface) 7%, transparent)",
+    },
+
+    "@container (max-width: 480px)": {
+      gridTemplateColumns: "minmax(0, 1fr) 40px",
+      "& > :first-child, & > :nth-child(3)": { display: "none" },
+    },
+  },
+});
+
+const LinhaDeTitulos = styled(Linha, {
+  base: {
+    minHeight: "32px",
+    marginBottom: "var(--gap-xs)",
+    borderBottom:
+      "1px solid color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent)",
+    borderRadius: 0,
+    fontSize: "12px",
+    letterSpacing: "0.04em",
+    textTransform: "uppercase",
+    color: "var(--md-sys-color-on-surface-variant)",
+    "& > :first-child": { textAlign: "center" },
+    _hover: { background: "transparent" },
+  },
+});
+
+/** O numero da linha; no hover (ou foco) vira o botao de tocar. */
+const Numero = styled("div", {
+  base: {
+    display: "grid",
+    placeItems: "center",
+    fontSize: "14px",
+    fontVariantNumeric: "tabular-nums",
+    color: "var(--md-sys-color-on-surface-variant)",
+
+    "& > *": { gridArea: "1 / 1" },
+    "& > button": { opacity: 0 },
+    "[data-fila]:hover &": {
+      "& > span": { opacity: 0 },
+      "& > button": { opacity: 1 },
+    },
+    "&:focus-within > span": { opacity: 0 },
+    "&:focus-within > button": { opacity: 1 },
+  },
+});
+
+const Miolo = styled("div", {
+  base: {
+    display: "flex",
+    alignItems: "center",
+    gap: "var(--gap-md)",
+    minWidth: 0,
+  },
 });
 
 /**
@@ -710,38 +1143,73 @@ const MiniCapa = styled(Capa, {
  * flex nunca encolhe abaixo do proprio conteudo, e titulos longos empurram a
  * duracao e o botao para fora do painel.
  */
-const Identificacao = styled("div", {
+const Textos = styled("div", {
   base: {
     display: "flex",
     flexDirection: "column",
     minWidth: 0,
-    flexGrow: 1,
-    "& > *": {
+
+    "& > span": {
       overflow: "hidden",
       textOverflow: "ellipsis",
       whiteSpace: "nowrap",
     },
+    "& > span:first-child": {
+      fontSize: "15px",
+      color: "var(--md-sys-color-on-surface)",
+    },
+    "& > span:last-child": {
+      fontSize: "13px",
+      color: "var(--md-sys-color-on-surface-variant)",
+    },
   },
 });
 
-const TocandoAgora = styled("div", {
+const MiniCapa = styled("div", {
   base: {
-    display: "flex",
-    gap: "var(--gap-md)",
-    alignItems: "center",
-    padding: "var(--gap-sm)",
-    borderRadius: "var(--borderRadius-md)",
-    background: "var(--md-sys-color-surface-container)",
+    width: "40px",
+    height: "40px",
     flexShrink: 0,
+    display: "grid",
+    placeItems: "center",
+    borderRadius: "var(--borderRadius-sm)",
+    overflow: "hidden",
+    background: "var(--md-sys-color-surface-container-highest)",
+    color: "var(--md-sys-color-on-surface-variant)",
+    "& img": { width: "100%", height: "100%", objectFit: "cover" },
   },
 });
 
-const Rotulo = styled("span", {
+/** Duracao da linha, alinhada a direita como numero. */
+const Duracao = styled("span", {
   base: {
-    fontSize: "11px",
-    fontWeight: 700,
-    letterSpacing: "0.04em",
-    textTransform: "uppercase",
+    textAlign: "right",
+    fontSize: "13px",
+    fontVariantNumeric: "tabular-nums",
+    color: "var(--md-sys-color-on-surface-variant)",
+  },
+});
+
+/** Tirar da fila: so aparece no hover, para a lista ficar limpa. */
+const AcaoNoHover = styled("div", {
+  base: {
+    display: "grid",
+    placeItems: "center",
+    opacity: 0,
+    transition: "opacity .15s",
+    "[data-fila]:hover &": { opacity: 1 },
+    "&:focus-within": { opacity: 1 },
+    "@container (max-width: 480px)": { opacity: 1 },
+  },
+});
+
+const JaNaFila = styled("div", {
+  base: {
+    width: "32px",
+    height: "32px",
+    display: "grid",
+    placeItems: "center",
+    justifySelf: "center",
     color: "var(--md-sys-color-primary)",
   },
 });
@@ -751,26 +1219,16 @@ const Volume = styled("div", {
     display: "flex",
     alignItems: "center",
     gap: "var(--gap-xs)",
-    flexShrink: 0,
-    width: "160px",
+    width: "150px",
 
     "& mdui-slider": { flexGrow: 1, minWidth: 0 },
 
     // Estreito: so o botao de mudo. O deslizante empurrava o "fechar" para
     // fora do painel.
-    "@container (max-width: 480px)": {
+    "@container (max-width: 720px)": {
       width: "auto",
       "& mdui-slider": { display: "none" },
     },
-  },
-});
-
-const LinhaDeTempo = styled("div", {
-  base: {
-    display: "flex",
-    justifyContent: "space-between",
-    fontSize: "11px",
-    color: "var(--md-sys-color-on-surface-variant)",
   },
 });
 
@@ -779,13 +1237,19 @@ const BarraDeBusca = styled("form", {
     display: "flex",
     alignItems: "center",
     gap: "var(--gap-xs)",
+    minWidth: 0,
+    height: "44px",
     padding: "0 var(--gap-xs) 0 var(--gap-md)",
     borderRadius: "var(--borderRadius-full)",
     background: "var(--md-sys-color-surface-container-highest)",
-    flexShrink: 0,
+    transition: "box-shadow .15s",
 
+    _hover: {
+      boxShadow:
+        "0 0 0 1px color-mix(in srgb, var(--md-sys-color-on-surface) 25%, transparent)",
+    },
     "&:focus-within": {
-      outline: "2px solid var(--md-sys-color-primary)",
+      boxShadow: "0 0 0 2px var(--md-sys-color-on-surface)",
     },
   },
 });
@@ -807,72 +1271,8 @@ const Campo = styled("input", {
     border: "none",
     background: "transparent",
     color: "var(--md-sys-color-on-surface)",
-    fontSize: "0.9rem",
+    fontSize: "14px",
     "&:focus": { outline: "none" },
-  },
-});
-
-const Resumo = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    minHeight: "32px",
-    padding: "0 var(--gap-xs)",
-    flexShrink: 0,
-  },
-});
-
-const Item = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "var(--gap-sm)",
-    padding: "6px var(--gap-sm)",
-    borderRadius: "var(--borderRadius-md)",
-    "&:hover": { background: "var(--md-sys-color-surface-container)" },
-  },
-});
-
-/** Botoes do item da fila: aparecem no hover, para a lista ficar limpa. */
-const AcoesDoItem = styled("div", {
-  base: {
-    display: "flex",
-    flexShrink: 0,
-    opacity: 0.35,
-    transition: "opacity .15s",
-    "*:hover > &": { opacity: 1 },
-    "&:focus-within": { opacity: 1 },
-  },
-});
-
-const JaNaFila = styled("div", {
-  base: {
-    width: "32px",
-    height: "32px",
-    display: "grid",
-    placeItems: "center",
-    flexShrink: 0,
-    color: "var(--md-sys-color-primary)",
-  },
-});
-
-const Posicao = styled("div", {
-  base: {
-    width: "1.5rem",
-    textAlign: "center",
-    flexShrink: 0,
-    "@container (max-width: 480px)": { display: "none" },
-  },
-});
-
-/** Duracao do item; sai primeiro quando falta espaco, o titulo importa mais. */
-const Duracao = styled("span", {
-  base: {
-    flexShrink: 0,
-    fontSize: "12px",
-    color: "var(--md-sys-color-on-surface-variant)",
-    "@container (max-width: 480px)": { display: "none" },
   },
 });
 
@@ -884,21 +1284,40 @@ const Vazio = styled("div", {
     gap: "var(--gap-sm)",
     padding: "var(--gap-lg)",
     textAlign: "center",
+    fontSize: "14px",
+    color: "var(--md-sys-color-on-surface-variant)",
   },
 });
 
-const Retornado = styled("div", {
+/** Aviso de uma linha: link abrindo, link adicionado, erro. */
+const Faixinha = styled("div", {
   base: {
     display: "flex",
-    flexDirection: "column",
     alignItems: "center",
-    gap: "var(--gap-xs)",
-    padding: "var(--gap-lg) var(--gap-md)",
-    textAlign: "center",
-    color: "var(--md-sys-color-primary)",
+    gap: "var(--gap-sm)",
+    margin: "0 0 var(--gap-md)",
+    padding: "var(--gap-xs) var(--gap-xs) var(--gap-xs) var(--gap-md)",
+    minHeight: "40px",
+    borderRadius: "var(--borderRadius-md)",
+    background: "var(--md-sys-color-surface-container-high)",
+    color: "var(--md-sys-color-on-surface)",
+    fontSize: "13px",
+    flexShrink: 0,
 
-    "& > span": { color: "var(--md-sys-color-on-surface)" },
-    '&[data-tipo="vazio"]': { color: "var(--md-sys-color-error)" },
+    "& > span": { flex: 1, minWidth: 0 },
+    '&[data-tipo="ok"] > :first-child': {
+      color: "var(--md-sys-color-primary)",
+    },
+    '&[data-tipo="vazio"] > :first-child': {
+      color: "var(--md-sys-color-error)",
+    },
+    '&[data-tipo="erro"]': {
+      background: "var(--md-sys-color-error-container)",
+      color: "var(--md-sys-color-on-error-container)",
+    },
+
+    // O erro geral fica entre o topo e o corpo, fora da margem do corpo.
+    "*:not(section) > &": { margin: "0 var(--gap-lg) var(--gap-sm)" },
   },
 });
 
@@ -906,53 +1325,26 @@ const ListaDeDicas = styled("ul", {
   base: {
     listStyle: "none",
     margin: 0,
-    padding: "var(--gap-sm)",
-    display: "flex",
-    flexDirection: "column",
-    gap: "var(--gap-md)",
+    padding: 0,
+    width: "100%",
+    maxWidth: "720px",
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+    gap: "var(--gap-sm)",
     fontSize: "13px",
-    color: "var(--md-sys-color-on-surface-variant)",
 
     "& li": {
       display: "flex",
       gap: "var(--gap-sm)",
-      alignItems: "center",
+      alignItems: "flex-start",
+      padding: "var(--gap-md)",
+      borderRadius: "var(--borderRadius-lg)",
+      background: "var(--md-sys-color-surface-container)",
+    },
+    "& li > :first-child": {
+      color: "var(--md-sys-color-primary)",
+      flexShrink: 0,
     },
     "& b": { color: "var(--md-sys-color-on-surface)" },
-  },
-});
-
-const AvisoDeErro = styled("div", {
-  base: {
-    display: "flex",
-    alignItems: "center",
-    gap: "var(--gap-sm)",
-    margin: "0 var(--gap-md)",
-    padding: "var(--gap-xs) var(--gap-xs) var(--gap-xs) var(--gap-md)",
-    borderRadius: "var(--borderRadius-md)",
-    background: "var(--md-sys-color-error-container)",
-    color: "var(--md-sys-color-on-error-container)",
-    fontSize: "13px",
-    flexShrink: 0,
-
-    "& > span": { flex: 1 },
-  },
-});
-
-const BarraDeProgresso = styled("div", {
-  base: {
-    height: "4px",
-    borderRadius: "var(--borderRadius-full)",
-    background: "var(--md-sys-color-surface-container-highest)",
-    overflow: "hidden",
-    marginTop: "var(--gap-sm)",
-    flexShrink: 0,
-
-    "& > div": {
-      height: "100%",
-      background: "var(--md-sys-color-primary)",
-      // Anda suave entre os polls de 2 s, em vez de pular.
-      transition: "width 2s linear",
-    },
   },
 });

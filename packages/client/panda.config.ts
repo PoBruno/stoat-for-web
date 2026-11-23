@@ -21,6 +21,11 @@ export default defineConfig({
   theme: {
     extend: {
       keyframes: {
+        /** Barrinhas do "Tocando agora" do MusicBox. */
+        musicboxEqualizador: {
+          "0%, 100%": { transform: "scaleY(0.3)" },
+          "50%": { transform: "scaleY(1)" },
+        },
         materialPhysicsButtonSelect: {
           "0%": {
             paddingInline: "var(--padding-inline)",
